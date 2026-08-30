@@ -1,0 +1,52 @@
+{
+  "ELEVATED_HBA1C": {
+    "condition_name": "Elevated Glycated Hemoglobin (HbA1c > 6.5%)",
+    "tamil_condition": "உயர்ந்த சர்க்கரை அளவு (நீரிழிவு)",
+    "tanglish_condition": "High Sugar Level (Diabetes)",
+    "primary_targets": ["Limit simple refined carbohydrates", "Increase soluble dietary fiber", "Opt for low glycemic index foods"],
+    "recommended_foods": ["food_001", "food_002", "food_003", "food_004"],
+    "foods_to_avoid": ["Refined white sugar", "Sweets & Mithai", "Polished white rice in large quantities", "Soda & sweetened fruit juices"],
+    "tamil_advice": "வெள்ளை சர்க்கரை, இனிப்புகள் மற்றும் அதிக வெள்ளை சாதம் உட்கொள்வதை குறைக்கவும். கேழ்வரகு, பாகற்காய், வெந்தயம் மற்றும் பாசிப்பயறு போன்ற குறைந்த கிளைசெமிக் உணவுகளை சேர்த்துக் கொள்ளுங்கள்.",
+    "tanglish_advice": "White sugar, sweets mattrum periya alavil white rice saapiduvadhai kuraikkavum. Ragi, Pavakkai, Vendhayam mattrum Paasi Payaru pondra low GI foods serthukkollavum."
+  },
+  "ELEVATED_LDL_CHOLESTEROL": {
+    "condition_name": "Elevated LDL Cholesterol (> 100 mg/dL)",
+    "tamil_condition": "உயர்ந்த கெட்ட கொழுப்பு (LDL)",
+    "tanglish_condition": "High Bad Cholesterol (LDL)",
+    "primary_targets": ["Reduce saturated and trans fats", "Increase soluble beta-glucan fiber", "Incorporate omega-3 fatty acids"],
+    "recommended_foods": ["food_004", "food_006", "food_009", "food_010"],
+    "foods_to_avoid": ["Deep fried snacks (Vada, Bajji, Samosa)", "Processed meat", "Excess butter and palm oil", "Commercial bakery items"],
+    "tamil_advice": "எண்ணெயில் பொரித்த உணவுகள், பட்டர் மற்றும் பேக்கரி பண்டங்களை தவிர்க்கவும். ஓட்ஸ், வெந்தயம் மற்றும் ஒமேகா-3 உள்ள மீன் வகைகளை உணவில் சேர்க்கவும்.",
+    "tanglish_advice": "Deep fried snacks, butter mattrum bakery items thavirkkavum. Oats, Vendhayam mattrum Omega-3 ulla fish items serthukkollavum."
+  },
+  "LOW_HEMOGLOBIN": {
+    "condition_name": "Low Hemoglobin / Anemia (< 12.0 g/dL)",
+    "tamil_condition": "இரத்த சோகை / குறைவான ஹீமோகுளோபின்",
+    "tanglish_condition": "Low Hemoglobin (Ratha Sogaai)",
+    "primary_targets": ["Enhance bioavailable dietary iron", "Combine iron with Vitamin C for absorption", "Ensure adequate folate and B12"],
+    "recommended_foods": ["food_005", "food_008", "food_010"],
+    "foods_to_avoid": ["Excess tea or coffee immediately after meals (inhibits iron absorption)"],
+    "tamil_advice": "பசலைக்கீரை, முருங்கைக்கீரை, முட்டை மற்றும் நெல்லிக்காய் சாறு போன்ற இரும்புச்சத்து மற்றும் வைட்டமின் சி நிறைந்த உணவுகளை உண்ணுங்கள். உணவு உண்ட உடனே தேநீர் குடிப்பதைத் தவிர்க்கவும்.",
+    "tanglish_advice": "Keerai, Murungai keerai, egg whites mattrum Amla juice saapidavum. Food saapitta udaney tea/coffee kudippadhai thavirkkavum."
+  },
+  "ELEVATED_CREATININE": {
+    "condition_name": "Elevated Serum Creatinine / Renal Caution (> 1.2 mg/dL)",
+    "tamil_condition": "சிறுநீரகக் குறியீடு (உயர்ந்த கிரியேட்டினின்)",
+    "tanglish_condition": "High Creatinine / Kidney Caution",
+    "primary_targets": ["Moderate protein intake", "Control dietary sodium", "Consult nephrologist regarding potassium intake"],
+    "recommended_foods": ["food_007", "food_008"],
+    "foods_to_avoid": ["Very high sodium pickles & papads", "Excessive red meat", "Unprescribed protein powder megadoses", "NSAID pain medications without doctor advice"],
+    "tamil_advice": "உப்பு மற்றும் ஊறுகாய் அளவை மிகக் கவனமாகக் குறைக்கவும். அதிகப்படியான புரதம் (protein powder) மற்றும் வலி நிவாரணி மாத்திரைகளை மருத்துவர் ஆலோசனையின்றி உட்கொள்ள வேண்டாம்.",
+    "tanglish_advice": "Salt mattrum oorugai alavai kuraikkavum. Doctor advice illamal high protein supplements eduthukkollakoodadhu."
+  },
+  "ELEVATED_BLOOD_PRESSURE": {
+    "condition_name": "Elevated Blood Pressure / Hypertension (Systolic > 130 mmHg)",
+    "tamil_condition": "உயர் இரத்த அழுத்தம் (Blood Pressure)",
+    "tanglish_condition": "High Blood Pressure (BP)",
+    "primary_targets": ["DASH diet principles", "Sodium restriction (< 2000mg/day)", "Potassium and magnesium rich fresh produce"],
+    "recommended_foods": ["food_003", "food_005", "food_006", "food_010"],
+    "foods_to_avoid": ["Added table salt", "Salted chips, snacks, canned soups", "Pickles, karuvadu (salted dry fish)"],
+    "tamil_advice": "உப்பு சேர்த்த உணவுகள், ஊறுகாய், கருவாடு மற்றும் சிப்ஸ் வகைகளை தவிர்க்கவும். கீரைகள், பாசிப்பயறு மற்றும் புதிய பழங்களை உணவில் சேர்த்துக் கொள்ளவும்.",
+    "tanglish_advice": "Salted snacks, oorugai, karuvadu kuraikkavum. Fresh keerai, sprouts mattrum fresh fruits serthukkollavum."
+  }
+}

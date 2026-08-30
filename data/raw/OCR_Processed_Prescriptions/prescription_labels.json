@@ -1,0 +1,222 @@
+{
+  "ocr_rx_001.png": {
+    "id": "ocr_rx_001",
+    "clinic": "City Health Clinic",
+    "doctor": "Dr. A. Sharma, MD",
+    "patient": "John Doe",
+    "medications": [
+      "Tab Azithromycin 500mg 1-0-0 5 days",
+      "Tab Paracetamol 650mg 1-1-1 SOS"
+    ],
+    "full_ground_truth": "CLINIC: City Health Clinic\nDOCTOR: Dr. A. Sharma, MD\nPATIENT: John Doe\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Azithromycin 500mg 1-0-0 5 days\n  * Tab Paracetamol 650mg 1-1-1 SOS\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed"
+  },
+  "ocr_rx_002.png": {
+    "id": "ocr_rx_002",
+    "clinic": "Apollo Medical Center",
+    "doctor": "Dr. R. K. Patel, MBBS",
+    "patient": "Anita Roy",
+    "medications": [
+      "Cap Amoxicillin 500mg 1-0-1 7 days",
+      "Tab Montelukast 10mg 0-0-1 HS"
+    ],
+    "full_ground_truth": "CLINIC: Apollo Medical Center\nDOCTOR: Dr. R. K. Patel, MBBS\nPATIENT: Anita Roy\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Cap Amoxicillin 500mg 1-0-1 7 days\n  * Tab Montelukast 10mg 0-0-1 HS\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed"
+  },
+  "ocr_rx_003.png": {
+    "id": "ocr_rx_003",
+    "clinic": "Care & Cure Clinic",
+    "doctor": "Dr. S. Nair, MD",
+    "patient": "Rajesh Kumar",
+    "medications": [
+      "Tab Metformin 500mg 1-0-1 AC",
+      "Tab Atorvastatin 10mg 0-0-1 HS"
+    ],
+    "full_ground_truth": "CLINIC: Care & Cure Clinic\nDOCTOR: Dr. S. Nair, MD\nPATIENT: Rajesh Kumar\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Metformin 500mg 1-0-1 AC\n  * Tab Atorvastatin 10mg 0-0-1 HS\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed"
+  },
+  "ocr_rx_004.png": {
+    "id": "ocr_rx_004",
+    "clinic": "Metro General Hospital",
+    "doctor": "Dr. V. Gupta, MS",
+    "patient": "Priya Sharma",
+    "medications": [
+      "Tab Pantoprazole 40mg 1-0-0 BBF",
+      "Tab Domperidone 10mg 1-0-1 AC"
+    ],
+    "full_ground_truth": "CLINIC: Metro General Hospital\nDOCTOR: Dr. V. Gupta, MS\nPATIENT: Priya Sharma\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Pantoprazole 40mg 1-0-0 BBF\n  * Tab Domperidone 10mg 1-0-1 AC\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed"
+  },
+  "ocr_rx_005.png": {
+    "id": "ocr_rx_005",
+    "clinic": "Sunrise Diagnostics",
+    "doctor": "Dr. M. K. Das, DNB",
+    "patient": "Vikram Singh",
+    "medications": [
+      "Tab Telmisartan 40mg 1-0-0 OD",
+      "Tab Amlodipine 5mg 1-0-0 OD"
+    ],
+    "full_ground_truth": "CLINIC: Sunrise Diagnostics\nDOCTOR: Dr. M. K. Das, DNB\nPATIENT: Vikram Singh\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Telmisartan 40mg 1-0-0 OD\n  * Tab Amlodipine 5mg 1-0-0 OD\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed"
+  },
+  "ocr_rx_006.png": {
+    "id": "ocr_rx_006",
+    "clinic": "Global Health Hospital",
+    "doctor": "Dr. P. Sundaram, MD",
+    "patient": "Meena Kumari",
+    "medications": [
+      "Tab Cefuroxime 500mg 1-0-1 5 days",
+      "Tab Levocetirizine 5mg 0-0-1 HS"
+    ],
+    "full_ground_truth": "CLINIC: Global Health Hospital\nDOCTOR: Dr. P. Sundaram, MD\nPATIENT: Meena Kumari\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Cefuroxime 500mg 1-0-1 5 days\n  * Tab Levocetirizine 5mg 0-0-1 HS\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed"
+  },
+  "ocr_rx_007.png": {
+    "id": "ocr_rx_007",
+    "clinic": "Lifecare PolyClinic",
+    "doctor": "Dr. H. Mehta, MD",
+    "patient": "Suresh Raina",
+    "medications": [
+      "Tab Ciprofloxacin 500mg 1-0-1 5 days",
+      "Syrup Benadryl 10ml 1-1-1"
+    ],
+    "full_ground_truth": "CLINIC: Lifecare PolyClinic\nDOCTOR: Dr. H. Mehta, MD\nPATIENT: Suresh Raina\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Ciprofloxacin 500mg 1-0-1 5 days\n  * Syrup Benadryl 10ml 1-1-1\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed"
+  },
+  "ocr_rx_008.png": {
+    "id": "ocr_rx_008",
+    "clinic": "Apex Medicare",
+    "doctor": "Dr. K. Iyer, MBBS",
+    "patient": "Lata Venkatesh",
+    "medications": [
+      "Tab Losartan 500mg 1-0-0 OD",
+      "Tab Hydrochlorothiazide 12.5mg 1-0-0"
+    ],
+    "full_ground_truth": "CLINIC: Apex Medicare\nDOCTOR: Dr. K. Iyer, MBBS\nPATIENT: Lata Venkatesh\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Losartan 500mg 1-0-0 OD\n  * Tab Hydrochlorothiazide 12.5mg 1-0-0\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed"
+  },
+  "ocr_rx_009.png": {
+    "id": "ocr_rx_009",
+    "clinic": "St. Jude Hospital",
+    "doctor": "Dr. E. Thomas, MD",
+    "patient": "David Miller",
+    "medications": [
+      "Cap Omeprazole 20mg 1-0-0 BBF",
+      "Tab Sucralfate 1000mg 1-1-1 AC"
+    ],
+    "full_ground_truth": "CLINIC: St. Jude Hospital\nDOCTOR: Dr. E. Thomas, MD\nPATIENT: David Miller\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Cap Omeprazole 20mg 1-0-0 BBF\n  * Tab Sucralfate 1000mg 1-1-1 AC\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed"
+  },
+  "ocr_rx_010.png": {
+    "id": "ocr_rx_010",
+    "clinic": "Prime Care Clinic",
+    "doctor": "Dr. N. Joshi, MD",
+    "patient": "Sunita Verma",
+    "medications": [
+      "Tab Glimepiride 1mg 1-0-0 BBF",
+      "Tab Teneligliptin 20mg 1-0-0 AC"
+    ],
+    "full_ground_truth": "CLINIC: Prime Care Clinic\nDOCTOR: Dr. N. Joshi, MD\nPATIENT: Sunita Verma\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Glimepiride 1mg 1-0-0 BBF\n  * Tab Teneligliptin 20mg 1-0-0 AC\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed"
+  },
+  "ocr_rx_011.png": {
+    "id": "ocr_rx_011",
+    "clinic": "Fortis Health Center",
+    "doctor": "Dr. G. Saxena, MS",
+    "patient": "Rahul Kapoor",
+    "medications": [
+      "Tab Ibuprofen 400mg 1-0-1 PC",
+      "Tab Paracetamol 500mg 1-1-1 SOS"
+    ],
+    "full_ground_truth": "CLINIC: Fortis Health Center\nDOCTOR: Dr. G. Saxena, MS\nPATIENT: Rahul Kapoor\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Ibuprofen 400mg 1-0-1 PC\n  * Tab Paracetamol 500mg 1-1-1 SOS\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed"
+  },
+  "ocr_rx_012.png": {
+    "id": "ocr_rx_012",
+    "clinic": "Max Healthcare",
+    "doctor": "Dr. B. Sengupta, MD",
+    "patient": "Anjali Mishra",
+    "medications": [
+      "Tab Doxycycline 100mg 1-0-1 7 days",
+      "Tab Probiotic 1 cap 1-0-1"
+    ],
+    "full_ground_truth": "CLINIC: Max Healthcare\nDOCTOR: Dr. B. Sengupta, MD\nPATIENT: Anjali Mishra\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Doxycycline 100mg 1-0-1 7 days\n  * Tab Probiotic 1 cap 1-0-1\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed"
+  },
+  "ocr_rx_013.png": {
+    "id": "ocr_rx_013",
+    "clinic": "Manipal Medical Hub",
+    "doctor": "Dr. R. Deshmukh, MBBS",
+    "patient": "Amitabh Bose",
+    "medications": [
+      "Tab Rosuvastatin 10mg 0-0-1 HS",
+      "Tab Clopidogrel 75mg 1-0-0 OD"
+    ],
+    "full_ground_truth": "CLINIC: Manipal Medical Hub\nDOCTOR: Dr. R. Deshmukh, MBBS\nPATIENT: Amitabh Bose\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Rosuvastatin 10mg 0-0-1 HS\n  * Tab Clopidogrel 75mg 1-0-0 OD\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed"
+  },
+  "ocr_rx_014.png": {
+    "id": "ocr_rx_014",
+    "clinic": "Green Valley Clinic",
+    "doctor": "Dr. T. Reddy, MD",
+    "patient": "Kavita Rao",
+    "medications": [
+      "Tab Cetirizine 10mg 0-0-1 HS",
+      "Nasal Spray Fluticasone 2 puffs OD"
+    ],
+    "full_ground_truth": "CLINIC: Green Valley Clinic\nDOCTOR: Dr. T. Reddy, MD\nPATIENT: Kavita Rao\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Cetirizine 10mg 0-0-1 HS\n  * Nasal Spray Fluticasone 2 puffs OD\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed"
+  },
+  "ocr_rx_015.png": {
+    "id": "ocr_rx_015",
+    "clinic": "Unity Care Hospital",
+    "doctor": "Dr. A. Khan, MS",
+    "patient": "Tariq Hussain",
+    "medications": [
+      "Tab Augmentin 625mg 1-0-1 5 days",
+      "Tab Linezolid 600mg 1-0-1"
+    ],
+    "full_ground_truth": "CLINIC: Unity Care Hospital\nDOCTOR: Dr. A. Khan, MS\nPATIENT: Tariq Hussain\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Augmentin 625mg 1-0-1 5 days\n  * Tab Linezolid 600mg 1-0-1\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed"
+  },
+  "ocr_rx_016.png": {
+    "id": "ocr_rx_016",
+    "clinic": "City Health Clinic",
+    "doctor": "Dr. A. Sharma, MD",
+    "patient": "Robert Brown",
+    "medications": [
+      "Tab Azithromycin 500mg 1-0-0 5 days",
+      "Tab Paracetamol 650mg 1-1-1 SOS"
+    ],
+    "full_ground_truth": "CLINIC: City Health Clinic\nDOCTOR: Dr. A. Sharma, MD\nPATIENT: Robert Brown\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Azithromycin 500mg 1-0-0 5 days\n  * Tab Paracetamol 650mg 1-1-1 SOS\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed"
+  },
+  "ocr_rx_017.png": {
+    "id": "ocr_rx_017",
+    "clinic": "Apollo Medical Center",
+    "doctor": "Dr. R. K. Patel, MBBS",
+    "patient": "Sneha Bose",
+    "medications": [
+      "Cap Amoxicillin 500mg 1-0-1 7 days",
+      "Tab Montelukast 10mg 0-0-1 HS"
+    ],
+    "full_ground_truth": "CLINIC: Apollo Medical Center\nDOCTOR: Dr. R. K. Patel, MBBS\nPATIENT: Sneha Bose\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Cap Amoxicillin 500mg 1-0-1 7 days\n  * Tab Montelukast 10mg 0-0-1 HS\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed"
+  },
+  "ocr_rx_018.png": {
+    "id": "ocr_rx_018",
+    "clinic": "Care & Cure Clinic",
+    "doctor": "Dr. S. Nair, MD",
+    "patient": "Rohan Malhotra",
+    "medications": [
+      "Tab Metformin 500mg 1-0-1 AC",
+      "Tab Atorvastatin 10mg 0-0-1 HS"
+    ],
+    "full_ground_truth": "CLINIC: Care & Cure Clinic\nDOCTOR: Dr. S. Nair, MD\nPATIENT: Rohan Malhotra\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Metformin 500mg 1-0-1 AC\n  * Tab Atorvastatin 10mg 0-0-1 HS\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed"
+  },
+  "ocr_rx_019.png": {
+    "id": "ocr_rx_019",
+    "clinic": "Metro General Hospital",
+    "doctor": "Dr. V. Gupta, MS",
+    "patient": "Deepak Chopra",
+    "medications": [
+      "Tab Pantoprazole 40mg 1-0-0 BBF",
+      "Tab Domperidone 10mg 1-0-1 AC"
+    ],
+    "full_ground_truth": "CLINIC: Metro General Hospital\nDOCTOR: Dr. V. Gupta, MS\nPATIENT: Deepak Chopra\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Pantoprazole 40mg 1-0-0 BBF\n  * Tab Domperidone 10mg 1-0-1 AC\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed"
+  },
+  "ocr_rx_020.png": {
+    "id": "ocr_rx_020",
+    "clinic": "Sunrise Diagnostics",
+    "doctor": "Dr. M. K. Das, DNB",
+    "patient": "Shalini Nair",
+    "medications": [
+      "Tab Telmisartan 40mg 1-0-0 OD",
+      "Tab Amlodipine 5mg 1-0-0 OD"
+    ],
+    "full_ground_truth": "CLINIC: Sunrise Diagnostics\nDOCTOR: Dr. M. K. Das, DNB\nPATIENT: Shalini Nair\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Telmisartan 40mg 1-0-0 OD\n  * Tab Amlodipine 5mg 1-0-0 OD\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed"
+  }
+}

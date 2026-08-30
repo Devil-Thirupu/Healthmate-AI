@@ -1,0 +1,461 @@
+{
+  "validation_eval": {
+    "split": "validation",
+    "total_samples": 16,
+    "overall_metrics": {
+      "average_cer": 0.9884,
+      "average_wer": 1.0,
+      "exact_match_percentage": 0.0,
+      "sig_extraction_accuracy": 0.0
+    },
+    "subgroup_metrics": {
+      "handwriting_research": {
+        "count": 13,
+        "average_cer": 1.0
+      },
+      "ocr_evaluation": {
+        "count": 3,
+        "average_cer": 0.9379
+      }
+    },
+    "error_categories": {
+      "dosage_digit_dropout_or_mismatch": 4,
+      "character_substitution": 0,
+      "low_contrast_or_cursive_segmentation_failure": 3,
+      "general_text_mismatch": 12
+    },
+    "detailed_results": [
+      {
+        "id": "hw_001",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "cefiget 40mg",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "dosage_digit_dropout_or_mismatch"
+        ]
+      },
+      {
+        "id": "hw_056",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "leflox",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "general_text_mismatch"
+        ]
+      },
+      {
+        "id": "hw_052",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "getryl",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "general_text_mismatch"
+        ]
+      },
+      {
+        "id": "hw_084",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "provas",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "general_text_mismatch"
+        ]
+      },
+      {
+        "id": "hw_058",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "lipiget",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "general_text_mismatch"
+        ]
+      },
+      {
+        "id": "hw_087",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "bisleri",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "general_text_mismatch"
+        ]
+      },
+      {
+        "id": "hw_054",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "fexet",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "general_text_mismatch"
+        ]
+      },
+      {
+        "id": "hw_026",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "uriguard",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "general_text_mismatch"
+        ]
+      },
+      {
+        "id": "hw_074",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "tab mesulid",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "general_text_mismatch"
+        ]
+      },
+      {
+        "id": "hw_065",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "starcox",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "general_text_mismatch"
+        ]
+      },
+      {
+        "id": "hw_030",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "tab ostium",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "general_text_mismatch"
+        ]
+      },
+      {
+        "id": "hw_028",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "tab atcam",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "general_text_mismatch"
+        ]
+      },
+      {
+        "id": "hw_078",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "tab atcam",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "general_text_mismatch"
+        ]
+      },
+      {
+        "id": "ocr_rx_003",
+        "dataset_type": "ocr_evaluation",
+        "ground_truth": "CLINIC: Care & Cure Clinic\nDOCTOR: Dr. S. Nair, MD\nPATIENT: Rajesh Kumar\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Metformin 500mg 1-0-1 AC\n  * Tab Atorvastatin 10mg 0-0-1 HS\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 0.9379,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "dosage_digit_dropout_or_mismatch",
+          "low_contrast_or_cursive_segmentation_failure"
+        ]
+      },
+      {
+        "id": "ocr_rx_017",
+        "dataset_type": "ocr_evaluation",
+        "ground_truth": "CLINIC: Apollo Medical Center\nDOCTOR: Dr. R. K. Patel, MBBS\nPATIENT: Sneha Bose\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Cap Amoxicillin 500mg 1-0-1 7 days\n  * Tab Montelukast 10mg 0-0-1 HS\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 0.9371,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "dosage_digit_dropout_or_mismatch",
+          "low_contrast_or_cursive_segmentation_failure"
+        ]
+      },
+      {
+        "id": "ocr_rx_008",
+        "dataset_type": "ocr_evaluation",
+        "ground_truth": "CLINIC: Apex Medicare\nDOCTOR: Dr. K. Iyer, MBBS\nPATIENT: Lata Venkatesh\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Losartan 500mg 1-0-0 OD\n  * Tab Hydrochlorothiazide 12.5mg 1-0-0\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 0.9387,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "dosage_digit_dropout_or_mismatch",
+          "low_contrast_or_cursive_segmentation_failure"
+        ]
+      }
+    ]
+  },
+  "test_eval": {
+    "split": "test",
+    "total_samples": 17,
+    "overall_metrics": {
+      "average_cer": 0.9899,
+      "average_wer": 1.0,
+      "exact_match_percentage": 0.0,
+      "sig_extraction_accuracy": 0.0
+    },
+    "subgroup_metrics": {
+      "handwriting_research": {
+        "count": 14,
+        "average_cer": 1.0
+      },
+      "ocr_evaluation": {
+        "count": 3,
+        "average_cer": 0.9429
+      }
+    },
+    "error_categories": {
+      "dosage_digit_dropout_or_mismatch": 6,
+      "character_substitution": 0,
+      "low_contrast_or_cursive_segmentation_failure": 3,
+      "general_text_mismatch": 11
+    },
+    "detailed_results": [
+      {
+        "id": "hw_085",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "movax",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "general_text_mismatch"
+        ]
+      },
+      {
+        "id": "hw_005",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "dicloran",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "general_text_mismatch"
+        ]
+      },
+      {
+        "id": "hw_055",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "starcox 90",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "general_text_mismatch"
+        ]
+      },
+      {
+        "id": "hw_076",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "tab uriguard",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "general_text_mismatch"
+        ]
+      },
+      {
+        "id": "hw_012",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "tab azitma 500mg",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "dosage_digit_dropout_or_mismatch"
+        ]
+      },
+      {
+        "id": "hw_070",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "montiget",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "general_text_mismatch"
+        ]
+      },
+      {
+        "id": "hw_014",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "tab nims 100mg",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "dosage_digit_dropout_or_mismatch"
+        ]
+      },
+      {
+        "id": "hw_018",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "cap caricef 40mg",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "dosage_digit_dropout_or_mismatch"
+        ]
+      },
+      {
+        "id": "hw_029",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "tab my d",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "general_text_mismatch"
+        ]
+      },
+      {
+        "id": "hw_032",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "tab atcomid",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "general_text_mismatch"
+        ]
+      },
+      {
+        "id": "hw_036",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "tab uriguard",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "general_text_mismatch"
+        ]
+      },
+      {
+        "id": "hw_004",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "nims",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "general_text_mismatch"
+        ]
+      },
+      {
+        "id": "hw_015",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "tab dicloran",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "general_text_mismatch"
+        ]
+      },
+      {
+        "id": "hw_082",
+        "dataset_type": "handwriting_research",
+        "ground_truth": "dicloran",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 1.0,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "general_text_mismatch"
+        ]
+      },
+      {
+        "id": "ocr_rx_009",
+        "dataset_type": "ocr_evaluation",
+        "ground_truth": "CLINIC: St. Jude Hospital\nDOCTOR: Dr. E. Thomas, MD\nPATIENT: David Miller\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Cap Omeprazole 20mg 1-0-0 BBF\n  * Tab Sucralfate 1000mg 1-1-1 AC\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 0.9444,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "dosage_digit_dropout_or_mismatch",
+          "low_contrast_or_cursive_segmentation_failure"
+        ]
+      },
+      {
+        "id": "ocr_rx_001",
+        "dataset_type": "ocr_evaluation",
+        "ground_truth": "CLINIC: City Health Clinic\nDOCTOR: Dr. A. Sharma, MD\nPATIENT: John Doe\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Azithromycin 500mg 1-0-0 5 days\n  * Tab Paracetamol 650mg 1-1-1 SOS\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 0.9421,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "dosage_digit_dropout_or_mismatch",
+          "low_contrast_or_cursive_segmentation_failure"
+        ]
+      },
+      {
+        "id": "ocr_rx_004",
+        "dataset_type": "ocr_evaluation",
+        "ground_truth": "CLINIC: Metro General Hospital\nDOCTOR: Dr. V. Gupta, MS\nPATIENT: Priya Sharma\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Pantoprazole 40mg 1-0-0 BBF\n  * Tab Domperidone 10mg 1-0-1 AC\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed",
+        "predicted_text": "Image document received and indexed.",
+        "cer": 0.9422,
+        "wer": 1.0,
+        "exact_match": false,
+        "errors": [
+          "dosage_digit_dropout_or_mismatch",
+          "low_contrast_or_cursive_segmentation_failure"
+        ]
+      }
+    ]
+  },
+  "recommendation": "Maintain current production OCR service. Handwriting dataset CER highlights need for specialised handwriting finetuning model before altering production OCR service for user uploads."
+}

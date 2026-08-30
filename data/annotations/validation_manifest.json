@@ -1,0 +1,299 @@
+[
+  {
+    "id": "hw_001",
+    "raw_filename": ".trashed-1730802496-IMG_20241006_151957 - Copy (2).jpg",
+    "raw_image_path": "data\\raw\\Doctor Handwriting Recognition Dataset\\img\\img\\.trashed-1730802496-IMG_20241006_151957 - Copy (2).jpg",
+    "ground_truth": "cefiget 40mg",
+    "raw_label": "cefiget 40mg",
+    "image_hash": "6ce335afd0a57f067db0f57e8e96851c",
+    "dataset_type": "handwriting_research",
+    "processed_image_path": "data\\processed\\handwriting_research\\hw_001_.trashed-1730802496-IMG_20241006_151957 - Copy (2).jpg",
+    "split_image_path": "data\\validation\\hw_001_.trashed-1730802496-IMG_20241006_151957 - Copy (2).jpg",
+    "preprocessing_info": {
+      "original_dimensions": "1335x447",
+      "processed_dimensions": "1335x447",
+      "original_mode": "RGB",
+      "processed_mode": "L",
+      "processed_path": "data\\processed\\handwriting_research\\hw_001_.trashed-1730802496-IMG_20241006_151957 - Copy (2).jpg"
+    }
+  },
+  {
+    "id": "hw_056",
+    "raw_filename": "IMG_20241006_153705.jpg",
+    "raw_image_path": "data\\raw\\Doctor Handwriting Recognition Dataset\\img\\img\\IMG_20241006_153705.jpg",
+    "ground_truth": "leflox",
+    "raw_label": "leflox",
+    "image_hash": "1c3a61345c1ed1646b515b9656d92fd4",
+    "dataset_type": "handwriting_research",
+    "processed_image_path": "data\\processed\\handwriting_research\\hw_056_IMG_20241006_153705.jpg",
+    "split_image_path": "data\\validation\\hw_056_IMG_20241006_153705.jpg",
+    "preprocessing_info": {
+      "original_dimensions": "1026x537",
+      "processed_dimensions": "1026x537",
+      "original_mode": "RGB",
+      "processed_mode": "L",
+      "processed_path": "data\\processed\\handwriting_research\\hw_056_IMG_20241006_153705.jpg"
+    }
+  },
+  {
+    "id": "hw_052",
+    "raw_filename": "IMG_20241006_153027.jpg",
+    "raw_image_path": "data\\raw\\Doctor Handwriting Recognition Dataset\\img\\img\\IMG_20241006_153027.jpg",
+    "ground_truth": "getryl",
+    "raw_label": "getryl",
+    "image_hash": "aca7bd5861036b8d41bbf16307926a3e",
+    "dataset_type": "handwriting_research",
+    "processed_image_path": "data\\processed\\handwriting_research\\hw_052_IMG_20241006_153027.jpg",
+    "split_image_path": "data\\validation\\hw_052_IMG_20241006_153027.jpg",
+    "preprocessing_info": {
+      "original_dimensions": "795x478",
+      "processed_dimensions": "795x478",
+      "original_mode": "RGB",
+      "processed_mode": "L",
+      "processed_path": "data\\processed\\handwriting_research\\hw_052_IMG_20241006_153027.jpg"
+    }
+  },
+  {
+    "id": "hw_084",
+    "raw_filename": "img 6.jpg",
+    "raw_image_path": "data\\raw\\Doctor Handwriting Recognition Dataset\\img\\img\\img 6.jpg",
+    "ground_truth": "provas",
+    "raw_label": "provas",
+    "image_hash": "54f30d5c627c0e8a75e5bd28c4b733e3",
+    "dataset_type": "handwriting_research",
+    "processed_image_path": "data\\processed\\handwriting_research\\hw_084_img 6.jpg",
+    "split_image_path": "data\\validation\\hw_084_img 6.jpg",
+    "preprocessing_info": {
+      "original_dimensions": "1637x396",
+      "processed_dimensions": "1637x396",
+      "original_mode": "RGB",
+      "processed_mode": "L",
+      "processed_path": "data\\processed\\handwriting_research\\hw_084_img 6.jpg"
+    }
+  },
+  {
+    "id": "hw_058",
+    "raw_filename": "IMG_20241006_153855.jpg",
+    "raw_image_path": "data\\raw\\Doctor Handwriting Recognition Dataset\\img\\img\\IMG_20241006_153855.jpg",
+    "ground_truth": "lipiget",
+    "raw_label": "lipiget",
+    "image_hash": "bd56edf572e339b563894d460480e2c7",
+    "dataset_type": "handwriting_research",
+    "processed_image_path": "data\\processed\\handwriting_research\\hw_058_IMG_20241006_153855.jpg",
+    "split_image_path": "data\\validation\\hw_058_IMG_20241006_153855.jpg",
+    "preprocessing_info": {
+      "original_dimensions": "1257x456",
+      "processed_dimensions": "1257x456",
+      "original_mode": "RGB",
+      "processed_mode": "L",
+      "processed_path": "data\\processed\\handwriting_research\\hw_058_IMG_20241006_153855.jpg"
+    }
+  },
+  {
+    "id": "hw_087",
+    "raw_filename": "img 9.jpg",
+    "raw_image_path": "data\\raw\\Doctor Handwriting Recognition Dataset\\img\\img\\img 9.jpg",
+    "ground_truth": "bisleri",
+    "raw_label": "bisleri",
+    "image_hash": "2d8003585997b742fd2b4b8db52313fa",
+    "dataset_type": "handwriting_research",
+    "processed_image_path": "data\\processed\\handwriting_research\\hw_087_img 9.jpg",
+    "split_image_path": "data\\validation\\hw_087_img 9.jpg",
+    "preprocessing_info": {
+      "original_dimensions": "1629x324",
+      "processed_dimensions": "1629x324",
+      "original_mode": "RGB",
+      "processed_mode": "L",
+      "processed_path": "data\\processed\\handwriting_research\\hw_087_img 9.jpg"
+    }
+  },
+  {
+    "id": "hw_054",
+    "raw_filename": "IMG_20241006_153145.jpg",
+    "raw_image_path": "data\\raw\\Doctor Handwriting Recognition Dataset\\img\\img\\IMG_20241006_153145.jpg",
+    "ground_truth": "fexet",
+    "raw_label": "fexet",
+    "image_hash": "e77743535fa3b48498670aa408b2f44a",
+    "dataset_type": "handwriting_research",
+    "processed_image_path": "data\\processed\\handwriting_research\\hw_054_IMG_20241006_153145.jpg",
+    "split_image_path": "data\\validation\\hw_054_IMG_20241006_153145.jpg",
+    "preprocessing_info": {
+      "original_dimensions": "847x483",
+      "processed_dimensions": "847x483",
+      "original_mode": "RGB",
+      "processed_mode": "L",
+      "processed_path": "data\\processed\\handwriting_research\\hw_054_IMG_20241006_153145.jpg"
+    }
+  },
+  {
+    "id": "hw_026",
+    "raw_filename": "IMG_20241006_145902.jpg",
+    "raw_image_path": "data\\raw\\Doctor Handwriting Recognition Dataset\\img\\img\\IMG_20241006_145902.jpg",
+    "ground_truth": "uriguard",
+    "raw_label": "uriguard",
+    "image_hash": "384dd86a9d68a5ed0d376649454c598c",
+    "dataset_type": "handwriting_research",
+    "processed_image_path": "data\\processed\\handwriting_research\\hw_026_IMG_20241006_145902.jpg",
+    "split_image_path": "data\\validation\\hw_026_IMG_20241006_145902.jpg",
+    "preprocessing_info": {
+      "original_dimensions": "725x241",
+      "processed_dimensions": "725x241",
+      "original_mode": "RGB",
+      "processed_mode": "L",
+      "processed_path": "data\\processed\\handwriting_research\\hw_026_IMG_20241006_145902.jpg"
+    }
+  },
+  {
+    "id": "hw_074",
+    "raw_filename": "img 23.jpg",
+    "raw_image_path": "data\\raw\\Doctor Handwriting Recognition Dataset\\img\\img\\img 23.jpg",
+    "ground_truth": "tab mesulid",
+    "raw_label": "tab mesulid",
+    "image_hash": "285276f1d7a6b52ff62efde5b3a34331",
+    "dataset_type": "handwriting_research",
+    "processed_image_path": "data\\processed\\handwriting_research\\hw_074_img 23.jpg",
+    "split_image_path": "data\\validation\\hw_074_img 23.jpg",
+    "preprocessing_info": {
+      "original_dimensions": "1801x341",
+      "processed_dimensions": "1801x341",
+      "original_mode": "RGB",
+      "processed_mode": "L",
+      "processed_path": "data\\processed\\handwriting_research\\hw_074_img 23.jpg"
+    }
+  },
+  {
+    "id": "hw_065",
+    "raw_filename": "img 14.jpg",
+    "raw_image_path": "data\\raw\\Doctor Handwriting Recognition Dataset\\img\\img\\img 14.jpg",
+    "ground_truth": "starcox",
+    "raw_label": "starcox",
+    "image_hash": "1ae5116f834d0bfcb53cbf8bf52c01ad",
+    "dataset_type": "handwriting_research",
+    "processed_image_path": "data\\processed\\handwriting_research\\hw_065_img 14.jpg",
+    "split_image_path": "data\\validation\\hw_065_img 14.jpg",
+    "preprocessing_info": {
+      "original_dimensions": "1202x315",
+      "processed_dimensions": "1202x315",
+      "original_mode": "RGB",
+      "processed_mode": "L",
+      "processed_path": "data\\processed\\handwriting_research\\hw_065_img 14.jpg"
+    }
+  },
+  {
+    "id": "hw_030",
+    "raw_filename": "IMG_20241006_150224.jpg",
+    "raw_image_path": "data\\raw\\Doctor Handwriting Recognition Dataset\\img\\img\\IMG_20241006_150224.jpg",
+    "ground_truth": "tab ostium",
+    "raw_label": "tab ostium",
+    "image_hash": "36e4b4e46e71a407526d5a9ea1198c91",
+    "dataset_type": "handwriting_research",
+    "processed_image_path": "data\\processed\\handwriting_research\\hw_030_IMG_20241006_150224.jpg",
+    "split_image_path": "data\\validation\\hw_030_IMG_20241006_150224.jpg",
+    "preprocessing_info": {
+      "original_dimensions": "1081x409",
+      "processed_dimensions": "1081x409",
+      "original_mode": "RGB",
+      "processed_mode": "L",
+      "processed_path": "data\\processed\\handwriting_research\\hw_030_IMG_20241006_150224.jpg"
+    }
+  },
+  {
+    "id": "hw_028",
+    "raw_filename": "IMG_20241006_150045.jpg",
+    "raw_image_path": "data\\raw\\Doctor Handwriting Recognition Dataset\\img\\img\\IMG_20241006_150045.jpg",
+    "ground_truth": "tab atcam",
+    "raw_label": "tab atcam",
+    "image_hash": "0e23c64a1f57ec22cb536efcc5d53101",
+    "dataset_type": "handwriting_research",
+    "processed_image_path": "data\\processed\\handwriting_research\\hw_028_IMG_20241006_150045.jpg",
+    "split_image_path": "data\\validation\\hw_028_IMG_20241006_150045.jpg",
+    "preprocessing_info": {
+      "original_dimensions": "1206x524",
+      "processed_dimensions": "1206x524",
+      "original_mode": "RGB",
+      "processed_mode": "L",
+      "processed_path": "data\\processed\\handwriting_research\\hw_028_IMG_20241006_150045.jpg"
+    }
+  },
+  {
+    "id": "hw_078",
+    "raw_filename": "img 27.jpg",
+    "raw_image_path": "data\\raw\\Doctor Handwriting Recognition Dataset\\img\\img\\img 27.jpg",
+    "ground_truth": "tab atcam",
+    "raw_label": "tab atcam",
+    "image_hash": "32fbba9d10b696ffef128901c05bbc10",
+    "dataset_type": "handwriting_research",
+    "processed_image_path": "data\\processed\\handwriting_research\\hw_078_img 27.jpg",
+    "split_image_path": "data\\validation\\hw_078_img 27.jpg",
+    "preprocessing_info": {
+      "original_dimensions": "1877x314",
+      "processed_dimensions": "1877x314",
+      "original_mode": "RGB",
+      "processed_mode": "L",
+      "processed_path": "data\\processed\\handwriting_research\\hw_078_img 27.jpg"
+    }
+  },
+  {
+    "id": "ocr_rx_003",
+    "raw_filename": "ocr_rx_003.png",
+    "raw_image_path": "data\\raw\\OCR_Processed_Prescriptions\\images\\ocr_rx_003.png",
+    "ground_truth": "CLINIC: Care & Cure Clinic\nDOCTOR: Dr. S. Nair, MD\nPATIENT: Rajesh Kumar\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Metformin 500mg 1-0-1 AC\n  * Tab Atorvastatin 10mg 0-0-1 HS\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed",
+    "medications": [
+      "Tab Metformin 500mg 1-0-1 AC",
+      "Tab Atorvastatin 10mg 0-0-1 HS"
+    ],
+    "image_hash": "a2936f32166f58d7dcde60e37a180aca",
+    "dataset_type": "ocr_evaluation",
+    "processed_image_path": "data\\processed\\ocr_evaluation\\ocr_rx_003_ocr_rx_003.png",
+    "split_image_path": "data\\validation\\ocr_rx_003_ocr_rx_003.png",
+    "preprocessing_info": {
+      "original_dimensions": "800x600",
+      "processed_dimensions": "800x600",
+      "original_mode": "RGB",
+      "processed_mode": "L",
+      "processed_path": "data\\processed\\ocr_evaluation\\ocr_rx_003_ocr_rx_003.png"
+    }
+  },
+  {
+    "id": "ocr_rx_017",
+    "raw_filename": "ocr_rx_017.png",
+    "raw_image_path": "data\\raw\\OCR_Processed_Prescriptions\\images\\ocr_rx_017.png",
+    "ground_truth": "CLINIC: Apollo Medical Center\nDOCTOR: Dr. R. K. Patel, MBBS\nPATIENT: Sneha Bose\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Cap Amoxicillin 500mg 1-0-1 7 days\n  * Tab Montelukast 10mg 0-0-1 HS\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed",
+    "medications": [
+      "Cap Amoxicillin 500mg 1-0-1 7 days",
+      "Tab Montelukast 10mg 0-0-1 HS"
+    ],
+    "image_hash": "cf1c8c5b98d6a9da89b5a162477f5869",
+    "dataset_type": "ocr_evaluation",
+    "processed_image_path": "data\\processed\\ocr_evaluation\\ocr_rx_017_ocr_rx_017.png",
+    "split_image_path": "data\\validation\\ocr_rx_017_ocr_rx_017.png",
+    "preprocessing_info": {
+      "original_dimensions": "800x600",
+      "processed_dimensions": "800x600",
+      "original_mode": "RGB",
+      "processed_mode": "L",
+      "processed_path": "data\\processed\\ocr_evaluation\\ocr_rx_017_ocr_rx_017.png"
+    }
+  },
+  {
+    "id": "ocr_rx_008",
+    "raw_filename": "ocr_rx_008.png",
+    "raw_image_path": "data\\raw\\OCR_Processed_Prescriptions\\images\\ocr_rx_008.png",
+    "ground_truth": "CLINIC: Apex Medicare\nDOCTOR: Dr. K. Iyer, MBBS\nPATIENT: Lata Venkatesh\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Losartan 500mg 1-0-0 OD\n  * Tab Hydrochlorothiazide 12.5mg 1-0-0\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed",
+    "medications": [
+      "Tab Losartan 500mg 1-0-0 OD",
+      "Tab Hydrochlorothiazide 12.5mg 1-0-0"
+    ],
+    "image_hash": "e349296094ae4e3f65e1a6858141c3d6",
+    "dataset_type": "ocr_evaluation",
+    "processed_image_path": "data\\processed\\ocr_evaluation\\ocr_rx_008_ocr_rx_008.png",
+    "split_image_path": "data\\validation\\ocr_rx_008_ocr_rx_008.png",
+    "preprocessing_info": {
+      "original_dimensions": "800x600",
+      "processed_dimensions": "800x600",
+      "original_mode": "RGB",
+      "processed_mode": "L",
+      "processed_path": "data\\processed\\ocr_evaluation\\ocr_rx_008_ocr_rx_008.png"
+    }
+  }
+]

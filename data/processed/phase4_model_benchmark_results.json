@@ -1,0 +1,225 @@
+{
+  "benchmark_timestamp": "2026-08-30T10:31:10Z",
+  "test_dataset_samples": 17,
+  "providers": {
+    "baseline_ocr": {
+      "name": "Baseline OCR Engine + Clinical Extractor",
+      "average_cer": 0.9899,
+      "average_wer": 1.0,
+      "medicine_extraction_precision": 0.0,
+      "medicine_extraction_recall": 0.0,
+      "medicine_extraction_f1": 0.0,
+      "average_latency_ms": 20.48
+    },
+    "qwen2_5_vl_prescription_ocr": {
+      "name": "Medical Prescription OCR (Qwen2.5-VL-3B Fine-tuned)",
+      "model_id": "KushagraWadhwa/medical-prescription-ocr-india",
+      "average_cer": 0.9899,
+      "average_wer": 1.0,
+      "medicine_extraction_precision": 0.0,
+      "medicine_extraction_recall": 0.0,
+      "medicine_extraction_f1": 0.0,
+      "average_latency_ms": 0.68
+    }
+  },
+  "hardware_evaluated": {
+    "model_id": "KushagraWadhwa/medical-prescription-ocr-india",
+    "architecture": "Qwen2_5_VLForConditionalGeneration",
+    "base_model": "Qwen/Qwen2.5-VL-3B-Instruct",
+    "license": "Apache 2.0",
+    "weights_size_gb": 7.52,
+    "cuda_available": false,
+    "gpu_device_name": null,
+    "device_recommended": "cpu"
+  },
+  "recommendation": "Dual-provider architecture is maintained. Baseline OCR remains default production pipeline; Qwen2.5-VL model is available as secondary comparative provider for user-driven on-demand analysis.",
+  "detailed_eval": [
+    {
+      "id": "hw_085",
+      "dataset_type": "handwriting_research",
+      "ground_truth": "movax",
+      "baseline_cer": 1.0,
+      "baseline_wer": 1.0,
+      "model_cer": 1.0,
+      "model_wer": 1.0,
+      "baseline_meds_count": 0,
+      "model_meds_count": 0
+    },
+    {
+      "id": "hw_005",
+      "dataset_type": "handwriting_research",
+      "ground_truth": "dicloran",
+      "baseline_cer": 1.0,
+      "baseline_wer": 1.0,
+      "model_cer": 1.0,
+      "model_wer": 1.0,
+      "baseline_meds_count": 0,
+      "model_meds_count": 0
+    },
+    {
+      "id": "hw_055",
+      "dataset_type": "handwriting_research",
+      "ground_truth": "starcox 90",
+      "baseline_cer": 1.0,
+      "baseline_wer": 1.0,
+      "model_cer": 1.0,
+      "model_wer": 1.0,
+      "baseline_meds_count": 0,
+      "model_meds_count": 0
+    },
+    {
+      "id": "hw_076",
+      "dataset_type": "handwriting_research",
+      "ground_truth": "tab uriguard",
+      "baseline_cer": 1.0,
+      "baseline_wer": 1.0,
+      "model_cer": 1.0,
+      "model_wer": 1.0,
+      "baseline_meds_count": 0,
+      "model_meds_count": 0
+    },
+    {
+      "id": "hw_012",
+      "dataset_type": "handwriting_research",
+      "ground_truth": "tab azitma 500mg",
+      "baseline_cer": 1.0,
+      "baseline_wer": 1.0,
+      "model_cer": 1.0,
+      "model_wer": 1.0,
+      "baseline_meds_count": 0,
+      "model_meds_count": 0
+    },
+    {
+      "id": "hw_070",
+      "dataset_type": "handwriting_research",
+      "ground_truth": "montiget",
+      "baseline_cer": 1.0,
+      "baseline_wer": 1.0,
+      "model_cer": 1.0,
+      "model_wer": 1.0,
+      "baseline_meds_count": 0,
+      "model_meds_count": 0
+    },
+    {
+      "id": "hw_014",
+      "dataset_type": "handwriting_research",
+      "ground_truth": "tab nims 100mg",
+      "baseline_cer": 1.0,
+      "baseline_wer": 1.0,
+      "model_cer": 1.0,
+      "model_wer": 1.0,
+      "baseline_meds_count": 0,
+      "model_meds_count": 0
+    },
+    {
+      "id": "hw_018",
+      "dataset_type": "handwriting_research",
+      "ground_truth": "cap caricef 40mg",
+      "baseline_cer": 1.0,
+      "baseline_wer": 1.0,
+      "model_cer": 1.0,
+      "model_wer": 1.0,
+      "baseline_meds_count": 0,
+      "model_meds_count": 0
+    },
+    {
+      "id": "hw_029",
+      "dataset_type": "handwriting_research",
+      "ground_truth": "tab my d",
+      "baseline_cer": 1.0,
+      "baseline_wer": 1.0,
+      "model_cer": 1.0,
+      "model_wer": 1.0,
+      "baseline_meds_count": 0,
+      "model_meds_count": 0
+    },
+    {
+      "id": "hw_032",
+      "dataset_type": "handwriting_research",
+      "ground_truth": "tab atcomid",
+      "baseline_cer": 1.0,
+      "baseline_wer": 1.0,
+      "model_cer": 1.0,
+      "model_wer": 1.0,
+      "baseline_meds_count": 0,
+      "model_meds_count": 0
+    },
+    {
+      "id": "hw_036",
+      "dataset_type": "handwriting_research",
+      "ground_truth": "tab uriguard",
+      "baseline_cer": 1.0,
+      "baseline_wer": 1.0,
+      "model_cer": 1.0,
+      "model_wer": 1.0,
+      "baseline_meds_count": 0,
+      "model_meds_count": 0
+    },
+    {
+      "id": "hw_004",
+      "dataset_type": "handwriting_research",
+      "ground_truth": "nims",
+      "baseline_cer": 1.0,
+      "baseline_wer": 1.0,
+      "model_cer": 1.0,
+      "model_wer": 1.0,
+      "baseline_meds_count": 0,
+      "model_meds_count": 0
+    },
+    {
+      "id": "hw_015",
+      "dataset_type": "handwriting_research",
+      "ground_truth": "tab dicloran",
+      "baseline_cer": 1.0,
+      "baseline_wer": 1.0,
+      "model_cer": 1.0,
+      "model_wer": 1.0,
+      "baseline_meds_count": 0,
+      "model_meds_count": 0
+    },
+    {
+      "id": "hw_082",
+      "dataset_type": "handwriting_research",
+      "ground_truth": "dicloran",
+      "baseline_cer": 1.0,
+      "baseline_wer": 1.0,
+      "model_cer": 1.0,
+      "model_wer": 1.0,
+      "baseline_meds_count": 0,
+      "model_meds_count": 0
+    },
+    {
+      "id": "ocr_rx_009",
+      "dataset_type": "ocr_evaluation",
+      "ground_truth": "CLINIC: St. Jude Hospital\nDOCTOR: Dr. E. Thomas, MD\nPATIENT: David Miller\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Cap Omeprazole 20mg 1-0-0 BBF\n  * Tab Sucralfate 1000mg 1-1-1 AC\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed",
+      "baseline_cer": 0.9444,
+      "baseline_wer": 1.0,
+      "model_cer": 0.9444,
+      "model_wer": 1.0,
+      "baseline_meds_count": 0,
+      "model_meds_count": 0
+    },
+    {
+      "id": "ocr_rx_001",
+      "dataset_type": "ocr_evaluation",
+      "ground_truth": "CLINIC: City Health Clinic\nDOCTOR: Dr. A. Sharma, MD\nPATIENT: John Doe\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Azithromycin 500mg 1-0-0 5 days\n  * Tab Paracetamol 650mg 1-1-1 SOS\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed",
+      "baseline_cer": 0.9421,
+      "baseline_wer": 1.0,
+      "model_cer": 0.9421,
+      "model_wer": 1.0,
+      "baseline_meds_count": 0,
+      "model_meds_count": 0
+    },
+    {
+      "id": "ocr_rx_004",
+      "dataset_type": "ocr_evaluation",
+      "ground_truth": "CLINIC: Metro General Hospital\nDOCTOR: Dr. V. Gupta, MS\nPATIENT: Priya Sharma\n--------------------------------------------------\nPRESCRIPTION / MEDICATION INSTRUCTIONS:\n  * Tab Pantoprazole 40mg 1-0-0 BBF\n  * Tab Domperidone 10mg 1-0-1 AC\n--------------------------------------------------\nRefill: 0 | Signature: Digitally Signed",
+      "baseline_cer": 0.9422,
+      "baseline_wer": 1.0,
+      "model_cer": 0.9422,
+      "model_wer": 1.0,
+      "baseline_meds_count": 0,
+      "model_meds_count": 0
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.env
+
+# Testing & Artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Database & Uploads
+*.db
+*.sqlite3
+uploads/*
+!uploads/README.md
+
+# Large Hugging Face & OCR Models
+models/prescription_ocr/
+models/
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.onnx
+.cache/
+hf_cache/
+
+# Node / Frontend
+node_modules/
+dist/
+.DS_Store

@@ -1,0 +1,89 @@
+{
+  "train_sample": [
+    {
+      "id": "hw_016",
+      "raw_filename": "IMG_20241006_144555.jpg",
+      "raw_image_path": "data\\raw\\Doctor Handwriting Recognition Dataset\\img\\img\\IMG_20241006_144555.jpg",
+      "ground_truth": "tab breaky",
+      "raw_label": "tab breaky",
+      "image_hash": "95f70ab5cc080e6eab473880c534d058",
+      "dataset_type": "handwriting_research"
+    },
+    {
+      "id": "hw_061",
+      "raw_filename": "img 10.jpg",
+      "raw_image_path": "data\\raw\\Doctor Handwriting Recognition Dataset\\img\\img\\img 10.jpg",
+      "ground_truth": "novidate",
+      "raw_label": "novidate",
+      "image_hash": "e8c95b4ebc16bbd05170da9204b5cf8a",
+      "dataset_type": "handwriting_research"
+    },
+    {
+      "id": "hw_059",
+      "raw_filename": ".trashed-1730798177-IMG_20241006_140831 - Copy (2).jpg",
+      "raw_image_path": "data\\raw\\Doctor Handwriting Recognition Dataset\\img\\img\\.trashed-1730798177-IMG_20241006_140831 - Copy (2).jpg",
+      "ground_truth": "azitma",
+      "raw_label": "azitma",
+      "image_hash": "e196e0a9c525817a120d68e6720c5efb",
+      "dataset_type": "handwriting_research"
+    }
+  ],
+  "val_sample": [
+    {
+      "id": "hw_001",
+      "raw_filename": ".trashed-1730802496-IMG_20241006_151957 - Copy (2).jpg",
+      "raw_image_path": "data\\raw\\Doctor Handwriting Recognition Dataset\\img\\img\\.trashed-1730802496-IMG_20241006_151957 - Copy (2).jpg",
+      "ground_truth": "cefiget 40mg",
+      "raw_label": "cefiget 40mg",
+      "image_hash": "6ce335afd0a57f067db0f57e8e96851c",
+      "dataset_type": "handwriting_research"
+    },
+    {
+      "id": "hw_056",
+      "raw_filename": "IMG_20241006_153705.jpg",
+      "raw_image_path": "data\\raw\\Doctor Handwriting Recognition Dataset\\img\\img\\IMG_20241006_153705.jpg",
+      "ground_truth": "leflox",
+      "raw_label": "leflox",
+      "image_hash": "1c3a61345c1ed1646b515b9656d92fd4",
+      "dataset_type": "handwriting_research"
+    },
+    {
+      "id": "hw_052",
+      "raw_filename": "IMG_20241006_153027.jpg",
+      "raw_image_path": "data\\raw\\Doctor Handwriting Recognition Dataset\\img\\img\\IMG_20241006_153027.jpg",
+      "ground_truth": "getryl",
+      "raw_label": "getryl",
+      "image_hash": "aca7bd5861036b8d41bbf16307926a3e",
+      "dataset_type": "handwriting_research"
+    }
+  ],
+  "test_sample": [
+    {
+      "id": "hw_085",
+      "raw_filename": "img 7.jpg",
+      "raw_image_path": "data\\raw\\Doctor Handwriting Recognition Dataset\\img\\img\\img 7.jpg",
+      "ground_truth": "movax",
+      "raw_label": "movax",
+      "image_hash": "66d40992f9df9bb4e33d2747fa5f323b",
+      "dataset_type": "handwriting_research"
+    },
+    {
+      "id": "hw_005",
+      "raw_filename": "IMG_20241006_142757 - Copy.jpg",
+      "raw_image_path": "data\\raw\\Doctor Handwriting Recognition Dataset\\img\\img\\IMG_20241006_142757 - Copy.jpg",
+      "ground_truth": "dicloran",
+      "raw_label": "dicloran",
+      "image_hash": "e6394eddfc3720d5ed7cfd0335b94c47",
+      "dataset_type": "handwriting_research"
+    },
+    {
+      "id": "hw_055",
+      "raw_filename": "IMG_20241006_153240.jpg",
+      "raw_image_path": "data\\raw\\Doctor Handwriting Recognition Dataset\\img\\img\\IMG_20241006_153240.jpg",
+      "ground_truth": "starcox 90",
+      "raw_label": "starcox 90",
+      "image_hash": "4b59ebc51913d01cf4d81d674c2a5b34",
+      "dataset_type": "handwriting_research"
+    }
+  ]
+}
