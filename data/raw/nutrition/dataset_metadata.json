@@ -1,0 +1,14 @@
+{
+  "dataset_name": "USDA FoodData Central Foundation Foods",
+  "dataset_version": "April 2026 Release (2026-04-30)",
+  "release_date": "2026-04-30",
+  "source": "U.S. Department of Agriculture, Agricultural Research Service",
+  "source_url": "https://fdc.nal.usda.gov/download-datasets.html",
+  "license": "U.S. Government Work / Public Domain (CC0-1.0 Universal)",
+  "download_filename": "FoodData_Central_foundation_food_csv_2026-04-30.zip",
+  "processing_date": "2026-08-30T16:07:29Z",
+  "raw_record_count": 15,
+  "processed_record_count": 15,
+  "sha256_checksum": "9e2e4661f97775f14109b759be37b373e59b26333b0734665554a5c4c0f870d4",
+  "standard_reference_basis": "100 grams edible portion"
+}

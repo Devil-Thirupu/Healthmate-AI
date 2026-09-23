@@ -12,6 +12,8 @@ import MedicalRecordsPage from './pages/MedicalRecordsPage';
 import ReportsPage from './pages/ReportsPage';
 import PrescriptionsPage from './pages/PrescriptionsPage';
 import AIAssistantPage from './pages/AIAssistantPage';
+import AppointmentPreparationPage from './pages/AppointmentPreparationPage';
+import NutritionPage from './pages/NutritionPage';
 import SharingPage from './pages/SharingPage';
 import AuditPage from './pages/AuditPage';
 import SettingsPage from './pages/SettingsPage';
@@ -27,6 +29,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/share/:token" element={<PublicShareViewPage />} />
+          <Route path="/shared/:token" element={<PublicShareViewPage />} />
 
           {/* Protected Clinical Vault Routes */}
           <Route
@@ -41,6 +44,8 @@ function App() {
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/prescriptions" element={<PrescriptionsPage />} />
             <Route path="/ai-assistant" element={<AIAssistantPage />} />
+            <Route path="/appointment-prep" element={<AppointmentPreparationPage />} />
+            <Route path="/nutrition" element={<NutritionPage />} />
             <Route path="/sharing" element={<SharingPage />} />
             <Route path="/audit" element={<AuditPage />} />
             <Route path="/settings" element={<SettingsPage />} />

@@ -80,39 +80,39 @@ const SettingsPage = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-4xl pb-10">
       <div>
-        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white font-heading">
+        <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
           Profile & Account Settings
         </h1>
-        <p className="text-xs text-slate-500 mt-0.5">
+        <p className="text-xs text-slate-500 mt-1">
           Manage your personal demographics, health vitals defaults, and security credentials
         </p>
       </div>
 
       {/* Demographics & Clinical Profile Card */}
-      <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+      <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-4">
         <div className="flex items-center space-x-2.5 pb-3 border-b border-slate-100 dark:border-slate-800">
-          <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950 text-brand-600 dark:text-brand-400 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-teal-50 dark:bg-teal-950 text-teal-700 dark:text-teal-400 flex items-center justify-center">
             <User className="w-4 h-4" />
           </div>
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">
               Personal & Clinical Demographics
             </h3>
-            <p className="text-[11px] text-slate-400">Used for contextual clinical intelligence and summaries</p>
+            <p className="text-[11px] text-slate-400 font-medium">Used for contextual clinical intelligence and summaries</p>
           </div>
         </div>
 
         {profileSuccess && (
-          <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs flex items-center space-x-2">
+          <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs flex items-center space-x-2 font-medium">
             <CheckCircle2 className="w-4 h-4 shrink-0" />
             <span>{profileSuccess}</span>
           </div>
         )}
 
         {profileError && (
-          <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs flex items-center space-x-2">
+          <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs flex items-center space-x-2 font-medium">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{profileError}</span>
           </div>
@@ -121,51 +121,51 @@ const SettingsPage = () => {
         <form onSubmit={handleProfileSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Full Name
               </label>
               <input
                 type="text"
                 value={profileData.full_name}
                 onChange={(e) => setProfileData({ ...profileData, full_name: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-600 font-medium"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Email Address (Read Only)
               </label>
               <input
                 type="text"
                 disabled
                 value={user?.email || ''}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-400 cursor-not-allowed"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-400 cursor-not-allowed font-medium"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Date of Birth
               </label>
               <input
                 type="date"
                 value={profileData.date_of_birth}
                 onChange={(e) => setProfileData({ ...profileData, date_of_birth: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-600 font-medium"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Gender
               </label>
               <select
                 value={profileData.gender}
                 onChange={(e) => setProfileData({ ...profileData, gender: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-600 font-medium"
               >
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
@@ -174,13 +174,13 @@ const SettingsPage = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Blood Group
               </label>
               <select
                 value={profileData.blood_group}
                 onChange={(e) => setProfileData({ ...profileData, blood_group: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-600 font-medium"
               >
                 <option value="A+">A+</option>
                 <option value="A-">A-</option>
@@ -196,7 +196,7 @@ const SettingsPage = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Emergency Contact Number
               </label>
               <input
@@ -204,29 +204,29 @@ const SettingsPage = () => {
                 value={profileData.emergency_contact}
                 onChange={(e) => setProfileData({ ...profileData, emergency_contact: e.target.value })}
                 placeholder="+91 98400 12345 (Relationship)"
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-600 font-medium"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                Default AI Language
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Default AI Language Preference
               </label>
               <select
                 value={profileData.language_preference}
                 onChange={(e) => setProfileData({ ...profileData, language_preference: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-600 font-medium"
               >
                 <option value="en">English</option>
                 <option value="ta">தமிழ் (Tamil)</option>
-                <option value="tanglish">Tanglish</option>
+                <option value="tanglish">Tanglish (Tamil + English)</option>
               </select>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Known Drug Allergies
               </label>
               <input
@@ -234,12 +234,12 @@ const SettingsPage = () => {
                 value={profileData.allergies}
                 onChange={(e) => setProfileData({ ...profileData, allergies: e.target.value })}
                 placeholder="e.g. Penicillin, Sulfa"
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-600 font-medium"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Chronic Health Conditions
               </label>
               <input
@@ -247,7 +247,7 @@ const SettingsPage = () => {
                 value={profileData.chronic_conditions}
                 onChange={(e) => setProfileData({ ...profileData, chronic_conditions: e.target.value })}
                 placeholder="e.g. Type 2 Diabetes, Hypertension"
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-600 font-medium"
               />
             </div>
           </div>
@@ -255,7 +255,7 @@ const SettingsPage = () => {
           <button
             type="submit"
             disabled={isProfileSaving}
-            className="inline-flex items-center space-x-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-xs font-semibold rounded-xl shadow-sm transition-all"
+            className="inline-flex items-center space-x-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
           >
             {isProfileSaving ? (
               <>
@@ -273,7 +273,7 @@ const SettingsPage = () => {
       </div>
 
       {/* Change Password Card */}
-      <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+      <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-4">
         <div className="flex items-center space-x-2.5 pb-3 border-b border-slate-100 dark:border-slate-800">
           <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center">
             <Lock className="w-4 h-4" />
@@ -282,19 +282,19 @@ const SettingsPage = () => {
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">
               Security & Password
             </h3>
-            <p className="text-[11px] text-slate-400">Update your vault password</p>
+            <p className="text-[11px] text-slate-400 font-medium">Update your vault authentication password</p>
           </div>
         </div>
 
         {passwordSuccess && (
-          <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs flex items-center space-x-2">
+          <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs flex items-center space-x-2 font-medium">
             <CheckCircle2 className="w-4 h-4 shrink-0" />
             <span>{passwordSuccess}</span>
           </div>
         )}
 
         {passwordError && (
-          <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs flex items-center space-x-2">
+          <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs flex items-center space-x-2 font-medium">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{passwordError}</span>
           </div>
@@ -303,7 +303,7 @@ const SettingsPage = () => {
         <form onSubmit={handlePasswordSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Current Password
               </label>
               <input
@@ -311,12 +311,12 @@ const SettingsPage = () => {
                 required
                 value={passwordData.current_password}
                 onChange={(e) => setPasswordData({ ...passwordData, current_password: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-600 font-medium"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 New Password (min 6)
               </label>
               <input
@@ -325,12 +325,12 @@ const SettingsPage = () => {
                 minLength={6}
                 value={passwordData.new_password}
                 onChange={(e) => setPasswordData({ ...passwordData, new_password: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-600 font-medium"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                 Confirm New Password
               </label>
               <input
@@ -339,7 +339,7 @@ const SettingsPage = () => {
                 minLength={6}
                 value={passwordData.confirm_password}
                 onChange={(e) => setPasswordData({ ...passwordData, confirm_password: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-600 font-medium"
               />
             </div>
           </div>
@@ -347,7 +347,7 @@ const SettingsPage = () => {
           <button
             type="submit"
             disabled={isPasswordSaving}
-            className="inline-flex items-center space-x-2 px-5 py-2.5 bg-slate-900 dark:bg-slate-800 hover:bg-black dark:hover:bg-slate-700 disabled:opacity-50 text-white text-xs font-semibold rounded-xl transition-all"
+            className="inline-flex items-center space-x-2 px-5 py-2.5 bg-slate-900 dark:bg-slate-800 hover:bg-black dark:hover:bg-slate-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-xs"
           >
             {isPasswordSaving ? (
               <>

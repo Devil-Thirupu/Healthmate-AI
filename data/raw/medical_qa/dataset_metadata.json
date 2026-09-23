@@ -1,0 +1,20 @@
+{
+  "dataset_name": "Malikeh1375/medical-question-answering-datasets",
+  "config_name": "all-processed",
+  "split": "train",
+  "parquet_file": "train-00000-of-00001-9bfe4b2cd0370c03.parquet",
+  "commit_sha": "29833779cb5921f474d9f469aa85c115277bf489",
+  "source_url": "https://huggingface.co/datasets/Malikeh1375/medical-question-answering-datasets",
+  "download_date": "2026-08-30T17:07:37Z",
+  "license": "mit",
+  "license_verified_from": "Hugging Face Repository Metadata API ('license': 'mit', 'tags': ['license:mit'])",
+  "file_size_bytes": 159702143,
+  "total_rows": 246678,
+  "columns": [
+    "instruction",
+    "input",
+    "output",
+    "__index_level_0__"
+  ],
+  "content_type": "Curated clinical Q&A aggregated from real patient-doctor consultations (iCliniQ, HealthCareMagic, WebMD, ChatDoctor)"
+}

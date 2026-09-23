@@ -1,4 +1,5 @@
 import re
+from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, asc
@@ -480,5 +481,223 @@ class HealthIntelligenceService:
             })
 
         return timeline
+
+    def explain_report(
+        self,
+        db: Session,
+        user_id: int,
+        document_id: int,
+        language: str = "en"
+    ) -> Dict[str, Any]:
+        """
+        Generates the structured "Explain My Report" response (Phase 14):
+        - REPORT OVERVIEW
+        - YOUR RECORDED VALUES
+        - WHAT CHANGED
+        - WHAT THE TEST GENERALLY MEASURES
+        - IMPORTANT (Disclaimer)
+        - SOURCES
+        Applies Evidence Guard strictly and supports English, Tamil, and Tanglish.
+        """
+        from backend.app.services.evidence_guard_service import evidence_guard_service
+        from backend.app.services.multilingual_explanation_service import multilingual_explanation_service
+
+        doc = db.query(Document).filter(Document.id == document_id, Document.user_id == user_id).first()
+        if not doc:
+            return None
+
+        lab_tests = db.query(LabTest).filter(LabTest.document_id == document_id, LabTest.user_id == user_id).all()
+        summary = self.get_user_health_intelligence_summary(db, user_id)
+        recent_changes_map = {c.get("test_name", "").lower(): c for c in summary.get("recent_changes", [])}
+
+        lang = multilingual_explanation_service.normalize_language(language)
+
+        # 1. REPORT OVERVIEW
+        count = len(lab_tests)
+        if lang == "ta":
+            overview = f"இந்த மருத்துவ அறிக்கை {count} பிரித்தெடுக்கப்பட்ட ஆய்வக அளவீடுகளைக் கொண்டுள்ளது."
+        elif lang == "tanglish":
+            overview = f"Indha medical report-la {count} extracted lab measurements irukku."
+        else:
+            overview = f"This report contains {count} extracted lab measurement(s)."
+
+        # 2. YOUR RECORDED VALUES
+        val_lines = []
+        citations = []
+        for t in lab_tests:
+            val_lines.append(multilingual_explanation_service.format_lab_item(
+                test_name=t.test_name,
+                value=t.observed_value,
+                unit=t.unit,
+                date=t.test_date or doc.document_date or "Recent",
+                flag=t.flag,
+                language=lang
+            ))
+            citations.append({
+                "source_type": "USER_STRUCTURED_RECORD",
+                "source_name": doc.title,
+                "document_id": doc.id,
+                "page_number": 1,
+                "text_snippet": f"{t.test_name}: {t.observed_value} {t.unit or ''} (Flag: {t.flag})",
+                "relevance_score": 1.0
+            })
+        recorded_values_text = "\n".join(val_lines) if val_lines else "No specific lab measurements found."
+
+        # 3. WHAT CHANGED
+        change_lines = []
+        for t in lab_tests:
+            c = recent_changes_map.get(t.test_name.lower())
+            if c and c.get("previous_value") is not None:
+                change_lines.append(f"• {t.test_name}: {c.get('previous_value')} → {c.get('latest_value')} ({c.get('percentage_change')}) [{c.get('trend_direction')}]")
+            else:
+                change_lines.append(f"• {t.test_name}: {t.observed_value} {t.unit or ''} (First recorded measurement)")
+        what_changed_text = "\n".join(change_lines) if change_lines else "No comparison available."
+
+        # 4. WHAT THE TEST GENERALLY MEASURES
+        if lang == "ta":
+            general_context = "பொது மருத்துவ வழிகாட்டலின்படி, இந்த இரத்தப் பரிசோதனைகள் உடலின் வளர்சிதை மாற்றம், இரத்த அணுக்களின் ஆரோக்கியம் மற்றும் உறுப்புகளின் சமநிலையை மதிப்பிட உதவுகின்றன."
+        elif lang == "tanglish":
+            general_context = "General medical knowledge padi, indha lab tests ungal body-oda metabolic status, blood cell balance matrum vital organ function-ai review panna use aagudhu."
+        else:
+            general_context = "According to general clinical references, these diagnostic panels evaluate metabolic equilibrium, blood cell indices, and organ function."
+
+        # 5. IMPORTANT
+        disclaimer = multilingual_explanation_service.format_disclaimer(lang)
+
+        # Build combined full explanation
+        full_sections = [
+            f"REPORT OVERVIEW\n{overview}\n",
+            f"YOUR RECORDED VALUES\n{recorded_values_text}\n",
+            f"WHAT CHANGED\n{what_changed_text}\n",
+            f"WHAT THE TEST GENERALLY MEASURES\n{general_context}\n",
+            f"IMPORTANT\n{disclaimer}\n",
+            f"SOURCES\n{doc.title} — Page 1"
+        ]
+        full_text = "\n".join(full_sections)
+        guarded_text = evidence_guard_service.sanitize_and_guard_response(
+            answer=full_text,
+            query_type="PATIENT_FACTUAL",
+            has_patient_records=bool(lab_tests),
+            is_cause_inquiry=False,
+            language=lang
+        )
+
+        return {
+            "document_id": doc.id,
+            "document_title": doc.title,
+            "document_date": doc.document_date,
+            "language": lang,
+            "report_overview": overview,
+            "recorded_values_text": recorded_values_text,
+            "what_changed_text": what_changed_text,
+            "general_context_text": general_context,
+            "disclaimer": disclaimer,
+            "full_explanation": guarded_text,
+            "evidence_status": "SUPPORTED" if lab_tests else "INSUFFICIENT",
+            "citations": citations,
+            "sources": citations
+        }
+
+    def get_doctor_visit_summary(self, db: Session, user_id: int) -> Dict[str, Any]:
+        """
+        Aggregates Doctor Visit Mode summary (Phase 14):
+        - Recent reports
+        - Current medications
+        - Health trends
+        - Important measurements
+        - Questions to discuss
+        - Sources
+        """
+        from backend.app.models.user import User
+        from backend.app.models.appointment_summary import AppointmentSummary
+
+        user = db.query(User).filter(User.id == user_id).first()
+        patient_name = user.full_name if user else "Patient"
+
+        # 1. Recent Reports
+        docs = db.query(Document).filter(Document.user_id == user_id).order_by(desc(Document.created_at)).limit(5).all()
+        recent_reports = []
+        for d in docs:
+            tests = db.query(LabTest).filter(LabTest.document_id == d.id).all()
+            summary_str = f"{len(tests)} measurement(s) extracted" if tests else "Archived health document"
+            recent_reports.append({
+                "id": d.id,
+                "title": d.title,
+                "date": d.document_date or d.created_at.strftime("%Y-%m-%d"),
+                "category": d.category,
+                "extracted_measurements_summary": summary_str
+            })
+
+        # 2. Current Medications
+        rxs = db.query(Prescription).filter(Prescription.user_id == user_id).order_by(desc(Prescription.created_at)).limit(10).all()
+        current_medications = []
+        for rx in rxs:
+            doc = db.query(Document).filter(Document.id == rx.document_id).first() if rx.document_id else None
+            current_medications.append({
+                "id": rx.id,
+                "medicine_name": rx.medication_name,
+                "dosage": rx.dosage or "Prescribed",
+                "frequency": rx.frequency or "Standard",
+                "timing": rx.timing_instructions or "As prescribed",
+                "prescribed_date": rx.prescribed_date or (doc.document_date if doc else "Recent"),
+                "source_document_title": doc.title if doc else "Prescription Record",
+                "source_page": 1
+            })
+
+        # 3. Health Trends
+        trend_series = self.get_biomarker_trends(db, user_id)
+        health_trends = []
+        for ts in trend_series[:4]:
+            pts = ts.get("points", [])
+            curr_val = pts[-1]["observed_value"] if pts else "Not available"
+            trend_summary = f"{len(pts)} record(s) tracked"
+            if len(pts) >= 2:
+                trend_summary = f"{pts[0]['observed_value']} → {pts[-1]['observed_value']} {ts.get('unit', '')}"
+            health_trends.append({
+                "test_name": ts.get("display_name", ts.get("canonical_name")),
+                "canonical_name": ts.get("canonical_name"),
+                "historical_points": pts,
+                "current_value": curr_val,
+                "unit": ts.get("unit"),
+                "trend_summary": trend_summary
+            })
+
+        # 4. Important / Out-of-range Measurements
+        all_tests = db.query(LabTest).filter(LabTest.user_id == user_id).order_by(desc(LabTest.created_at)).all()
+        important_measurements = []
+        for t in all_tests:
+            if t.flag in {"high", "low", "critical", "abnormal"}:
+                important_measurements.append({
+                    "test_name": t.test_name,
+                    "value": f"{t.observed_value} {t.unit or ''}".strip(),
+                    "flag": t.flag.upper(),
+                    "reference_range": t.reference_range_text,
+                    "date": t.test_date or "Recent"
+                })
+            if len(important_measurements) >= 5:
+                break
+
+        # 5. Questions to Discuss (from Appointment Preparation)
+        appt = db.query(AppointmentSummary).filter(AppointmentSummary.user_id == user_id).order_by(desc(AppointmentSummary.created_at)).first()
+        questions = appt.questions_json if appt and appt.questions_json else [
+            {"id": "q1", "question_text": "Can you help me understand the changes in my latest blood test results?", "category": "General", "priority": "HIGH"},
+            {"id": "q2", "question_text": "Are my current prescription medications still appropriate?", "category": "Medication", "priority": "MEDIUM"}
+        ]
+
+        # 6. Sources
+        sources = [
+            {"title": d.title, "document_id": d.id, "page": 1} for d in docs[:5]
+        ]
+
+        return {
+            "patient_name": patient_name,
+            "date_of_visit": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+            "recent_reports": recent_reports,
+            "current_medications": current_medications,
+            "health_trends": health_trends,
+            "important_measurements": important_measurements,
+            "questions_to_discuss": questions,
+            "sources": sources
+        }
 
 health_intelligence_service = HealthIntelligenceService()

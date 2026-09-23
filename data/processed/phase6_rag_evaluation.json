@@ -1,0 +1,186 @@
+{
+  "evaluation_metadata": {
+    "timestamp": "2026-08-30T15:11:39Z",
+    "pipeline": "Hybrid RAG + Medical Knowledge Dataset",
+    "collections_evaluated": [
+      "USER_MEDICAL_RECORDS (Structured + OCR Chunks)",
+      "GENERAL_MEDICAL_KNOWLEDGE (Malikeh1375/medical-question-answering-datasets)"
+    ],
+    "total_benchmark_queries": 7
+  },
+  "performance_metrics": {
+    "average_latency_ms": 3.28,
+    "source_attribution_accuracy_pct": 100.0,
+    "unsupported_answer_rate_pct": 0.0,
+    "evidence_guard_success_rate_pct": 100.0,
+    "recall_at_k": 1.0,
+    "precision_at_k": 0.95
+  },
+  "detailed_query_evaluations": [
+    {
+      "query_id": "q1",
+      "query": "What is my fasting glucose and HbA1c result?",
+      "classified_type": "PATIENT_FACTUAL",
+      "type_match": true,
+      "evidence_priority": "USER_RECORDS_PRIMARY",
+      "citations_count": 3,
+      "citations": [
+        {
+          "source_type": "USER_STRUCTURED_RECORD",
+          "source_name": "Annual Comprehensive Health Checkup 2026",
+          "license": null
+        },
+        {
+          "source_type": "USER_STRUCTURED_RECORD",
+          "source_name": "Annual Comprehensive Health Checkup 2026",
+          "license": null
+        },
+        {
+          "source_type": "USER_DOCUMENT_CHUNK",
+          "source_name": "Annual Comprehensive Health Checkup 2026",
+          "license": null
+        }
+      ],
+      "answer_snippet": "Based on your uploaded medical records:\n\u2022 Fasting Blood Glucose: 118 mg/dL (Date: 2026-04-10) [Status: HIGH]\n\u2022 HbA1c: 6.4 % (Date: 2026-04-10) [Status: HIGH]...",
+      "latency_ms": 3.75,
+      "guard_passed": true
+    },
+    {
+      "query_id": "q2",
+      "query": "What are my active prescription medications and food timing?",
+      "classified_type": "PATIENT_FACTUAL",
+      "type_match": true,
+      "evidence_priority": "USER_RECORDS_PRIMARY",
+      "citations_count": 2,
+      "citations": [
+        {
+          "source_type": "USER_STRUCTURED_RECORD",
+          "source_name": "Annual Comprehensive Health Checkup 2026",
+          "license": null
+        },
+        {
+          "source_type": "USER_DOCUMENT_CHUNK",
+          "source_name": "Annual Comprehensive Health Checkup 2026",
+          "license": null
+        }
+      ],
+      "answer_snippet": "Based on your uploaded medical records:\n\u2022 Rx Metformin (500mg): Twice daily (BD / 1-0-1), After meals (PC)...",
+      "latency_ms": 0.0,
+      "guard_passed": true
+    },
+    {
+      "query_id": "q3",
+      "query": "What is HbA1c and what does it measure?",
+      "classified_type": "GENERAL_MEDICAL_KNOWLEDGE",
+      "type_match": true,
+      "evidence_priority": "GENERAL_KNOWLEDGE_ONLY",
+      "citations_count": 3,
+      "citations": [
+        {
+          "source_type": "GENERAL_MEDICAL_KNOWLEDGE",
+          "source_name": "Malikeh1375/medical-question-answering-datasets",
+          "license": "mit"
+        },
+        {
+          "source_type": "GENERAL_MEDICAL_KNOWLEDGE",
+          "source_name": "Malikeh1375/medical-question-answering-datasets",
+          "license": "mit"
+        },
+        {
+          "source_type": "GENERAL_MEDICAL_KNOWLEDGE",
+          "source_name": "Malikeh1375/medical-question-answering-datasets",
+          "license": "mit"
+        }
+      ],
+      "answer_snippet": "According to general medical knowledge sources:\ndear madam, thank you for your consultation.it seems that after a fusion operation at l23 and l34 it is still pa...",
+      "latency_ms": 15.55,
+      "guard_passed": true
+    },
+    {
+      "query_id": "q4",
+      "query": "Explain what high blood pressure is.",
+      "classified_type": "GENERAL_MEDICAL_KNOWLEDGE",
+      "type_match": true,
+      "evidence_priority": "GENERAL_KNOWLEDGE_ONLY",
+      "citations_count": 3,
+      "citations": [
+        {
+          "source_type": "GENERAL_MEDICAL_KNOWLEDGE",
+          "source_name": "Malikeh1375/medical-question-answering-datasets",
+          "license": "mit"
+        },
+        {
+          "source_type": "GENERAL_MEDICAL_KNOWLEDGE",
+          "source_name": "Malikeh1375/medical-question-answering-datasets",
+          "license": "mit"
+        },
+        {
+          "source_type": "GENERAL_MEDICAL_KNOWLEDGE",
+          "source_name": "Malikeh1375/medical-question-answering-datasets",
+          "license": "mit"
+        }
+      ],
+      "answer_snippet": "According to general medical knowledge sources:\nhello and thank you for using chatbot. i carefully read your question and i understand your concern. i will try ...",
+      "latency_ms": 0.59,
+      "guard_passed": true
+    },
+    {
+      "query_id": "q5",
+      "query": "Explain my glucose value and why glucose increases in blood.",
+      "classified_type": "HYBRID",
+      "type_match": true,
+      "evidence_priority": "HYBRID_USER_RECORDS_OVER_GENERAL_KNOWLEDGE",
+      "citations_count": 3,
+      "citations": [
+        {
+          "source_type": "USER_STRUCTURED_RECORD",
+          "source_name": "Annual Comprehensive Health Checkup 2026",
+          "license": null
+        },
+        {
+          "source_type": "USER_STRUCTURED_RECORD",
+          "source_name": "Annual Comprehensive Health Checkup 2026",
+          "license": null
+        },
+        {
+          "source_type": "GENERAL_MEDICAL_KNOWLEDGE",
+          "source_name": "Malikeh1375/medical-question-answering-datasets",
+          "license": "mit"
+        }
+      ],
+      "answer_snippet": "1. Documented Patient Values from Your Records:\n\u2022 Fasting Blood Glucose: 118 mg/dL (2026-04-10)\n\u2022 HbA1c: 6.4 % (2026-04-10)\n\n2. General Clinical & Physiological...",
+      "latency_ms": 3.06,
+      "guard_passed": true
+    },
+    {
+      "query_id": "q6",
+      "query": "What was my serum potassium level in March?",
+      "classified_type": "PATIENT_FACTUAL",
+      "type_match": true,
+      "evidence_priority": "USER_RECORDS_MANDATORY_MISSING",
+      "citations_count": 0,
+      "citations": [],
+      "answer_snippet": "The available records do not contain enough information to answer this patient-specific question....",
+      "latency_ms": 0.0,
+      "guard_passed": true
+    },
+    {
+      "query_id": "q7",
+      "query": "What does my uploaded report say about dietary recommendations?",
+      "classified_type": "DOCUMENT_SEARCH",
+      "type_match": true,
+      "evidence_priority": "USER_DOCUMENTS_PRIMARY",
+      "citations_count": 1,
+      "citations": [
+        {
+          "source_type": "USER_DOCUMENT_CHUNK",
+          "source_name": "Annual Comprehensive Health Checkup 2026",
+          "license": null
+        }
+      ],
+      "answer_snippet": "Based on the content of your uploaded reports:\n\u2022 Patient advises mild fasting hyperglycemia. Recommendation: Initiate low-glycemic dietary modifications and reg...",
+      "latency_ms": 0.0,
+      "guard_passed": true
+    }
+  ]
+}

@@ -19,8 +19,17 @@ class UserCreate(UserBase):
     password: str = Field(..., min_length=6)
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    email: Optional[str] = None
+    phone_number: Optional[str] = None
+    identifier: Optional[str] = None
     password: str
+
+class MobileLogin(BaseModel):
+    phone_number: str
+    password: str
+
+class GoogleLoginRequest(BaseModel):
+    id_token: str = Field(..., description="Google ID Token from Google Sign-In SDK")
 
 class UserUpdate(BaseModel):
     full_name: Optional[str] = None

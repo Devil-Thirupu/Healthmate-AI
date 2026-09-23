@@ -29,8 +29,33 @@ export const AuthProvider = ({ children }) => {
     verifyUser();
   }, []);
 
-  const login = async (email, password) => {
-    const res = await api.post('/auth/login', { email, password });
+  const login = async (identifier, password) => {
+    const payload = identifier.includes('@')
+      ? { email: identifier, password }
+      : { identifier, password };
+    const res = await api.post('/auth/login', payload);
+    const { access_token, refresh_token, user: userData } = res.data;
+    localStorage.setItem('healthmate_access_token', access_token);
+    localStorage.setItem('healthmate_refresh_token', refresh_token);
+    localStorage.setItem('healthmate_user', JSON.stringify(userData));
+    setToken(access_token);
+    setUser(userData);
+    return userData;
+  };
+
+  const loginMobile = async (phone_number, password) => {
+    const res = await api.post('/auth/login-mobile', { phone_number, password });
+    const { access_token, refresh_token, user: userData } = res.data;
+    localStorage.setItem('healthmate_access_token', access_token);
+    localStorage.setItem('healthmate_refresh_token', refresh_token);
+    localStorage.setItem('healthmate_user', JSON.stringify(userData));
+    setToken(access_token);
+    setUser(userData);
+    return userData;
+  };
+
+  const loginGoogle = async (id_token) => {
+    const res = await api.post('/auth/google', { id_token });
     const { access_token, refresh_token, user: userData } = res.data;
     localStorage.setItem('healthmate_access_token', access_token);
     localStorage.setItem('healthmate_refresh_token', refresh_token);
@@ -79,6 +104,8 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: !!token && !!user,
         isLoading,
         login,
+        loginMobile,
+        loginGoogle,
         register,
         logout,
         updateProfile,

@@ -56,4 +56,9 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: str = ""
     LLM_PROVIDER: str = "auto"  # auto, gemini, openai, local_fallback
 
+    # Google OAuth 2.0 (Optional / Development Mode fallback)
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
+    GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/google/callback"
+
 settings = Settings()

@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useOutletContext, Link } from 'react-router-dom';
+import api from '../services/api';
 import {
   BotMessageSquare,
   Send,
@@ -11,32 +13,66 @@ import {
   User,
   Info,
   CheckCircle2,
-  RefreshCw
+  AlertCircle,
+  RefreshCw,
+  ExternalLink,
+  BookOpen,
+  Database,
+  Eye,
+  X,
+  Highlighter,
+  ChevronDown,
+  ChevronUp,
+  FlaskConical,
+  Pill,
+  Activity,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  PlusCircle,
+  CornerDownLeft,
+  Loader2,
+  MessageSquare,
+  Clock
 } from 'lucide-react';
 
 const SUGGESTED_PROMPTS = [
-  'What are my latest HbA1c and blood glucose results?',
-  'Explain my active prescription medications and food timings.',
-  'Are any of my recent blood test parameters flagged abnormal?',
-  'What Indian dietary foods can help manage my blood sugar level?',
-  'Generate an appointment summary for my upcoming doctor visit.'
+  'What are my latest values?',
+  'What changed from my previous report?',
+  'What medicines are listed?',
+  'Show my glucose history.',
+  'What was my glucose in March?',
+  'Explain my latest report.',
+  'What is glucose and what are normal ranges?'
 ];
 
 const AIAssistantPage = () => {
   const { user } = useAuth();
+  const { openUpload } = useOutletContext() || {};
   const [messages, setMessages] = useState([
     {
       id: 'welcome',
       sender: 'ai',
-      text: `Hello ${user?.full_name || 'Patient'}, I am your HealthMate AI Medical Assistant. I provide evidence-grounded answers based strictly on your uploaded medical records in English, Tamil, and Tanglish. How can I help you today?`,
+      text: `Hello ${user?.full_name || 'Patient'}! I am your HealthMate Clinical AI Assistant.\n\nI can help you review and analyze your verified personal medical records, track longitudinal biomarker trends, review prescribed medicines, and cross-reference clinical ranges in English, தமிழ், or Tanglish.`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      citations: []
+      citations: [],
+      sources: [],
+      evidence_status: 'SUPPORTED',
+      structured_cards: [],
+      follow_up_suggestions: [
+        'What are my latest values?',
+        'What changed from my previous report?',
+        'What medicines are listed?'
+      ]
     }
   ]);
   const [inputQuery, setInputQuery] = useState('');
   const [selectedLang, setSelectedLang] = useState('en');
   const [isTyping, setIsTyping] = useState(false);
+  const [activeSourceModal, setActiveSourceModal] = useState(null);
+  const [expandedSources, setExpandedSources] = useState({});
   const messagesEndRef = useRef(null);
+  const textareaRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -46,14 +82,21 @@ const AIAssistantPage = () => {
     scrollToBottom();
   }, [messages, isTyping]);
 
+  const toggleSources = (msgId) => {
+    setExpandedSources((prev) => ({
+      ...prev,
+      [msgId]: !prev[msgId]
+    }));
+  };
+
   const handleSend = async (queryText) => {
-    const text = queryText || inputQuery;
-    if (!text.trim()) return;
+    const text = (queryText || inputQuery).trim();
+    if (!text || isTyping) return;
 
     const userMsg = {
       id: Date.now().toString(),
       sender: 'user',
-      text: text.trim(),
+      text: text,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
@@ -61,83 +104,177 @@ const AIAssistantPage = () => {
     setInputQuery('');
     setIsTyping(true);
 
-    // Simulate Evidence-Grounded AI Response with Citations & Guardrails
-    setTimeout(() => {
-      let aiResponseText = '';
-      let citations = [];
+    try {
+      const res = await api.post('/assistant/chat', {
+        query: text,
+        language: selectedLang
+      });
 
-      const queryLower = text.toLowerCase();
-
-      if (queryLower.includes('sugar') || queryLower.includes('hba1c') || queryLower.includes('glucose')) {
-        if (selectedLang === 'ta') {
-          aiResponseText = `உங்கள் பதிவேற்றப்பட்ட இரத்தப் பரிசோதனை ஆவணத்தின்படி:
-• HbA1c அளவு: 7.2% (இயல்பு வரம்பு: < 5.7% - சற்று அதிகம்)
-• Fasting Blood Sugar: 135 mg/dL (இயல்பு வரம்பு: 70 - 99 mg/dL)
-
-உணவுமுறை ஆலோசனை:
-வெள்ளை சர்க்கரை மற்றும் அதிக மாவுச்சத்து உள்ள உணவுகளைக் குறைக்கவும். கேழ்வரகு (Ragi), வெந்தயம் மற்றும் பாகற்காய் உணவில் சேர்த்துக் கொள்ளலாம். உங்கள் மருத்துவரை அணுகி ஆலோசிக்கவும்.`;
-        } else if (selectedLang === 'tanglish') {
-          aiResponseText = `Ungaloda uploaded blood test report padi:
-• HbA1c Level: 7.2% (Normal range: < 5.7% - Konjam High)
-• Fasting Blood Sugar: 135 mg/dL (Normal: 70 - 99 mg/dL)
-
-Diet Suggestion:
-White sugar kuraikkavum. Ragi, Pavakkai mattrum Vendhayam unavil serthukkollavum. Please consult your doctor for medical advice.`;
-        } else {
-          aiResponseText = `Based on your uploaded clinical laboratory records:
-• HbA1c: 7.2% (Standard Reference: < 5.7% — Elevated / Diabetic range)
-• Fasting Blood Glucose: 135 mg/dL (Standard Reference: 70 - 99 mg/dL)
-
-Evidence-Based Dietary Guidance:
-Incorporate low-glycemic index foods such as Finger Millet (Ragi), Bitter Gourd (Pavakkai), and Sprouted Moong Dal. Consult your diabetologist or physician for personal clinical management.`;
-        }
-        citations = [
-          { docTitle: 'Annual Comprehensive Blood Panel.pdf', page: 1, text: 'HbA1c: 7.2 % [Ref: 4.0 - 5.6 %]' },
-          { docTitle: 'Fasting Blood Sugar Test.pdf', page: 1, text: 'Glucose Fasting: 135 mg/dL [Ref: 70 - 99 mg/dL]' }
-        ];
-      } else if (queryLower.includes('medication') || queryLower.includes('prescription') || queryLower.includes('food timing')) {
-        if (selectedLang === 'ta') {
-          aiResponseText = `உங்கள் பரிந்துரைக்கப்பட்ட மருந்து விவரங்கள்:
-• Metformin 500mg: காலை மற்றும் இரவு உணவுக்குப் பின் (PC) உட்கொள்ளவும்.
-• Atorvastatin 10mg: இரவு உணவுக்குப் பின் (PC) உட்கொள்ளவும்.
-
-மருத்துவர் அறிவுறுத்தியபடி மருந்துகளைத் தவறாமல் உட்கொள்ளவும்.`;
-        } else if (selectedLang === 'tanglish') {
-          aiResponseText = `Ungaloda active prescription details:
-• Metformin 500mg: Morning & Night food-ku pinnaadi (PC) saapidavum.
-• Atorvastatin 10mg: Night saappaattukku pinnaadi (PC) eduthukkollavum.`;
-        } else {
-          aiResponseText = `Extracted from your doctor's prescription records:
-• Metformin 500 mg: Twice daily after meals (BD, PC)
-• Atorvastatin 10 mg: Once daily at night after dinner (OD, PC)
-
-Always verify pill instructions with your prescribing physician or pharmacist.`;
-        }
-        citations = [
-          { docTitle: 'Physician Prescription - Dr. S. Ramanathan.pdf', page: 1, text: 'Rx: Tab Metformin 500mg 1-0-1 PC x 30 days' }
-        ];
-      } else {
-        if (selectedLang === 'ta') {
-          aiResponseText = `நான் உங்கள் மருத்துவ ஆவணங்களின் அடிப்படையில் மட்டுமே தகவல்களை வழங்குகிறேன். நீங்கள் கேட்கும் கேள்விக்கான போதுமான சான்றுகள் உங்கள் தற்போதைய ஆவணங்களில் இல்லை என்றால், தயவுசெய்து கூடுதல் அறிக்கைகளைப் பதிவேற்றவும் அல்லது உங்கள் மருத்துவரிடம் கேட்கவும்.`;
-        } else if (selectedLang === 'tanglish') {
-          aiResponseText = `Naan ungaloda uploaded medical records-il irukkum unmaiyaana thagavalgalai mattumey tharuven. Edheinum adhisayangal irundhal doctor-idam direct-aa kettukkollavum.`;
-        } else {
-          aiResponseText = `HealthMate AI operates strictly on evidence grounding. Every medical data point is verified against your uploaded files. If a detail is missing from your uploaded records, our Evidence Guard strictly prevents hallucinating values.`;
-        }
-        citations = [];
-      }
-
+      const data = res.data;
       const aiMsg = {
         id: (Date.now() + 1).toString(),
         sender: 'ai',
-        text: aiResponseText,
+        text: data.answer,
+        queryType: data.query_type,
+        priorityApplied: data.evidence_priority_applied,
+        evidence_status: data.evidence_status || (data.evidence_found ? 'SUPPORTED' : 'INSUFFICIENT'),
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        citations: citations
+        citations: data.citations || data.sources || [],
+        sources: data.sources || data.citations || [],
+        structured_cards: data.structured_cards || [],
+        follow_up_suggestions: data.follow_up_suggestions || []
       };
 
       setMessages((prev) => [...prev, aiMsg]);
+    } catch (err) {
+      console.error('Chat error:', err);
+      const errMsg = {
+        id: (Date.now() + 1).toString(),
+        sender: 'ai',
+        text: "Sorry, I couldn't retrieve your health records right now. Please try again or verify your connection.",
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        citations: [],
+        sources: [],
+        evidence_status: 'INSUFFICIENT',
+        structured_cards: [],
+        follow_up_suggestions: ['What are my latest values?', 'What is glucose?']
+      };
+      setMessages((prev) => [...prev, errMsg]);
+    } finally {
       setIsTyping(false);
-    }, 700);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const renderEvidenceStatusBadge = (status) => {
+    switch (status) {
+      case 'SUPPORTED':
+        return (
+          <div className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60 dark:bg-emerald-950/60 dark:text-emerald-300">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+            <span>Supported by verified records</span>
+          </div>
+        );
+      case 'PARTIAL':
+        return (
+          <div className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/60 dark:bg-amber-950/60 dark:text-amber-300">
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+            <span>Partially supported by available records</span>
+          </div>
+        );
+      case 'INSUFFICIENT':
+        return (
+          <div className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200/60 dark:bg-rose-950/60 dark:text-rose-300">
+            <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+            <span>No matching evidence in available records</span>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const renderStructuredCard = (card, idx) => {
+    if (card.card_type === 'VALUE_CARD') {
+      return (
+        <div
+          key={idx}
+          className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-700 shadow-2xs flex items-center justify-between gap-3 min-w-[200px]"
+        >
+          <div className="flex items-center space-x-2.5">
+            <div className="p-2 rounded-lg bg-teal-50 dark:bg-teal-950 text-teal-600 shrink-0">
+              <FlaskConical className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-slate-900 dark:text-white">{card.title}</p>
+              <p className="text-[10px] text-slate-400">{card.date}</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <span className="text-xs font-black text-teal-700 dark:text-teal-400">
+              {card.value} {card.unit}
+            </span>
+            <span className="block text-[9px] font-bold uppercase text-slate-400">{card.flag}</span>
+          </div>
+        </div>
+      );
+    } else if (card.card_type === 'PRESCRIPTION_CARD') {
+      return (
+        <div
+          key={idx}
+          className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-700 shadow-2xs space-y-1.5 min-w-[220px]"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-1.5">
+              <Pill className="w-3.5 h-3.5 text-teal-600" />
+              <span className="text-xs font-bold text-slate-900 dark:text-white">{card.title}</span>
+            </div>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200/60">
+              {card.dosage}
+            </span>
+          </div>
+          <p className="text-[10px] text-slate-500">
+            {card.frequency} • {card.timing}
+          </p>
+        </div>
+      );
+    } else if (card.card_type === 'TREND_CARD') {
+      return (
+        <div
+          key={idx}
+          className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-700 shadow-2xs space-y-1 min-w-[220px]"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-900 dark:text-white">{card.title}</span>
+            <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+              {card.percentage_change}
+            </span>
+          </div>
+          <p className="text-xs font-bold text-teal-700">
+            {card.previous_value} {card.unit} → {card.latest_value} {card.unit}
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const getCitationBadge = (sourceType) => {
+    switch (sourceType) {
+      case 'USER_STRUCTURED_RECORD':
+        return (
+          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-teal-50 text-teal-700 border border-teal-200 flex items-center space-x-1">
+            <Database className="w-3 h-3" />
+            <span>Vault Record</span>
+          </span>
+        );
+      case 'USER_DOCUMENT_CHUNK':
+        return (
+          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-sky-50 text-sky-700 border border-sky-200 flex items-center space-x-1">
+            <FileText className="w-3 h-3" />
+            <span>Document OCR Chunk</span>
+          </span>
+        );
+      case 'GENERAL_MEDICAL_KNOWLEDGE':
+        return (
+          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-purple-50 text-purple-700 border border-purple-200 flex items-center space-x-1">
+            <BookOpen className="w-3 h-3" />
+            <span>Clinical Knowledge</span>
+          </span>
+        );
+      default:
+        return (
+          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-slate-100 text-slate-700">
+            <span>Verified Source</span>
+          </span>
+        );
+    }
   };
 
   return (
@@ -146,41 +283,44 @@ Always verify pill instructions with your prescribing physician or pharmacist.`;
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
         <div>
           <div className="flex items-center space-x-2">
-            <h1 className="text-xl font-extrabold text-slate-900 dark:text-white font-heading">
-              Evidence-Grounded AI Clinical Assistant
-            </h1>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300">
-              Hybrid RAG
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-teal-700 bg-teal-50 dark:bg-teal-950/60 px-2.5 py-0.5 rounded-full border border-teal-200/60 dark:border-teal-800/50">
+              Evidence Guard Engine
+            </span>
+            <span className="text-xs text-slate-400">
+              • Zero Hallucination Mode Active
             </span>
           </div>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white font-heading tracking-tight mt-0.5">
+            HealthMate Clinical AI Assistant
+          </h1>
           <p className="text-xs text-slate-500">
-            Answers strictly cited from your personal medical documents with zero hallucination tolerance
+            Query lab diagnostics, medication records, and historical changes with verbatim source citations.
           </p>
         </div>
 
-        {/* Trilingual Toggle */}
-        <div className="flex items-center space-x-1 p-1 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-xs self-start sm:self-auto">
-          <Languages className="w-3.5 h-3.5 text-brand-600 dark:text-brand-400 ml-1.5" />
+        {/* Trilingual Switcher */}
+        <div className="flex items-center space-x-1 p-1 bg-white dark:bg-slate-800 rounded-xl border border-slate-200/90 dark:border-slate-700 text-xs self-start sm:self-auto shadow-2xs font-semibold">
+          <Languages className="w-3.5 h-3.5 text-teal-600 ml-1.5" />
           <button
             onClick={() => setSelectedLang('en')}
-            className={`px-2 py-0.5 rounded-lg font-medium ${
-              selectedLang === 'en' ? 'bg-brand-600 text-white' : 'text-slate-500'
+            className={`px-2.5 py-1 rounded-lg transition-colors ${
+              selectedLang === 'en' ? 'bg-teal-600 text-white font-bold' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
             English
           </button>
           <button
             onClick={() => setSelectedLang('ta')}
-            className={`px-2 py-0.5 rounded-lg font-medium ${
-              selectedLang === 'ta' ? 'bg-brand-600 text-white' : 'text-slate-500'
+            className={`px-2.5 py-1 rounded-lg transition-colors ${
+              selectedLang === 'ta' ? 'bg-teal-600 text-white font-bold' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
             தமிழ்
           </button>
           <button
             onClick={() => setSelectedLang('tanglish')}
-            className={`px-2 py-0.5 rounded-lg font-medium ${
-              selectedLang === 'tanglish' ? 'bg-brand-600 text-white' : 'text-slate-500'
+            className={`px-2.5 py-1 rounded-lg transition-colors ${
+              selectedLang === 'tanglish' ? 'bg-teal-600 text-white font-bold' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
             Tanglish
@@ -188,117 +328,230 @@ Always verify pill instructions with your prescribing physician or pharmacist.`;
         </div>
       </div>
 
-      {/* Non-Diagnostic Disclaimer Banner */}
-      <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 text-xs text-amber-800 dark:text-amber-300 flex items-center space-x-2 shrink-0">
-        <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600" />
-        <span>
-          <strong>Clinical Disclaimer:</strong> HealthMate AI provides informational summaries from your uploaded records. AI does not diagnose or prescribe. Consult a licensed doctor for medical care.
-        </span>
+      {/* Safety Notice */}
+      <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 text-xs text-amber-900 dark:text-amber-300 flex items-center space-x-2.5 shrink-0 shadow-2xs">
+        <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+        <p className="leading-tight">
+          <strong>Clinical Copilot Protocol:</strong> Answers are retrieved strictly from your uploaded files with source chunk hashes. Non-prescriptive reference only.
+        </p>
       </div>
 
-      {/* Chat Messages Area */}
-      <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 overflow-y-auto space-y-4 shadow-sm">
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex items-start space-x-3 ${msg.sender === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}
-          >
-            <div
-              className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-                msg.sender === 'user'
-                  ? 'bg-brand-600 text-white'
-                  : 'bg-gradient-to-tr from-cyan-600 to-teal-500 text-white'
-              }`}
-            >
-              {msg.sender === 'user' ? <User className="w-4 h-4" /> : <BotMessageSquare className="w-4 h-4" />}
-            </div>
+      {/* Chat Messages Stream */}
+      <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 p-5 overflow-y-auto space-y-5 shadow-2xs">
+        {messages.map((msg) => {
+          const isUser = msg.sender === 'user';
+          const citationList = msg.citations?.length ? msg.citations : msg.sources || [];
+          const isSourcesOpen = expandedSources[msg.id] || false;
 
-            <div className={`space-y-2 max-w-xl ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}>
+          return (
+            <div
+              key={msg.id}
+              className={`flex items-start space-x-3 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}`}
+            >
+              {/* Avatar */}
               <div
-                className={`p-3.5 rounded-2xl text-xs leading-relaxed ${
-                  msg.sender === 'user'
-                    ? 'bg-brand-600 text-white rounded-tr-none'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-tl-none whitespace-pre-wrap'
+                className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-xs ${
+                  isUser
+                    ? 'bg-slate-900 dark:bg-slate-800 text-white'
+                    : 'bg-teal-600 text-white'
                 }`}
               >
-                {msg.text}
+                {isUser ? <User className="w-4 h-4" /> : <BotMessageSquare className="w-4 h-4" />}
               </div>
 
-              {/* Source Document Citations (Evidence Grounding) */}
-              {msg.citations && msg.citations.length > 0 && (
-                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-left space-y-1.5">
-                  <div className="flex items-center space-x-1 text-[10px] font-bold uppercase text-brand-600 dark:text-brand-400">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>Verified Source Citations</span>
-                  </div>
-                  {msg.citations.map((c, i) => (
-                    <div key={i} className="text-[11px] text-slate-600 dark:text-slate-300 flex items-start space-x-1.5">
-                      <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
-                      <div>
-                        <span className="font-semibold text-slate-800 dark:text-slate-200">
-                          {c.docTitle} (p. {c.page})
-                        </span>
-                        <p className="text-[10px] text-slate-500 italic">"{c.text}"</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* Message Content Bubble */}
+              <div className={`space-y-2.5 max-w-2xl ${isUser ? 'items-end text-right' : 'items-start text-left'}`}>
+                {!isUser && msg.id !== 'welcome' && (
+                  <div>{renderEvidenceStatusBadge(msg.evidence_status)}</div>
+                )}
 
-              <span className="text-[10px] text-slate-400 block px-1">{msg.timestamp}</span>
+                <div
+                  className={`p-4 rounded-2xl text-xs leading-relaxed shadow-2xs ${
+                    isUser
+                      ? 'bg-teal-600 text-white rounded-tr-xs'
+                      : 'bg-slate-50/80 dark:bg-slate-800/70 text-slate-900 dark:text-slate-100 rounded-tl-xs border border-slate-200/80 dark:border-slate-700/80 whitespace-pre-wrap'
+                  }`}
+                >
+                  {msg.text}
+                </div>
+
+                {/* Structured Cards */}
+                {!isUser && msg.structured_cards && msg.structured_cards.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                    {msg.structured_cards.map((c, i) => renderStructuredCard(c, i))}
+                  </div>
+                )}
+
+                {/* Citations Box */}
+                {!isUser && citationList.length > 0 && (
+                  <div className="rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 overflow-hidden text-left">
+                    <button
+                      onClick={() => toggleSources(msg.id)}
+                      className="w-full px-3.5 py-2 flex items-center justify-between text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors"
+                    >
+                      <div className="flex items-center space-x-1.5">
+                        <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
+                        <span>Evidence Sources & RE EHR Paths ({citationList.length})</span>
+                      </div>
+                      {isSourcesOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                    </button>
+
+                    {isSourcesOpen && (
+                      <div className="p-3 pt-0 space-y-2 divide-y divide-slate-200 dark:divide-slate-700">
+                        {citationList.map((c, i) => (
+                          <div key={i} className="pt-2 text-[11px] space-y-1.5">
+                            <div className="flex items-center justify-between gap-2 flex-wrap">
+                              <div className="flex items-center space-x-2">
+                                {getCitationBadge(c.source_type)}
+                                <span className="font-bold text-slate-800 dark:text-slate-200 truncate max-w-[200px]">
+                                  {c.source_name}
+                                </span>
+                              </div>
+
+                              <button
+                                onClick={() => setActiveSourceModal(c)}
+                                className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-700 font-bold text-[10px] transition-colors"
+                              >
+                                <span>[Inspect Snippet]</span>
+                                <Eye className="w-3 h-3" />
+                              </button>
+                            </div>
+                            <p className="text-[10px] text-slate-600 dark:text-slate-400 italic bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200/80 dark:border-slate-800">
+                              "{c.text_snippet}"
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Follow-up Suggestions */}
+                {!isUser && msg.follow_up_suggestions && msg.follow_up_suggestions.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {msg.follow_up_suggestions.map((sug, i) => (
+                      <button
+                        key={i}
+                        onClick={() => handleSend(sug)}
+                        className="px-3 py-1 rounded-full text-[11px] font-semibold bg-teal-50 hover:bg-teal-100 text-teal-800 dark:bg-teal-950/60 dark:text-teal-300 border border-teal-200/60 transition-colors shadow-2xs"
+                      >
+                        {sug}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {isTyping && (
-          <div className="flex items-center space-x-2 text-slate-400 text-xs p-2">
-            <BotMessageSquare className="w-4 h-4 text-brand-500 animate-pulse" />
-            <span>Scanning uploaded records & grounding evidence...</span>
+          <div className="flex items-start space-x-3">
+            <div className="w-9 h-9 rounded-xl bg-teal-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+              <BotMessageSquare className="w-4 h-4" />
+            </div>
+            <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 text-xs text-slate-500 flex items-center space-x-2">
+              <Loader2 className="w-4 h-4 animate-spin text-teal-600" />
+              <span>Verifying patient records & evidence snippets...</span>
+            </div>
           </div>
         )}
 
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Suggested Clinical Prompts */}
-      <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 shrink-0">
-        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap pl-1">
-          Suggestions:
-        </span>
-        {SUGGESTED_PROMPTS.map((prompt, index) => (
-          <button
-            key={index}
-            onClick={() => handleSend(prompt)}
-            className="px-2.5 py-1 rounded-lg text-[11px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-brand-400 dark:hover:border-brand-600 text-slate-600 dark:text-slate-300 whitespace-nowrap transition-colors"
-          >
-            {prompt}
-          </button>
-        ))}
-      </div>
+      {/* Suggested Prompts */}
+      {messages.length <= 1 && (
+        <div className="flex items-center space-x-2 overflow-x-auto pb-1 shrink-0 scrollbar-none">
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">
+            Suggested:
+          </span>
+          {SUGGESTED_PROMPTS.map((prompt, idx) => (
+            <button
+              key={idx}
+              onClick={() => handleSend(prompt)}
+              className="px-3 py-1 rounded-xl text-xs font-semibold bg-white hover:bg-teal-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/90 dark:border-slate-700 shrink-0 transition-colors shadow-2xs"
+            >
+              {prompt}
+            </button>
+          ))}
+        </div>
+      )}
 
-      {/* Query Input Box */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSend();
-        }}
-        className="flex items-center space-x-2 shrink-0"
-      >
-        <input
-          type="text"
+      {/* Input Bar */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 p-2 shadow-2xs shrink-0 flex items-center space-x-2">
+        <textarea
+          ref={textareaRef}
+          rows={1}
           value={inputQuery}
           onChange={(e) => setInputQuery(e.target.value)}
-          placeholder={`Ask about your blood tests, active medicines, or dietary advice (${selectedLang.toUpperCase()})...`}
-          className="flex-1 px-4 py-2.5 text-xs rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-900 dark:text-white"
+          onKeyDown={handleKeyDown}
+          placeholder="Ask a clinical question about your lab tests or medications..."
+          className="flex-1 px-3 py-1.5 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 text-xs resize-none focus:outline-none max-h-24"
         />
         <button
-          type="submit"
+          onClick={() => handleSend()}
           disabled={!inputQuery.trim() || isTyping}
-          className="p-2.5 bg-gradient-to-r from-brand-600 to-cyan-600 hover:from-brand-700 hover:to-cyan-700 disabled:opacity-50 text-white rounded-xl shadow-md transition-all active:scale-95"
+          className="p-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl active:scale-95 disabled:opacity-40 disabled:pointer-events-none transition-all shadow-xs"
+          aria-label="Send query"
         >
           <Send className="w-4 h-4" />
         </button>
-      </form>
+      </div>
+
+      {/* Source Highlighting Modal */}
+      {activeSourceModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-2xl max-w-lg w-full overflow-hidden">
+            <div className="p-5 bg-teal-600 text-white flex items-center justify-between">
+              <div className="flex items-center space-x-2.5">
+                <Highlighter className="w-5 h-5 text-teal-200" />
+                <h3 className="text-sm font-bold font-heading">Evidence Grounding & Source Snippet</h3>
+              </div>
+              <button
+                onClick={() => setActiveSourceModal(null)}
+                className="p-1 rounded-full hover:bg-white/20 text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <span className="text-[10px] font-bold uppercase text-slate-400">Source Document</span>
+                <p className="text-sm font-bold text-slate-900 dark:text-white">
+                  {activeSourceModal.source_name}
+                </p>
+                {activeSourceModal.page_number && (
+                  <p className="text-xs text-slate-500">Page {activeSourceModal.page_number}</p>
+                )}
+              </div>
+
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">
+                <span className="text-[10px] font-bold uppercase text-teal-700 dark:text-teal-400">
+                  Extracted Evidence Text
+                </span>
+                <p className="text-xs text-slate-800 dark:text-slate-200 mt-1.5 font-mono leading-relaxed bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-800">
+                  "{activeSourceModal.text_snippet}"
+                </p>
+              </div>
+
+              {activeSourceModal.document_id && (
+                <div className="pt-2 flex justify-end">
+                  <a
+                    href={`/api/v1/documents/${activeSourceModal.document_id}/download`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center space-x-1.5 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all"
+                  >
+                    <span>Open Original File</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

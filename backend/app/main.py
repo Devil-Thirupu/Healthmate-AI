@@ -10,11 +10,33 @@ from backend.app.api.api_router import api_router
 # Import all models to ensure metadata registration
 import backend.app.models
 
+def ensure_schema_compatibility():
+    """Safely adds missing additive columns to existing SQLite tables without data loss."""
+    from sqlalchemy import inspect, text
+    inspector = inspect(engine)
+    with engine.connect() as conn:
+        if "shared_links" in inspector.get_table_names():
+            columns = [c["name"] for c in inspector.get_columns("shared_links")]
+            if "lab_ids_json" not in columns:
+                conn.execute(text("ALTER TABLE shared_links ADD COLUMN lab_ids_json JSON DEFAULT '[]'"))
+            if "prescription_ids_json" not in columns:
+                conn.execute(text("ALTER TABLE shared_links ADD COLUMN prescription_ids_json JSON DEFAULT '[]'"))
+            if "vital_ids_json" not in columns:
+                conn.execute(text("ALTER TABLE shared_links ADD COLUMN vital_ids_json JSON DEFAULT '[]'"))
+            if "appointment_summary_ids_json" not in columns:
+                conn.execute(text("ALTER TABLE shared_links ADD COLUMN appointment_summary_ids_json JSON DEFAULT '[]'"))
+            if "permission" not in columns:
+                conn.execute(text("ALTER TABLE shared_links ADD COLUMN permission VARCHAR(50) DEFAULT 'READ_ONLY'"))
+            if "revoked_at" not in columns:
+                conn.execute(text("ALTER TABLE shared_links ADD COLUMN revoked_at DATETIME"))
+            conn.commit()
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Ensure tables are created
+    # Startup: Ensure tables are created and additive columns synced
     logger.info("Initializing Healthmate AI database tables...")
     Base.metadata.create_all(bind=engine)
+    ensure_schema_compatibility()
     logger.info("Database tables initialized successfully.")
     yield
     # Shutdown: Clean up resources if needed

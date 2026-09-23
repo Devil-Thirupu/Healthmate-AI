@@ -1,0 +1,160 @@
+{
+  "dataset_metadata": {
+    "dataset_name": "Malikeh1375/medical-question-answering-datasets",
+    "config_name": "all-processed",
+    "split": "train",
+    "parquet_file": "train-00000-of-00001-9bfe4b2cd0370c03.parquet",
+    "commit_sha": "29833779cb5921f474d9f469aa85c115277bf489",
+    "source_url": "https://huggingface.co/datasets/Malikeh1375/medical-question-answering-datasets",
+    "download_date": "2026-08-30T17:07:37Z",
+    "license": "mit",
+    "license_verified_from": "Hugging Face Repository Metadata API ('license': 'mit', 'tags': ['license:mit'])",
+    "file_size_bytes": 159702143,
+    "total_rows": 246678,
+    "columns": [
+      "instruction",
+      "input",
+      "output",
+      "__index_level_0__"
+    ],
+    "content_type": "Curated clinical Q&A aggregated from real patient-doctor consultations (iCliniQ, HealthCareMagic, WebMD, ChatDoctor)"
+  },
+  "processing_summary": {
+    "total_raw_rows": 246678,
+    "extracted_records_count": 10,
+    "duplicates_filtered": 0,
+    "empty_or_short_filtered": 0
+  },
+  "records": [
+    {
+      "record_id": "157271",
+      "dataset_name": "Malikeh1375/medical-question-answering-datasets",
+      "dataset_version": "29833779cb5921f474d9f469aa85c115277bf489",
+      "license": "mit",
+      "source_url": "https://huggingface.co/datasets/Malikeh1375/medical-question-answering-datasets",
+      "source_name": "Clinical Consultation Q&A",
+      "instruction": "If you are a doctor, please answer the medical questions based on the patient's description.",
+      "input_question": "Hey Just wondering.  I am a 39 year old female, pretty smallMy heart rate is around 97 to 106 at rest, and my BP is 140/90 and twice I get 175/118I did visit a doctor because I  didnt feel well past month or twoThen the doctor gave me a heart medicine to take the pulse down and BP  (its still in further examination.)But I wondering what it can be? Do I need the medicine really?  Is that bad ?",
+      "output_answer": "hello and thank you for using chatbot. i carefully read your question and i understand your concern. i will try to explain you something and give you my opinion. we talk about hypertension if we have mean value that exceeds 140 / 90 mmhg. a person might have high value during emotional and physicals trees so it's mandatory to judge on mean values. usaly hypertension does not give any symptoms but left untreated he slowly modifies the heart. according to heart rhythm, the normal rate is between 50-100 beat for minute. when it exceeds 100 we talk about sinus tachycardia. this might have different causes to simple emotional stress, physical activity, coffee consumption or pathologies like anemia, hyperthyroidism. so if we diagnose hypertension and rhythm issue we have to find they cause and of course treat them. if you treat the hypertension than you have nothing to worry. if i was your treating doctor i will recommend some examination like an electrocardiogram, a cardiac echo, a full blood analyze, a holder rhythm and pressure monitoring. this gives a better view how to treat the problem, medical or not. but as you catch values up to 170 i think medical treatment is necessary. hope i was helpful. wish you good health. best regards.",
+      "content": "Question: Hey Just wondering.  I am a 39 year old female, pretty smallMy heart rate is around 97 to 106 at rest, and my BP is 140/90 and twice I get 175/118I did visit a doctor because I  didnt feel well past month or twoThen the doctor gave me a heart medicine to take the pulse down and BP  (its still in further examination.)But I wondering what it can be? Do I need the medicine really?  Is that bad ?\nAnswer: hello and thank you for using chatbot. i carefully read your question and i understand your concern. i will try to explain you something and give you my opinion. we talk about hypertension if we have mean value that exceeds 140 / 90 mmhg. a person might have high value during emotional and physicals trees so it's mandatory to judge on mean values. usaly hypertension does not give any symptoms but left untreated he slowly modifies the heart. according to heart rhythm, the normal rate is between 50-100 beat for minute. when it exceeds 100 we talk about sinus tachycardia. this might have different causes to simple emotional stress, physical activity, coffee consumption or pathologies like anemia, hyperthyroidism. so if we diagnose hypertension and rhythm issue we have to find they cause and of course treat them. if you treat the hypertension than you have nothing to worry. if i was your treating doctor i will recommend some examination like an electrocardiogram, a cardiac echo, a full blood analyze, a holder rhythm and pressure monitoring. this gives a better view how to treat the problem, medical or not. but as you catch values up to 170 i think medical treatment is necessary. hope i was helpful. wish you good health. best regards.",
+      "token_count": 293
+    },
+    {
+      "record_id": "235698",
+      "dataset_name": "Malikeh1375/medical-question-answering-datasets",
+      "dataset_version": "29833779cb5921f474d9f469aa85c115277bf489",
+      "license": "mit",
+      "source_url": "https://huggingface.co/datasets/Malikeh1375/medical-question-answering-datasets",
+      "source_name": "Clinical Consultation Q&A",
+      "instruction": "If you are a doctor, please answer the medical questions based on the patient's description.",
+      "input_question": "I had a brain anyurism in 1993. I used to have severe migrains then after the anyurism I had no more.I am now experiencing some shooting pains off and on in my head and severe memory problems I forget what Im trying to save and that happens daily .Had a spell the other day and I couldn t speak at all. Do these symtoms tell of maybe another anyurism or brain tumor that. I appricaie any help ty.",
+      "output_answer": "hello brain tumor may present in various ways. it may present as headache, seizure(generalized or focal) etc. you may need detail neurological examination and investigations. investigation include ct scan of brain, eeg etc. mri can be done if needed. contrast ct scan or mri should be done as you have history of brain aneurysm. i advise consulting neurologist for detail evaluation. get well soon. take care chatbot.",
+      "content": "Question: I had a brain anyurism in 1993. I used to have severe migrains then after the anyurism I had no more.I am now experiencing some shooting pains off and on in my head and severe memory problems I forget what Im trying to save and that happens daily .Had a spell the other day and I couldn t speak at all. Do these symtoms tell of maybe another anyurism or brain tumor that. I appricaie any help ty.\nAnswer: hello brain tumor may present in various ways. it may present as headache, seizure(generalized or focal) etc. you may need detail neurological examination and investigations. investigation include ct scan of brain, eeg etc. mri can be done if needed. contrast ct scan or mri should be done as you have history of brain aneurysm. i advise consulting neurologist for detail evaluation. get well soon. take care chatbot.",
+      "token_count": 147
+    },
+    {
+      "record_id": "48042",
+      "dataset_name": "Malikeh1375/medical-question-answering-datasets",
+      "dataset_version": "29833779cb5921f474d9f469aa85c115277bf489",
+      "license": "mit",
+      "source_url": "https://huggingface.co/datasets/Malikeh1375/medical-question-answering-datasets",
+      "source_name": "Clinical Consultation Q&A",
+      "instruction": "Answer this question truthfully",
+      "input_question": "When to seek urgent medical care when I have Uterine cancer ?",
+      "output_answer": "Call your health care provider if symptoms of uterine cancer develop. If you experience a larger amount of vaginal bleeding, seek urgent medical care as soon as possible.",
+      "content": "Question: When to seek urgent medical care when I have Uterine cancer ?\nAnswer: Call your health care provider if symptoms of uterine cancer develop. If you experience a larger amount of vaginal bleeding, seek urgent medical care as soon as possible.",
+      "token_count": 42
+    },
+    {
+      "record_id": "180396",
+      "dataset_name": "Malikeh1375/medical-question-answering-datasets",
+      "dataset_version": "29833779cb5921f474d9f469aa85c115277bf489",
+      "license": "mit",
+      "source_url": "https://huggingface.co/datasets/Malikeh1375/medical-question-answering-datasets",
+      "source_name": "Clinical Consultation Q&A",
+      "instruction": "If you are a doctor, please answer the medical questions based on the patient's description.",
+      "input_question": "Hi My problem is that before some month my skin was dark then i coslt to doctor he prescribed me a cream Melalite xl when i use this cream my skin becomes fair, my skin becomes white but my skin get thin as the black skin come out so i stoped to use that cream but now my skin turns hn to black again Prescribe some cream and body lotions",
+      "output_answer": "hi surya, thanks for writing in. melanie cream contains 2% hy chatbot. these ingredients can cause permanent pigmentation of skin leading to white spot. it is not advisable to use it for long time. my advice to you would be -stop using melanie xl. use a good sunscreen during daytime. you can apply a cream called climax cream at night over dark spots. fairness will come back, but process is slow may take 2-3 months of treatment. take a lot of it c in diet. avoid sun exposure. color will come back, but process is slow may take 2-3 months of treatment. avoid any hq and steroid based creams in the future. hope this helps. i will be available for follow up. regards.",
+      "content": "Question: Hi My problem is that before some month my skin was dark then i coslt to doctor he prescribed me a cream Melalite xl when i use this cream my skin becomes fair, my skin becomes white but my skin get thin as the black skin come out so i stoped to use that cream but now my skin turns hn to black again Prescribe some cream and body lotions\nAnswer: hi surya, thanks for writing in. melanie cream contains 2% hy chatbot. these ingredients can cause permanent pigmentation of skin leading to white spot. it is not advisable to use it for long time. my advice to you would be -stop using melanie xl. use a good sunscreen during daytime. you can apply a cream called climax cream at night over dark spots. fairness will come back, but process is slow may take 2-3 months of treatment. take a lot of it c in diet. avoid sun exposure. color will come back, but process is slow may take 2-3 months of treatment. avoid any hq and steroid based creams in the future. hope this helps. i will be available for follow up. regards.",
+      "token_count": 195
+    },
+    {
+      "record_id": "132970",
+      "dataset_name": "Malikeh1375/medical-question-answering-datasets",
+      "dataset_version": "29833779cb5921f474d9f469aa85c115277bf489",
+      "license": "mit",
+      "source_url": "https://huggingface.co/datasets/Malikeh1375/medical-question-answering-datasets",
+      "source_name": "Clinical Consultation Q&A",
+      "instruction": "If you are a doctor, please answer the medical questions based on the patient's description.",
+      "input_question": "Im having horrible pain in my lower abdominal, very low...and when I have to go pee the pain escalates, & I have to push & push so hard to get it out. I also have a rectal prolapse, & when I wipe, theres also a lot of blood...any suggestions to help me?",
+      "output_answer": "hello! i read your question and understand your concern. your symptoms seem to be related to a urinary infection and hemorrhoids. i recommend you to perform a routine blood test, a urinalysis, an abdominal ultrasound. i would also advise you to consult with the proctologist for the rectal prolapse, to examine better the region for hemorrhoids and prescribe the proper treatment.  hope to have been helpful! greetings!",
+      "content": "Question: Im having horrible pain in my lower abdominal, very low...and when I have to go pee the pain escalates, & I have to push & push so hard to get it out. I also have a rectal prolapse, & when I wipe, theres also a lot of blood...any suggestions to help me?\nAnswer: hello! i read your question and understand your concern. your symptoms seem to be related to a urinary infection and hemorrhoids. i recommend you to perform a routine blood test, a urinalysis, an abdominal ultrasound. i would also advise you to consult with the proctologist for the rectal prolapse, to examine better the region for hemorrhoids and prescribe the proper treatment.  hope to have been helpful! greetings!",
+      "token_count": 121
+    },
+    {
+      "record_id": "32374",
+      "dataset_name": "Malikeh1375/medical-question-answering-datasets",
+      "dataset_version": "29833779cb5921f474d9f469aa85c115277bf489",
+      "license": "mit",
+      "source_url": "https://huggingface.co/datasets/Malikeh1375/medical-question-answering-datasets",
+      "source_name": "Clinical Consultation Q&A",
+      "instruction": "Answer this question truthfully",
+      "input_question": "What is the reason for minimal to no axillary or pubic hair development in individuals with Androgen insensitivity syndrome (AIS)?",
+      "output_answer": "Minimal to no axillary or pubic hair development occurs in individuals with Androgen insensitivity syndrome (AIS) due to peripheral androgen resistance.",
+      "content": "Question: What is the reason for minimal to no axillary or pubic hair development in individuals with Androgen insensitivity syndrome (AIS)?\nAnswer: Minimal to no axillary or pubic hair development occurs in individuals with Androgen insensitivity syndrome (AIS) due to peripheral androgen resistance.",
+      "token_count": 43
+    },
+    {
+      "record_id": "128930",
+      "dataset_name": "Malikeh1375/medical-question-answering-datasets",
+      "dataset_version": "29833779cb5921f474d9f469aa85c115277bf489",
+      "license": "mit",
+      "source_url": "https://huggingface.co/datasets/Malikeh1375/medical-question-answering-datasets",
+      "source_name": "Clinical Consultation Q&A",
+      "instruction": "If you are a doctor, please answer the medical questions based on the patient's description.",
+      "input_question": "I had blood in my urine for 5 days and then suddenly stopped. I have no pain or fever and the blood was bright red and came at the end of my stream. Now that it has stopped should I still go see a doctor, or was it probably a kidney stone? I am a 38 year old female and had cervical cancer 9 years ago that resulted in a total hysterectomy, other than that I have no other health issues.",
+      "output_answer": "hi and thanks for the query, blood in the urine in the absence of lower urinary tract symptoms like pain on urination, frequent urination or difficulties in holding urine often lead first to the suspicion of a bladder tumor. a urine cytology and urological examination and advice is usually needed in this situation. however, possibilities of urinary tract infections must always be ruled out by carrying out routine urine cultures and anti-biotic sensitivity test. exposures to paints in the past is an important risk factor to be considered. a past history of having spent time in water logged zone, which could be endemic to schistosomiasis (s. histologic) could a possibility to bear in mind too. consulting with a urologist could be very necessary. thanks and best regards, luchuo, md.",
+      "content": "Question: I had blood in my urine for 5 days and then suddenly stopped. I have no pain or fever and the blood was bright red and came at the end of my stream. Now that it has stopped should I still go see a doctor, or was it probably a kidney stone? I am a 38 year old female and had cervical cancer 9 years ago that resulted in a total hysterectomy, other than that I have no other health issues.\nAnswer: hi and thanks for the query, blood in the urine in the absence of lower urinary tract symptoms like pain on urination, frequent urination or difficulties in holding urine often lead first to the suspicion of a bladder tumor. a urine cytology and urological examination and advice is usually needed in this situation. however, possibilities of urinary tract infections must always be ruled out by carrying out routine urine cultures and anti-biotic sensitivity test. exposures to paints in the past is an important risk factor to be considered. a past history of having spent time in water logged zone, which could be endemic to schistosomiasis (s. histologic) could a possibility to bear in mind too. consulting with a urologist could be very necessary. thanks and best regards, luchuo, md.",
+      "token_count": 212
+    },
+    {
+      "record_id": "94243",
+      "dataset_name": "Malikeh1375/medical-question-answering-datasets",
+      "dataset_version": "29833779cb5921f474d9f469aa85c115277bf489",
+      "license": "mit",
+      "source_url": "https://huggingface.co/datasets/Malikeh1375/medical-question-answering-datasets",
+      "source_name": "Clinical Consultation Q&A",
+      "instruction": "Please summerize the given abstract to a title",
+      "input_question": "A wide variety of social determinants of health have been associated with various risks and impacts on quality of life. Specifically, poverty, lack of insurance coverage, large household sizes, and social vulnerability are all factors implicated in incidence and mortality rates of infectious disease. However, no studies have examined the relationship of these factors to the COVID-19 pandemic on a state-wide level in Florida. Thereby, the objective of this study is to examine the relationship between average household size, poverty, uninsured populations, social vulnerability index (SVI), and rates of COVID-19 cases and deaths in Florida counties. The objective was accomplished by analyzing the cumulative case and death reports from state and local health departments in Florida. The data was compiled into a single dataset by the CDC COVID-19 Task Force. Using US Census Bureau data, all Florida counties were classified into tertiles of the separate categories of poverty rate, average household size, uninsured rates, and SVI (Social Vulnerability Index). The poverty level was classified as low (0-12.3%), moderate (12.3-17.3%), and high (>17.3% below the federal poverty line). The uninsured population proportion was classified as low (0-7.1%), moderate (7.1-11.4%), and high (>11.4% uninsured residents). Average county household size was classified as low (0-2.4), moderate (2.4-2.6), and high (>2.6). The Centers for Disease Control and Prevention (CDC)/Agency for Toxic Substances and Disease Registry (ATSDR) Social Vulnerability Index (SVI) used US census data on 15 social determinants of vulnerability to evaluate and assist disadvantaged communities. SVI tertiles were low (0-0.333), moderate (0.334-0.666), and high (0.667-1) on a range of 0-1, with higher numbers signifying communities with many factors of social vulnerability. The mean cumulative cases and deaths per 100,000 inhabitants were calculated in each tertile for each category. Analysis of the data revealed that case and mortality rates due to COVID-19 in the high poverty counties were markedly higher in Florida than the national average. In contrast, moderate and low poverty rates were below average. Similarly, counties with a high SVI had case and mortality rates greatly above state and national averages. Counties with a high proportion of uninsured displayed the highest case rates. However, mortality rates were the highest in counties with a low proportion of uninsured individuals. No clear correlation was observed between COVID-19 rates and household size. It was concluded that compiled CDC and US census data suggests a significant correlation between poverty, social vulnerability, lack of insurance coverage, and increased incidence and mortality from COVID-19. Future research should statistically analyze the correlations and examine the individual factors of SVI as potential COVID-19 predictors.",
+      "output_answer": "Socioeconomic Determinants of COVID-19 Incidence and Mortality in Florida",
+      "content": "Question: A wide variety of social determinants of health have been associated with various risks and impacts on quality of life. Specifically, poverty, lack of insurance coverage, large household sizes, and social vulnerability are all factors implicated in incidence and mortality rates of infectious disease. However, no studies have examined the relationship of these factors to the COVID-19 pandemic on a state-wide level in Florida. Thereby, the objective of this study is to examine the relationship between average household size, poverty, uninsured populations, social vulnerability index (SVI), and rates of COVID-19 cases and deaths in Florida counties. The objective was accomplished by analyzing the cumulative case and death reports from state and local health departments in Florida. The data was compiled into a single dataset by the CDC COVID-19 Task Force. Using US Census Bureau data, all Florida counties were classified into tertiles of the separate categories of poverty rate, average household size, uninsured rates, and SVI (Social Vulnerability Index). The poverty level was classified as low (0-12.3%), moderate (12.3-17.3%), and high (>17.3% below the federal poverty line). The uninsured population proportion was classified as low (0-7.1%), moderate (7.1-11.4%), and high (>11.4% uninsured residents). Average county household size was classified as low (0-2.4), moderate (2.4-2.6), and high (>2.6). The Centers for Disease Control and Prevention (CDC)/Agency for Toxic Substances and Disease Registry (ATSDR) Social Vulnerability Index (SVI) used US census data on 15 social determinants of vulnerability to evaluate and assist disadvantaged communities. SVI tertiles were low (0-0.333), moderate (0.334-0.666), and high (0.667-1) on a range of 0-1, with higher numbers signifying communities with many factors of social vulnerability. The mean cumulative cases and deaths per 100,000 inhabitants were calculated in each tertile for each category. Analysis of the data revealed that case and mortality rates due to COVID-19 in the high poverty counties were markedly higher in Florida than the national average. In contrast, moderate and low poverty rates were below average. Similarly, counties with a high SVI had case and mortality rates greatly above state and national averages. Counties with a high proportion of uninsured displayed the highest case rates. However, mortality rates were the highest in counties with a low proportion of uninsured individuals. No clear correlation was observed between COVID-19 rates and household size. It was concluded that compiled CDC and US census data suggests a significant correlation between poverty, social vulnerability, lack of insurance coverage, and increased incidence and mortality from COVID-19. Future research should statistically analyze the correlations and examine the individual factors of SVI as potential COVID-19 predictors.\nAnswer: Socioeconomic Determinants of COVID-19 Incidence and Mortality in Florida",
+      "token_count": 435
+    },
+    {
+      "record_id": "15461",
+      "dataset_name": "Malikeh1375/medical-question-answering-datasets",
+      "dataset_version": "29833779cb5921f474d9f469aa85c115277bf489",
+      "license": "mit",
+      "source_url": "https://huggingface.co/datasets/Malikeh1375/medical-question-answering-datasets",
+      "source_name": "Clinical Consultation Q&A",
+      "instruction": "Answer this question truthfully",
+      "input_question": "How does Tiagabine exert its effects as an anti-epileptic?",
+      "output_answer": "Tiagabine exerts its effects as an anti-epileptic by inhibiting GABA reuptake.",
+      "content": "Question: How does Tiagabine exert its effects as an anti-epileptic?\nAnswer: Tiagabine exerts its effects as an anti-epileptic by inhibiting GABA reuptake.",
+      "token_count": 22
+    },
+    {
+      "record_id": "173374",
+      "dataset_name": "Malikeh1375/medical-question-answering-datasets",
+      "dataset_version": "29833779cb5921f474d9f469aa85c115277bf489",
+      "license": "mit",
+      "source_url": "https://huggingface.co/datasets/Malikeh1375/medical-question-answering-datasets",
+      "source_name": "Clinical Consultation Q&A",
+      "instruction": "If you are a doctor, please answer the medical questions based on the patient's description.",
+      "input_question": "L23 L34 L45 L5S1 herniations. all with nerve root contact except for L5. Disco gram showed all painful except L45. posteriolateral fusion of L23 L34 six months ago. now worsening back pain as well as worsening leg pain and extending to foot (all right sided, same as prior to surgery). repeat MRI shows L45 nerve root contact, L5-S1 bulge with no nerve root contact. However, moderate DJD to L5-S1, which is new, as well as small DJD at all other levels, and normal post op scaring at nerve root areas. treating, at this time, with pain meds for back pain and neurontin for nerve pain, however, not helping significantly. I am an otherwise healthy 45 yo female who sustained a traumatic injury resulting in this problem. what is likelihood of further surgery at this time? pre and post op we discussed probability of further surgery at some time, as no one wanted to do a 4 level fusion, which really was what I needed. We all agreed due to age, it was a poor choice to do 4 levels with initial surgery.",
+      "output_answer": "dear madam, thank you for your consultation.it seems that after a fusion operation at l23 and l34 it is still painful while maintaining your daily life. with keeping in mind your age and extent of damage done by trauma i think you should not go for a 4 level fusion. because a second surgery like 4 level after an initial spinal fusion surgery does not necessarily yield any good result. rather you should try some light back strengthening exercise under the supervision of a physiotherapist to get some relief from pain. this will partially overcome the apparent need of 4 level fusion surgery.my best wishes for your health in coming days. thank you.",
+      "content": "Question: L23 L34 L45 L5S1 herniations. all with nerve root contact except for L5. Disco gram showed all painful except L45. posteriolateral fusion of L23 L34 six months ago. now worsening back pain as well as worsening leg pain and extending to foot (all right sided, same as prior to surgery). repeat MRI shows L45 nerve root contact, L5-S1 bulge with no nerve root contact. However, moderate DJD to L5-S1, which is new, as well as small DJD at all other levels, and normal post op scaring at nerve root areas. treating, at this time, with pain meds for back pain and neurontin for nerve pain, however, not helping significantly. I am an otherwise healthy 45 yo female who sustained a traumatic injury resulting in this problem. what is likelihood of further surgery at this time? pre and post op we discussed probability of further surgery at some time, as no one wanted to do a 4 level fusion, which really was what I needed. We all agreed due to age, it was a poor choice to do 4 levels with initial surgery.\nAnswer: dear madam, thank you for your consultation.it seems that after a fusion operation at l23 and l34 it is still painful while maintaining your daily life. with keeping in mind your age and extent of damage done by trauma i think you should not go for a 4 level fusion. because a second surgery like 4 level after an initial spinal fusion surgery does not necessarily yield any good result. rather you should try some light back strengthening exercise under the supervision of a physiotherapist to get some relief from pain. this will partially overcome the apparent need of 4 level fusion surgery.my best wishes for your health in coming days. thank you.",
+      "token_count": 297
+    }
+  ]
+}

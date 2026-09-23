@@ -18,7 +18,8 @@ import {
   Download,
   Languages,
   Eye,
-  Loader2
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 
 const DocumentDetailModal = ({ docId, isOpen, onClose, onUpdated }) => {
@@ -115,16 +116,16 @@ const DocumentDetailModal = ({ docId, isOpen, onClose, onUpdated }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-6xl w-full h-[90vh] shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/80 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-6xl w-full h-[90vh] shadow-2xl border border-slate-200/90 dark:border-slate-800 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="px-6 py-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
           <div className="flex items-center space-x-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-950 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-teal-50 dark:bg-teal-950 text-teal-600 flex items-center justify-center shrink-0">
               <FileText className="w-5 h-5" />
             </div>
             <div className="min-w-0">
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white truncate max-w-md">
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white truncate max-w-md font-heading">
                 {doc?.title || 'Document Details'}
               </h2>
               <p className="text-[11px] text-slate-400 flex items-center space-x-2">
@@ -132,9 +133,9 @@ const DocumentDetailModal = ({ docId, isOpen, onClose, onUpdated }) => {
                 <span>•</span>
                 <span>{doc ? (doc.file_size_bytes / (1024 * 1024)).toFixed(2) : 0} MB</span>
                 <span>•</span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center space-x-0.5">
+                <span className="text-emerald-600 font-bold flex items-center space-x-0.5">
                   <ShieldCheck className="w-3 h-3" />
-                  <span>SHA-256 OK</span>
+                  <span>SHA-256 Verified</span>
                 </span>
               </p>
             </div>
@@ -143,7 +144,7 @@ const DocumentDetailModal = ({ docId, isOpen, onClose, onUpdated }) => {
           <div className="flex items-center space-x-2">
             <button
               onClick={handleDownload}
-              className="p-2 rounded-xl text-slate-500 hover:text-emerald-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="p-2 rounded-xl text-slate-500 hover:text-teal-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               title="Download Verified File"
             >
               <Download className="w-4 h-4" />
@@ -160,15 +161,15 @@ const DocumentDetailModal = ({ docId, isOpen, onClose, onUpdated }) => {
         {/* Content Body: Split Screen */}
         {isLoading ? (
           <div className="flex-1 flex flex-col items-center justify-center p-8">
-            <Loader2 className="w-8 h-8 animate-spin text-brand-600 mb-2" />
+            <Loader2 className="w-8 h-8 animate-spin text-teal-600 mb-2" />
             <p className="text-xs text-slate-500">Loading document intelligence...</p>
           </div>
         ) : (
           <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-slate-200 dark:divide-slate-800 overflow-hidden">
             {/* Left Screen: Document File Preview */}
-            <div className="h-full bg-slate-100 dark:bg-slate-950 p-2 overflow-hidden flex flex-col">
+            <div className="h-full bg-slate-100/70 dark:bg-slate-950 p-2 overflow-hidden flex flex-col">
               <div className="flex items-center justify-between px-3 py-1.5 text-xs text-slate-500">
-                <span className="font-semibold">Original Medical File</span>
+                <span className="font-bold">Original Medical Document</span>
                 <span className="text-[10px] uppercase font-mono">
                   {doc?.mime_type}
                 </span>
@@ -189,9 +190,9 @@ const DocumentDetailModal = ({ docId, isOpen, onClose, onUpdated }) => {
                 <div className="flex items-center space-x-1">
                   <button
                     onClick={() => setActiveTab('structured')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
                       activeTab === 'structured'
-                        ? 'bg-brand-50 dark:bg-brand-950/80 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800'
+                        ? 'bg-teal-50 dark:bg-teal-950/80 text-teal-800 dark:text-teal-200 border border-teal-200/80'
                         : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                     }`}
                   >
@@ -200,9 +201,9 @@ const DocumentDetailModal = ({ docId, isOpen, onClose, onUpdated }) => {
 
                   <button
                     onClick={() => setActiveTab('raw_ocr')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
                       activeTab === 'raw_ocr'
-                        ? 'bg-brand-50 dark:bg-brand-950/80 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800'
+                        ? 'bg-teal-50 dark:bg-teal-950/80 text-teal-800 dark:text-teal-200 border border-teal-200/80'
                         : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                     }`}
                   >
@@ -211,9 +212,9 @@ const DocumentDetailModal = ({ docId, isOpen, onClose, onUpdated }) => {
 
                   <button
                     onClick={() => setActiveTab('edit')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors flex items-center space-x-1 ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors flex items-center space-x-1 ${
                       activeTab === 'edit'
-                        ? 'bg-brand-50 dark:bg-brand-950/80 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800'
+                        ? 'bg-teal-50 dark:bg-teal-950/80 text-teal-800 dark:text-teal-200 border border-teal-200/80'
                         : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                     }`}
                   >
@@ -225,45 +226,45 @@ const DocumentDetailModal = ({ docId, isOpen, onClose, onUpdated }) => {
                 <button
                   onClick={handleReprocess}
                   disabled={isReprocessing}
-                  className="p-1.5 rounded-lg text-slate-500 hover:text-brand-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  className="p-1.5 rounded-lg text-slate-500 hover:text-teal-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                   title="Reprocess OCR"
                 >
-                  <RefreshCw className={`w-4 h-4 ${isReprocessing ? 'animate-spin text-brand-600' : ''}`} />
+                  <RefreshCw className={`w-4 h-4 ${isReprocessing ? 'animate-spin text-teal-600' : ''}`} />
                 </button>
               </div>
 
               {/* Status & Alerts Bar */}
-              <div className="px-6 py-2 bg-slate-50 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs shrink-0">
+              <div className="px-6 py-2 bg-slate-50/70 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs shrink-0">
                 <div className="flex items-center space-x-2">
-                  <span className="text-[10px] text-slate-400 font-semibold uppercase">Confidence:</span>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  <span className="text-[10px] text-slate-400 font-bold uppercase">Confidence:</span>
+                  <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
                     doc?.ocr_confidence_score > 90
-                      ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
-                      : 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300'
+                      ? 'bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60'
+                      : 'bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-200/60'
                   }`}>
                     {doc?.ocr_confidence_score}% High
                   </span>
                   {doc?.has_manual_corrections && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">
                       Human Verified
                     </span>
                   )}
                 </div>
 
-                <div className="text-[11px] text-slate-400">
-                  {doc?.category?.replace('_', ' ').toUpperCase()}
+                <div className="text-[11px] text-slate-500 font-bold uppercase">
+                  {doc?.category?.replace('_', ' ')}
                 </div>
               </div>
 
               {successMsg && (
-                <div className="m-4 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs flex items-center space-x-2 shrink-0">
+                <div className="m-4 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 text-emerald-700 text-xs flex items-center space-x-2 shrink-0 font-medium">
                   <CheckCircle2 className="w-4 h-4 shrink-0" />
                   <span>{successMsg}</span>
                 </div>
               )}
 
               {errorMsg && (
-                <div className="m-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs flex items-center space-x-2 shrink-0">
+                <div className="m-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 text-rose-700 text-xs flex items-center space-x-2 shrink-0 font-medium">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{errorMsg}</span>
                 </div>
@@ -275,12 +276,12 @@ const DocumentDetailModal = ({ docId, isOpen, onClose, onUpdated }) => {
                   {/* Lab Tests Section */}
                   {doc?.lab_tests && doc.lab_tests.length > 0 && (
                     <div className="space-y-3">
-                      <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center space-x-1.5">
-                        <FlaskConical className="w-4 h-4 text-cyan-600" />
+                      <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center space-x-1.5 font-heading">
+                        <FlaskConical className="w-4 h-4 text-teal-600" />
                         <span>Extracted Biomarkers ({doc.lab_tests.length})</span>
                       </h4>
 
-                      <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
+                      <div className="border border-slate-200/90 dark:border-slate-800 rounded-xl overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
                         {doc.lab_tests.map((lab, idx) => (
                           <div key={idx} className="p-3 bg-white dark:bg-slate-900 space-y-1.5">
                             <div className="flex items-start justify-between gap-2">
@@ -295,17 +296,17 @@ const DocumentDetailModal = ({ docId, isOpen, onClose, onUpdated }) => {
 
                               <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
                                 lab.flag === 'high' || lab.flag === 'critical'
-                                  ? 'bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300'
+                                  ? 'bg-rose-50 text-rose-700 border border-rose-200'
                                   : lab.flag === 'low'
-                                  ? 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300'
-                                  : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300'
+                                  ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                               }`}>
                                 {lab.flag}
                               </span>
                             </div>
 
                             {lab.explanation_tamil && (
-                              <p className="text-[10px] text-brand-700 dark:text-brand-300 bg-brand-50/50 dark:bg-brand-950/30 p-2 rounded-lg">
+                              <p className="text-[10px] text-teal-800 dark:text-teal-300 bg-teal-50/70 dark:bg-teal-950/30 p-2 rounded-lg border border-teal-200/50">
                                 <strong>தமிழ்:</strong> {lab.explanation_tamil}
                               </p>
                             )}
@@ -318,12 +319,12 @@ const DocumentDetailModal = ({ docId, isOpen, onClose, onUpdated }) => {
                   {/* Prescriptions Section */}
                   {doc?.prescriptions && doc.prescriptions.length > 0 && (
                     <div className="space-y-3">
-                      <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center space-x-1.5">
+                      <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center space-x-1.5 font-heading">
                         <Pill className="w-4 h-4 text-teal-600" />
                         <span>Prescription Items ({doc.prescriptions.length})</span>
                       </h4>
 
-                      <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
+                      <div className="border border-slate-200/90 dark:border-slate-800 rounded-xl overflow-hidden divide-y divide-slate-100 dark:divide-slate-800">
                         {doc.prescriptions.map((p, idx) => (
                           <div key={idx} className="p-3 bg-white dark:bg-slate-900 space-y-1.5">
                             <div className="flex items-start justify-between">
@@ -338,7 +339,7 @@ const DocumentDetailModal = ({ docId, isOpen, onClose, onUpdated }) => {
                             </div>
 
                             {p.instructions_tamil && (
-                              <p className="text-[10px] text-teal-700 dark:text-teal-300 bg-teal-50/50 dark:bg-teal-950/30 p-2 rounded-lg">
+                              <p className="text-[10px] text-teal-800 dark:text-teal-300 bg-teal-50/70 dark:bg-teal-950/30 p-2 rounded-lg border border-teal-200/50">
                                 <strong>வழிகாட்டல்:</strong> {p.instructions_tamil}
                               </p>
                             )}
@@ -348,15 +349,15 @@ const DocumentDetailModal = ({ docId, isOpen, onClose, onUpdated }) => {
                     </div>
                   )}
 
-                  {/* If no structured items detected */}
+                  {/* Empty case */}
                   {(!doc?.lab_tests || doc.lab_tests.length === 0) && (!doc?.prescriptions || doc.prescriptions.length === 0) && (
                     <div className="p-8 text-center bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 space-y-2">
                       <FileText className="w-8 h-8 text-slate-400 mx-auto" />
-                      <p className="text-xs text-slate-600 dark:text-slate-300 font-semibold">
+                      <p className="text-xs text-slate-700 dark:text-slate-300 font-bold">
                         Document indexed for RAG Search
                       </p>
                       <p className="text-[11px] text-slate-400">
-                        Full text is available under Raw OCR Text and queryable via the AI Assistant.
+                        Full text is available under Raw OCR Text and queryable via the Clinical AI Assistant.
                       </p>
                     </div>
                   )}
@@ -376,26 +377,26 @@ const DocumentDetailModal = ({ docId, isOpen, onClose, onUpdated }) => {
               {activeTab === 'edit' && (
                 <form onSubmit={handleSaveCorrections} className="flex-1 p-6 overflow-y-auto space-y-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                       Document Title
                     </label>
                     <input
                       type="text"
                       value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                      className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500/30 text-slate-900 dark:text-white"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                         Category
                       </label>
                       <select
                         value={editCategory}
                         onChange={(e) => setEditCategory(e.target.value)}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                        className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500/30 text-slate-900 dark:text-white"
                       >
                         <option value="lab_report">Lab Report</option>
                         <option value="prescription">Prescription</option>
@@ -406,21 +407,21 @@ const DocumentDetailModal = ({ docId, isOpen, onClose, onUpdated }) => {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                         Document Date
                       </label>
                       <input
                         type="date"
                         value={editDate}
                         onChange={(e) => setEditDate(e.target.value)}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                        className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500/30 text-slate-900 dark:text-white"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                         Doctor Name
                       </label>
                       <input
@@ -428,40 +429,40 @@ const DocumentDetailModal = ({ docId, isOpen, onClose, onUpdated }) => {
                         value={editDoctor}
                         onChange={(e) => setEditDoctor(e.target.value)}
                         placeholder="e.g. Dr. Ramanathan"
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                        className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500/30 text-slate-900 dark:text-white"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                        Clinic / Lab Name
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Clinic / Lab
                       </label>
                       <input
                         type="text"
                         value={editClinic}
                         onChange={(e) => setEditClinic(e.target.value)}
                         placeholder="e.g. Apollo Diagnostics"
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                        className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500/30 text-slate-900 dark:text-white"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                       OCR Raw Text (Edit or correct missing tokens)
                     </label>
                     <textarea
                       rows={6}
                       value={editOcrText}
                       onChange={(e) => setEditOcrText(e.target.value)}
-                      className="w-full p-3 font-mono text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                      className="w-full p-3 font-mono text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500/30 text-slate-900 dark:text-white"
                     />
                   </div>
 
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="inline-flex items-center space-x-2 px-5 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-xs font-semibold rounded-xl shadow-sm transition-all"
+                    className="inline-flex items-center space-x-2 px-5 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-xs transition-all"
                   >
                     {isSaving ? (
                       <>
