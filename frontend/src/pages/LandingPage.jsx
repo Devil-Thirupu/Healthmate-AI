@@ -67,7 +67,7 @@ const LandingPage = () => {
             </h1>
 
             <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed font-normal">
-              HealthMate AI unifies your prescriptions, blood tests, and medical summaries into a secure, SHA-256 verified personal health vault with evidence-grounded AI insights in <strong>English, Tamil, and Tanglish</strong>.
+              HealthMate AI unifies your prescriptions, blood tests, and medical summaries into a secure, SHA-256 verified personal health vault with evidence-grounded AI insights in <strong>English, Tamil, and Multilanguage</strong>.
             </p>
 
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -103,7 +103,7 @@ const LandingPage = () => {
               <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-2xs">
                 <Languages className="w-5 h-5 text-teal-700 mb-2" />
                 <h4 className="text-xs font-bold text-slate-900 dark:text-white">Trilingual Guidance</h4>
-                <p className="text-[11px] text-slate-500 mt-0.5">Medical advice in English, தமிழ், & Tanglish</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">Medical advice in English, தமிழ், & Multilanguage</p>
               </div>
 
               <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-2xs">
@@ -145,7 +145,7 @@ const LandingPage = () => {
               </div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white">Prescription Clarifier</h3>
               <p className="text-xs text-slate-500 leading-relaxed">
-                Converts complex doctor shorthand (OD, BD, TID, AC, PC) into plain-language dosage instructions and meal timings in Tamil and Tanglish.
+                Converts complex doctor shorthand (OD, BD, TID, AC, PC) into plain-language dosage instructions and meal timings in Tamil and Multilanguage.
               </p>
             </div>
 

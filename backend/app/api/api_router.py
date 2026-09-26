@@ -13,6 +13,7 @@ from backend.app.api.nutrition import router as nutrition_router
 from backend.app.api.reminders import router as reminders_router
 from backend.app.api.notifications import router as notifications_router
 from backend.app.api.timeline_search import router as timeline_search_router
+from backend.app.api.doctors import router as doctors_router  # Doctor Connect (additive)
 
 api_router = APIRouter()
 
@@ -27,6 +28,8 @@ api_router.include_router(nutrition_router, prefix="/nutrition", tags=["Nutritio
 api_router.include_router(reminders_router, prefix="/reminders", tags=["Medication Reminders"])
 api_router.include_router(notifications_router, prefix="/notifications", tags=["Notifications"])
 api_router.include_router(timeline_search_router, prefix="", tags=["Timeline, Search & Doctor Visit"])
+api_router.include_router(doctors_router, prefix="/doctors", tags=["Doctor Connect"])  # additive
+
 
 # Direct Shared Access Endpoints (/api/v1/shared/{token})
 @api_router.get("/shared/{token}", tags=["Patient Sharing"])

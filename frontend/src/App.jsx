@@ -18,6 +18,10 @@ import SharingPage from './pages/SharingPage';
 import AuditPage from './pages/AuditPage';
 import SettingsPage from './pages/SettingsPage';
 import PublicShareViewPage from './pages/PublicShareViewPage';
+// Doctor Connect (additive)
+import MyDoctorsPage from './pages/MyDoctorsPage';
+import AppointmentsPage from './pages/AppointmentsPage';
+import DoctorSharingPage from './pages/DoctorSharingPage';
 
 function App() {
   return (
@@ -49,6 +53,10 @@ function App() {
             <Route path="/sharing" element={<SharingPage />} />
             <Route path="/audit" element={<AuditPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            {/* Doctor Connect */}
+            <Route path="/doctors" element={<MyDoctorsPage />} />
+            <Route path="/appointments" element={<AppointmentsPage />} />
+            <Route path="/doctor-sharing" element={<DoctorSharingPage />} />
           </Route>
 
           {/* Catch-all redirect */}
@@ -60,3 +68,4 @@ function App() {
 }
 
 export default App;
+

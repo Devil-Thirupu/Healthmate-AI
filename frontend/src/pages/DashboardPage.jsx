@@ -158,7 +158,7 @@ const DashboardPage = () => {
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white font-heading tracking-tight mt-1">
-            Clinical Intelligence Center
+            {user?.full_name ? `Welcome, ${user.full_name}` : 'Welcome'}
           </h1>
           <p className="text-xs text-slate-500 max-w-2xl mt-0.5">
             Real-time longitudinal health monitoring, EHR ingestion status, and verified medical document vault.

@@ -17,7 +17,10 @@ import {
   ShieldCheck,
   Settings,
   PhoneCall,
-  Sparkles
+  Sparkles,
+  Calendar,
+  Users,
+  Lock
 } from 'lucide-react';
 
 const navigationItems = [
@@ -32,6 +35,14 @@ const navigationItems = [
   { name: 'Audit & Privacy', path: '/audit', icon: ShieldCheck },
   { name: 'Settings', path: '/settings', icon: Settings },
 ];
+
+// Doctor Connect section — additive
+const doctorConnectItems = [
+  { name: 'My Doctors', path: '/doctors', icon: Stethoscope },
+  { name: 'Appointments', path: '/appointments', icon: Calendar },
+  { name: 'Doctor Sharing', path: '/doctor-sharing', icon: Lock },
+];
+
 
 const Sidebar = ({ isOpen, onClose }) => {
   const { user } = useAuth();
@@ -97,7 +108,37 @@ const Sidebar = ({ isOpen, onClose }) => {
               );
             })}
           </nav>
+
+          {/* ── Doctor Connect section ── */}
+          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-2">
+              Doctor Connect
+            </p>
+            <nav className="space-y-1">
+              {doctorConnectItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => onClose?.()}
+                    className={({ isActive }) =>
+                      `flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs transition-all ${
+                        isActive
+                          ? 'bg-[#ccfbf1] dark:bg-teal-950/70 text-[#0f766e] dark:text-teal-300 font-bold shadow-xs'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 font-medium'
+                      }`
+                    }
+                  >
+                    <Icon className="w-4 h-4 shrink-0" />
+                    <span>{item.name}</span>
+                  </NavLink>
+                );
+              })}
+            </nav>
+          </div>
         </div>
+
 
         {/* Bottom Section: Clinical Help Card & User Profile */}
         <div className="p-3.5 border-t border-slate-100 dark:border-slate-800 space-y-3 shrink-0">

@@ -61,4 +61,23 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRET: str = ""
     GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/google/callback"
 
+    # ------------------------------------------------------------------
+    # Supabase Integration
+    # SUPABASE_URL        — project URL  (https://xxxx.supabase.co)
+    # SUPABASE_SECRET_KEY — service_role key (backend-only, never frontend)
+    # ------------------------------------------------------------------
+    SUPABASE_URL: str = ""
+    SUPABASE_SECRET_KEY: str = ""
+
+    @property
+    def is_postgres(self) -> bool:
+        """True when the DATABASE_URL points at PostgreSQL (Supabase or otherwise)."""
+        return self.DATABASE_URL.startswith("postgresql") or self.DATABASE_URL.startswith("postgres")
+
+    @property
+    def supabase_enabled(self) -> bool:
+        """True when Supabase credentials are configured in the environment."""
+        return bool(self.SUPABASE_URL and self.SUPABASE_SECRET_KEY and \
+               not self.SUPABASE_SECRET_KEY.startswith("PASTE"))
+
 settings = Settings()

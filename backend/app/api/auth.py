@@ -16,6 +16,51 @@ from backend.app.core.logging import logger
 
 router = APIRouter()
 
+# ---------------------------------------------------------------------------
+# Supabase Auth sync helper (best-effort, never blocks the main auth flow)
+# ---------------------------------------------------------------------------
+
+def _sync_to_supabase_auth(email: str, password: Optional[str] = None, full_name: str = "") -> None:
+    """
+    Create or update the user in Supabase Auth via the Admin API.
+    Uses the service_role key — backend-only, never exposed to the frontend.
+    Errors are silently logged; they never propagate to the caller.
+    """
+    try:
+        from backend.app.core.config import settings as _cfg
+        if not _cfg.supabase_enabled:
+            return
+        from supabase import create_client  # type: ignore
+        sb = create_client(_cfg.SUPABASE_URL, _cfg.SUPABASE_SECRET_KEY)
+        # Try to create the user in Supabase Auth
+        user_metadata = {"full_name": full_name}
+        try:
+            if password:
+                sb.auth.admin.create_user({
+                    "email": email,
+                    "password": password,
+                    "email_confirm": True,
+                    "user_metadata": user_metadata,
+                })
+            else:
+                # OAuth-created users — no password needed
+                sb.auth.admin.create_user({
+                    "email": email,
+                    "email_confirm": True,
+                    "user_metadata": user_metadata,
+                })
+        except Exception as create_err:
+            err_msg = str(create_err)
+            # User already exists in Supabase Auth — update metadata
+            if "already" in err_msg.lower() or "duplicate" in err_msg.lower():
+                logger.debug(f"[SupabaseAuth] User {email} already exists, updating metadata.")
+            else:
+                raise  # re-raise unexpected errors to outer try
+    except Exception as exc:
+        # Never propagate Supabase Auth errors to the caller
+        logger.warning(f"[SupabaseAuth] Sync failed for {email} (non-fatal): {exc}")
+
+
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 def register_user(
     user_in: UserCreate,
@@ -64,6 +109,9 @@ def register_user(
         user_agent=request.headers.get("User-Agent"),
         details={"email": user.email, "role": user.role}
     )
+
+    # Sync to Supabase Auth (best-effort, non-blocking)
+    _sync_to_supabase_auth(email=user.email, password=user_in.password, full_name=user.full_name)
 
     return {
         "access_token": access_token,
@@ -305,6 +353,9 @@ def login_with_google(
         user_agent=request.headers.get("User-Agent"),
         details={"email": user.email, "google_auth": True}
     )
+
+    # Sync to Supabase Auth (best-effort — Google users have no local password)
+    _sync_to_supabase_auth(email=user.email, full_name=user.full_name)
 
     return {
         "access_token": access_token,

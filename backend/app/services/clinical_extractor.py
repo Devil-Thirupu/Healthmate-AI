@@ -147,6 +147,66 @@ LAB_STANDARDS = {
         "patterns": [r'tsh', r'thyroid\s+stimulating\s+hormone'],
         "tamil": "தைராய்டு சுரப்பியின் செயல்பாடு காட்டும் ஹார்மோன்.",
         "tanglish": "Thyroid hormone level indicator."
+    },
+    "vitamin_d": {
+        "canonical_name": "Vitamin D (25-OH)",
+        "category": "Vitamins & Minerals",
+        "unit": "ng/mL",
+        "min": 30.0,
+        "max": 100.0,
+        "critical_high": 150.0,
+        "ref_text": "30.0 - 100.0 ng/mL",
+        "patterns": [r'vitamin\s+d', r'25-oh\s+vitamin\s+d', r'25-hydroxy\s+vitamin\s+d', r'vit\s+d'],
+        "tamil": "வைட்டமின் டி அளவு. எலும்பு பலம் மற்றும் நோய் எதிர்ப்பு சக்திக்கு அவசியமானது.",
+        "tanglish": "Vitamin D level. Bone strength mattrum immunity-ku avasiyam."
+    },
+    "vitamin_b12": {
+        "canonical_name": "Vitamin B12 (Cobalamin)",
+        "category": "Vitamins & Minerals",
+        "unit": "pg/mL",
+        "min": 211.0,
+        "max": 911.0,
+        "critical_high": 2000.0,
+        "ref_text": "211 - 911 pg/mL",
+        "patterns": [r'vitamin\s+b12', r'vit\s+b12', r'cobalamin', r'b12'],
+        "tamil": "வைட்டமின் பி12. நரம்பு மண்டல ஆரோக்கியம் மற்றும் இரத்த அணுக்கள் உற்பத்திக்கு முக்கியமானது.",
+        "tanglish": "Vitamin B12. Nerve health mattrum blood cell production-ku thevai."
+    },
+    "serum_iron": {
+        "canonical_name": "Serum Iron",
+        "category": "Iron Profile",
+        "unit": "ug/dL",
+        "min": 60.0,
+        "max": 170.0,
+        "critical_high": 350.0,
+        "ref_text": "60 - 170 ug/dL",
+        "patterns": [r'serum\s+iron', r'iron\s+serum', r'\biron\b'],
+        "tamil": "இரத்தத்தில் உள்ள இரும்புச்சத்து அளவு. ஹீமோகுளோபின் உற்பத்திக்கு அத்தியாவசியம்.",
+        "tanglish": "Blood-il ulla iron content. Hemoglobin urpathikku thevai."
+    },
+    "calcium": {
+        "canonical_name": "Serum Calcium",
+        "category": "Electrolytes & Minerals",
+        "unit": "mg/dL",
+        "min": 8.5,
+        "max": 10.5,
+        "critical_high": 14.0,
+        "ref_text": "8.5 - 10.5 mg/dL",
+        "patterns": [r'serum\s+calcium', r'calcium\s+total', r'\bcalcium\b'],
+        "tamil": "இரத்த கால்சியம் அளவு. எலும்பு, பல் மற்றும் இதயத் தசை இயக்கத்திற்கு முக்கியமானது.",
+        "tanglish": "Serum calcium level. Bone mattrum heart muscle movement-ku thevai."
+    },
+    "potassium": {
+        "canonical_name": "Serum Potassium",
+        "category": "Electrolytes",
+        "unit": "mEq/L",
+        "min": 3.5,
+        "max": 5.1,
+        "critical_high": 6.5,
+        "ref_text": "3.5 - 5.1 mEq/L",
+        "patterns": [r'serum\s+potassium', r'potassium', r'\bk\+\b'],
+        "tamil": "பொட்டாசியம் எலக்ட்ரோலைட் அளவு. இதயத் துடிப்பு மற்றும் தசை இயக்கத்தைக் கட்டுப்படுத்துகிறது.",
+        "tanglish": "Potassium electrolyte level. Heart beat mattrum muscle balance-ku avasiyam."
     }
 }
 

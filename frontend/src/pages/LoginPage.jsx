@@ -164,7 +164,7 @@ const LoginPage = () => {
               {
                 icon: Cpu,
                 title: 'Trilingual Clinical Copilot',
-                desc: 'Accessible medical summaries in English, தமிழ் (Tamil), and Tanglish.',
+                desc: 'Accessible medical summaries in English, தமிழ் (Tamil), and Multilanguage.',
               },
             ].map((feature, idx) => {
               const Icon = feature.icon;

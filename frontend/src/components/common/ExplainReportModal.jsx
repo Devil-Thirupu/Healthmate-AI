@@ -91,7 +91,7 @@ const ExplainReportModal = ({ documentId, documentTitle, isOpen, onClose, onView
                   language === 'tanglish' ? 'bg-white text-teal-800 font-bold' : 'text-white/80 hover:text-white'
                 }`}
               >
-                Tanglish
+                Multilanguage
               </button>
             </div>
 

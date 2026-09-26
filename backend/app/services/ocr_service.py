@@ -7,17 +7,32 @@ from PIL import Image, ImageEnhance, ImageFilter
 import pypdf
 from backend.app.core.logging import logger
 
-# Try importing fitz (PyMuPDF)
+# Try importing PyMuPDF
 try:
-    import fitz # PyMuPDF
+    import pymupdf as fitz
     HAS_PYMUPDF = True
 except ImportError:
-    HAS_PYMUPDF = False
+    try:
+        import fitz
+        HAS_PYMUPDF = True
+    except ImportError:
+        HAS_PYMUPDF = False
 
-# Try importing pytesseract
+# Try importing pytesseract and auto-locate Windows executable
 try:
     import pytesseract
     HAS_PYTESSERACT = True
+    # Auto-detect standard Windows Tesseract installations if not already in PATH
+    _tess_paths = [
+        r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+        r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+        os.path.expanduser(r"~\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"),
+        os.path.expanduser(r"~\AppData\Local\Tesseract-OCR\tesseract.exe")
+    ]
+    for _tp in _tess_paths:
+        if os.path.exists(_tp):
+            pytesseract.pytesseract.tesseract_cmd = _tp
+            break
 except ImportError:
     HAS_PYTESSERACT = False
 

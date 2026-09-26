@@ -1,10 +1,12 @@
 from datetime import datetime, timezone, timedelta
 from typing import Any, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi.responses import FileResponse, RedirectResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from backend.app.core.database import get_db
 from backend.app.core.security import verify_password, get_password_hash
+from backend.app.core.config import settings as _cfg
 from backend.app.models.user import User
 from backend.app.models.document import Document
 from backend.app.models.clinical import Prescription, LabTest, VitalRecord
@@ -15,6 +17,7 @@ from backend.app.schemas.sharing import (
 )
 from backend.app.api.deps import get_current_user, get_client_ip
 from backend.app.services.audit_service import audit_service
+from backend.app.services.storage_service import storage_service
 from backend.app.core.logging import logger
 
 router = APIRouter()
@@ -410,3 +413,130 @@ def access_shared_records(
             for s in standalone_sums
         ]
     }
+
+@router.get("/public/{token}/document/{doc_id}/preview")
+def preview_shared_document(
+    token: str,
+    doc_id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """
+    Serve authorized document inline for public share viewer.
+    Validates token validity, expiration, revocation, and document ID authorization.
+    """
+    link = db.query(SharedLink).filter(SharedLink.token == token).first()
+    if not link:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid share link")
+
+    now = datetime.now(timezone.utc)
+    expires_at = link.expires_at.replace(tzinfo=timezone.utc) if link.expires_at.tzinfo is None else link.expires_at
+    if not link.is_active or now > expires_at:
+        raise HTTPException(status_code=status.HTTP_410_GONE, detail="This share link has expired or was revoked")
+
+    # Verify that this doc_id was explicitly shared
+    doc_ids = link.document_ids_json or []
+    if doc_id not in doc_ids:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Document not authorized in this share link")
+
+    doc = db.query(Document).filter(
+        Document.id == doc_id,
+        Document.user_id == link.user_id
+    ).first()
+
+    if not doc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
+
+    # Supabase Storage path: issue a signed URL redirect
+    supabase_path = (doc.metadata_json or {}).get("supabase_storage_path", "")
+    if supabase_path and _cfg.supabase_enabled:
+        try:
+            from backend.app.services.supabase_storage_service import supabase_storage
+            signed_url = supabase_storage.create_signed_url(
+                storage_path=supabase_path,
+                category=doc.category,
+                expiry_seconds=3600,
+            )
+            if signed_url:
+                return RedirectResponse(url=signed_url, status_code=302)
+        except Exception as exc:
+            logger.warning(f"[Supabase] Preview signed URL failed in share view, falling back to local: {exc}")
+
+    # Fallback local disk
+    safe_path = storage_service.resolve_safe_path(link.user_id, doc.stored_filename)
+    if not safe_path or not safe_path.exists():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Physical file missing on server")
+
+    return FileResponse(
+        path=safe_path,
+        media_type=doc.mime_type,
+        content_disposition_type="inline"
+    )
+
+@router.get("/public/{token}/document/{doc_id}/download")
+def download_shared_document(
+    token: str,
+    doc_id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """
+    Download authorized document for public share viewer if allow_download is permitted.
+    """
+    link = db.query(SharedLink).filter(SharedLink.token == token).first()
+    if not link:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid share link")
+
+    now = datetime.now(timezone.utc)
+    expires_at = link.expires_at.replace(tzinfo=timezone.utc) if link.expires_at.tzinfo is None else link.expires_at
+    if not link.is_active or now > expires_at:
+        raise HTTPException(status_code=status.HTTP_410_GONE, detail="This share link has expired or was revoked")
+
+    if not link.allow_download:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Document download is not permitted by patient")
+
+    doc_ids = link.document_ids_json or []
+    if doc_id not in doc_ids:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Document not authorized in this share link")
+
+    doc = db.query(Document).filter(
+        Document.id == doc_id,
+        Document.user_id == link.user_id
+    ).first()
+
+    if not doc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
+
+    audit_service.log_event(
+        db=db,
+        action="SHARED_DOC_DOWNLOADED",
+        resource_type="shared_link",
+        user_id=link.user_id,
+        resource_id=f"share_{link.id}_doc_{doc.id}",
+        ip_address=get_client_ip(request),
+        user_agent=request.headers.get("User-Agent")
+    )
+
+    supabase_path = (doc.metadata_json or {}).get("supabase_storage_path", "")
+    if supabase_path and _cfg.supabase_enabled:
+        try:
+            from backend.app.services.supabase_storage_service import supabase_storage
+            signed_url = supabase_storage.create_signed_url(
+                storage_path=supabase_path,
+                category=doc.category,
+                expiry_seconds=3600,
+            )
+            if signed_url:
+                return RedirectResponse(url=signed_url, status_code=302)
+        except Exception as exc:
+            logger.warning(f"[Supabase] Download signed URL failed in share view, falling back to local: {exc}")
+
+    safe_path = storage_service.resolve_safe_path(link.user_id, doc.stored_filename)
+    if not safe_path or not safe_path.exists():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Physical file missing on server")
+
+    return FileResponse(
+        path=safe_path,
+        media_type=doc.mime_type,
+        filename=doc.original_filename
+    )

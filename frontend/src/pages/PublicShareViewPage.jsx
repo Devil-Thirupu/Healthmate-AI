@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../services/api';
+import ReportViewer from '../components/common/ReportViewer';
 import {
   Activity,
   Lock,
@@ -13,7 +14,8 @@ import {
   Calendar,
   User,
   ShieldCheck,
-  Loader2
+  Loader2,
+  Eye
 } from 'lucide-react';
 
 const PublicShareViewPage = () => {
@@ -24,6 +26,7 @@ const PublicShareViewPage = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isUnlocking, setIsUnlocking] = useState(false);
+  const [viewingDoc, setViewingDoc] = useState(null);
 
   useEffect(() => {
     const fetchMetadata = async () => {
@@ -226,6 +229,27 @@ const PublicShareViewPage = () => {
                           </p>
                         </div>
                       </div>
+
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => setViewingDoc(doc)}
+                          className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center space-x-1.5"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>View Document</span>
+                        </button>
+                        {records.allow_download && (
+                          <a
+                            href={`/api/v1/sharing/public/${token}/document/${doc.id}/download`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 hover:bg-slate-100 transition-colors"
+                            title="Download Document"
+                          >
+                            <Download className="w-4 h-4" />
+                          </a>
+                        )}
+                      </div>
                     </div>
 
                     {/* Prescriptions Details if present */}
@@ -275,6 +299,20 @@ const PublicShareViewPage = () => {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Report Viewer for Public Share */}
+        {viewingDoc && (
+          <ReportViewer
+            isOpen={!!viewingDoc}
+            onClose={() => setViewingDoc(null)}
+            title={viewingDoc.title}
+            mimeType={viewingDoc.mime_type}
+            previewUrl={`/api/v1/sharing/public/${token}/document/${viewingDoc.id}/preview`}
+            downloadUrl={records?.allow_download ? `/api/v1/sharing/public/${token}/document/${viewingDoc.id}/download` : null}
+            allowDownload={!!records?.allow_download}
+            docData={viewingDoc}
+          />
         )}
       </main>
     </div>

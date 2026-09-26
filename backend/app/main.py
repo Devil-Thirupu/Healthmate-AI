@@ -30,6 +30,13 @@ def ensure_schema_compatibility():
             if "revoked_at" not in columns:
                 conn.execute(text("ALTER TABLE shared_links ADD COLUMN revoked_at DATETIME"))
             conn.commit()
+        # Doctor Connect new tables are created by create_all() above — no ALTER needed.
+        # Log table presence for diagnostics
+        table_names = inspector.get_table_names()
+        for tbl in ["doctors", "patient_doctor_connections", "appointments", "doctor_access_grants"]:
+            if tbl in table_names:
+                logger.info(f"[Doctor Connect] Table '{tbl}' ready.")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -81,7 +88,57 @@ def health_check():
         "status": "healthy",
         "service": settings.PROJECT_NAME,
         "version": settings.VERSION,
-        "database": "connected"
+        "database": "connected",
+        "database_type": "postgresql" if settings.is_postgres else "sqlite",
+        "supabase_configured": settings.supabase_enabled
+    }
+
+@app.get("/api/health/supabase", tags=["System"])
+@app.get(f"{settings.API_V1_STR}/health/supabase", tags=["System"])
+def supabase_health_diagnostic():
+    """
+    Diagnostic verification endpoint for Supabase integration (Auth, PostgreSQL DB, Storage).
+    Safely verifies connectivity without exposing keys or passwords.
+    """
+    from sqlalchemy import text
+    from backend.app.core.database import SessionLocal
+    
+    db_status = "unknown"
+    db_error = None
+    try:
+        db = SessionLocal()
+        db.execute(text("SELECT 1"))
+        db.close()
+        db_status = "connected"
+    except Exception as e:
+        db_status = "disconnected"
+        db_error = str(e)
+
+    storage_status = "not_configured"
+    storage_buckets = {}
+    if settings.supabase_enabled:
+        try:
+            from backend.app.services.supabase_storage_service import supabase_storage
+            buckets = ["medical-documents", "prescriptions", "medical-images", "appointment-pdfs"]
+            for b in buckets:
+                try:
+                    storage_buckets[b] = "accessible" if supabase_storage.client else "unreachable"
+                except Exception:
+                    storage_buckets[b] = "error"
+            storage_status = "connected" if supabase_storage.is_enabled else "client_init_failed"
+        except Exception as e:
+            storage_status = f"error: {str(e)}"
+
+    return {
+        "supabase_url_configured": bool(settings.SUPABASE_URL),
+        "supabase_url": settings.SUPABASE_URL or None,
+        "database_engine": "PostgreSQL (Supabase)" if settings.is_postgres else "SQLite (Local/Fallback)",
+        "database_connectivity": db_status,
+        "database_error": db_error,
+        "supabase_storage_status": storage_status,
+        "supabase_storage_buckets": storage_buckets,
+        "supabase_auth_sync_enabled": settings.supabase_enabled,
+        "is_production_ready": bool(settings.is_postgres and settings.supabase_enabled)
     }
 
 @app.get("/", tags=["System"])

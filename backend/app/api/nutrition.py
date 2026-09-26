@@ -136,3 +136,20 @@ def explain_nutrition(
         source="USDA FoodData Central — Foundation Foods",
         license="Public Domain / CC0-1.0"
     )
+
+@router.get("/report-recommendations")
+def get_lab_nutrition_recommendations(
+    document_id: Optional[int] = Query(None, description="Optional document ID to focus analysis on"),
+    request: Request = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> Any:
+    """
+    Connects the patient's verified medical laboratory test results to USDA nutritional recommendations.
+    Provides food suggestions with calorie and nutrient densities for flagged/low biomarkers.
+    """
+    return nutrition_service.get_lab_connected_nutrition_insights(
+        db=db,
+        user_id=current_user.id,
+        document_id=document_id
+    )

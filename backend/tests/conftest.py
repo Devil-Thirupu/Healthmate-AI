@@ -6,8 +6,16 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-# Set test environment
+# ---------------------------------------------------------------------------
+# Test environment overrides — MUST be set before any backend imports so the
+# engine is created with these values, regardless of .env content
+# (Production .env now points to PostgreSQL; tests always use in-memory SQLite)
+# ---------------------------------------------------------------------------
 os.environ["SECRET_KEY"] = "test-secret-key-healthmate-ai-super-secure"
+os.environ["DATABASE_URL"] = "sqlite:///:memory:"
+# Prevent Supabase auth sync calls during tests (no real Supabase key in CI)
+os.environ["SUPABASE_URL"] = ""
+os.environ["SUPABASE_SECRET_KEY"] = ""
 
 from backend.app.core.database import Base, get_db
 from backend.app.main import app

@@ -53,7 +53,7 @@ const AIAssistantPage = () => {
     {
       id: 'welcome',
       sender: 'ai',
-      text: `Hello ${user?.full_name || 'Patient'}! I am your HealthMate Clinical AI Assistant.\n\nI can help you review and analyze your verified personal medical records, track longitudinal biomarker trends, review prescribed medicines, and cross-reference clinical ranges in English, தமிழ், or Tanglish.`,
+      text: `Hello ${user?.full_name || 'Patient'}! I am your HealthMate Clinical AI Assistant.\n\nI can help you review and analyze your verified personal medical records, track longitudinal biomarker trends, review prescribed medicines, and cross-reference clinical ranges in English, தமிழ், or Multilanguage.`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       citations: [],
       sources: [],
@@ -323,7 +323,7 @@ const AIAssistantPage = () => {
               selectedLang === 'tanglish' ? 'bg-teal-600 text-white font-bold' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            Tanglish
+            Multilanguage
           </button>
         </div>
       </div>

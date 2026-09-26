@@ -10,18 +10,28 @@ from backend.app.core.logging import logger
 security_scheme = HTTPBearer(auto_error=False)
 
 def get_current_user(
+    request: Request,
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security_scheme),
     db: Session = Depends(get_db)
 ) -> User:
-    """Dependency to retrieve the current authenticated user from JWT Bearer token."""
-    if not credentials:
+    """Dependency to retrieve the current authenticated user from JWT Bearer token or ?token= query param."""
+    token = None
+    if credentials:
+        token = credentials.credentials
+    elif request.query_params.get("token"):
+        token = request.query_params.get("token")
+    elif request.headers.get("Authorization"):
+        auth_header = request.headers.get("Authorization")
+        if auth_header.startswith("Bearer "):
+            token = auth_header[7:].strip()
+
+    if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication token is required",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    token = credentials.credentials
     payload = decode_token(token)
     
     if not payload or payload.get("type") != "access":

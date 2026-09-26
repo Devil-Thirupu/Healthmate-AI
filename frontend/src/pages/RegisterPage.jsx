@@ -227,7 +227,7 @@ const RegisterPage = () => {
                 {[
                   { id: 'en', label: 'English', desc: 'Standard Medical Terms' },
                   { id: 'ta', label: 'தமிழ் (Tamil)', desc: 'மருத்துவ வழிகாட்டல்' },
-                  { id: 'tanglish', label: 'Tanglish', desc: 'Conversational Tamil' },
+                  { id: 'tanglish', label: 'Multilanguage', desc: 'Tamil + English' },
                 ].map((lang) => (
                   <button
                     type="button"

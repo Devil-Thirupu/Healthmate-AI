@@ -180,11 +180,15 @@ async def upload_document(
     db: Session = Depends(get_db)
 ) -> Any:
     """Upload and securely store a medical document with SHA-256 integrity and automatic OCR extraction."""
-    # 1. Save file securely to isolated user storage directory
-    stored_filename, clean_original_name, file_path, file_size, sha256_hash = await storage_service.save_uploaded_file(
-        file=file,
-        user_id=current_user.id
-    )
+    doc_category = category or DocumentCategory.OTHER.value
+
+    # 1. Save file to local disk AND mirror to Supabase Storage (when configured)
+    stored_filename, clean_original_name, file_path, file_size, sha256_hash, supabase_storage_path = \
+        await storage_service.save_uploaded_file(
+            file=file,
+            user_id=current_user.id,
+            category=doc_category,
+        )
 
     doc_title = title.strip() if title else clean_original_name
     doc_date = document_date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -198,7 +202,7 @@ async def upload_document(
         file_size_bytes=file_size,
         mime_type=file.content_type or "application/octet-stream",
         file_hash_sha256=sha256_hash,
-        category=category or DocumentCategory.OTHER.value,
+        category=doc_category,
         title=doc_title,
         document_date=doc_date,
         doctor_name=doctor_name,
@@ -206,7 +210,10 @@ async def upload_document(
         specialty=specialty,
         ocr_status=OCRStatus.PENDING.value,
         ocr_confidence_score=0.0,
-        metadata_json={}
+        # Store Supabase storage path in metadata so we can issue signed URLs later
+        metadata_json={
+            "supabase_storage_path": supabase_storage_path,
+        }
     )
     db.add(doc)
     db.commit()
@@ -495,7 +502,14 @@ def download_document(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Download the original file with SHA-256 integrity verification."""
+    """Download the original file with SHA-256 integrity verification.
+
+    If the file is in Supabase Storage, returns a 1-hour signed URL redirect.
+    Falls back to serving the local copy when Supabase is not configured.
+    """
+    from fastapi.responses import RedirectResponse
+    from backend.app.core.config import settings as _cfg
+
     doc = db.query(Document).filter(
         Document.id == doc_id,
         Document.user_id == current_user.id
@@ -503,18 +517,6 @@ def download_document(
 
     if not doc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
-
-    safe_path = storage_service.resolve_safe_path(current_user.id, doc.stored_filename)
-    if not safe_path or not safe_path.exists():
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Physical file missing on server")
-
-    # Verify SHA-256 integrity
-    if not storage_service.verify_integrity(str(safe_path), doc.file_hash_sha256):
-        logger.error(f"Integrity check failed for document {doc.id}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="File integrity check failed: file may have been modified or corrupted."
-        )
 
     audit_service.log_event(
         db=db,
@@ -525,6 +527,34 @@ def download_document(
         ip_address=get_client_ip(request),
         user_agent=request.headers.get("User-Agent")
     )
+
+    # --- Supabase Storage path: issue a signed URL redirect ---
+    supabase_path = (doc.metadata_json or {}).get("supabase_storage_path", "")
+    if supabase_path and _cfg.supabase_enabled:
+        try:
+            from backend.app.services.supabase_storage_service import supabase_storage
+            signed_url = supabase_storage.create_signed_url(
+                storage_path=supabase_path,
+                category=doc.category,
+                expiry_seconds=3600,
+            )
+            if signed_url:
+                return RedirectResponse(url=signed_url, status_code=302)
+        except Exception as exc:
+            logger.warning(f"[Supabase] Signed URL generation failed, falling back to local: {exc}")
+
+    # --- Fallback: serve from local disk ---
+    safe_path = storage_service.resolve_safe_path(current_user.id, doc.stored_filename)
+    if not safe_path or not safe_path.exists():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Physical file missing on server")
+
+    # Verify SHA-256 integrity on local file
+    if not storage_service.verify_integrity(str(safe_path), doc.file_hash_sha256):
+        logger.error(f"Integrity check failed for document {doc.id}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="File integrity check failed: file may have been modified or corrupted."
+        )
 
     return FileResponse(
         path=safe_path,
@@ -538,7 +568,13 @@ def preview_document(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Serve file inline for browser/PDF/image preview without forcing download."""
+    """Serve file inline for browser/PDF/image preview without forcing download.
+
+    Uses a Supabase signed URL redirect when available, otherwise serves locally.
+    """
+    from fastapi.responses import RedirectResponse
+    from backend.app.core.config import settings as _cfg
+
     doc = db.query(Document).filter(
         Document.id == doc_id,
         Document.user_id == current_user.id
@@ -547,6 +583,22 @@ def preview_document(
     if not doc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
 
+    # --- Supabase Storage: signed URL redirect for inline preview ---
+    supabase_path = (doc.metadata_json or {}).get("supabase_storage_path", "")
+    if supabase_path and _cfg.supabase_enabled:
+        try:
+            from backend.app.services.supabase_storage_service import supabase_storage
+            signed_url = supabase_storage.create_signed_url(
+                storage_path=supabase_path,
+                category=doc.category,
+                expiry_seconds=3600,
+            )
+            if signed_url:
+                return RedirectResponse(url=signed_url, status_code=302)
+        except Exception as exc:
+            logger.warning(f"[Supabase] Preview signed URL failed, falling back to local: {exc}")
+
+    # --- Fallback: serve from local disk ---
     safe_path = storage_service.resolve_safe_path(current_user.id, doc.stored_filename)
     if not safe_path or not safe_path.exists():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Physical file missing on server")

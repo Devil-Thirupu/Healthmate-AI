@@ -33,6 +33,28 @@ class AuditService:
         except Exception as e:
             logger.error(f"Failed to record audit event '{action}': {e}")
             db.rollback()
-            return None
+    @staticmethod
+    def log(
+        db: Session,
+        action: str,
+        resource_type: str = "general",
+        user_id: Optional[int] = None,
+        resource_id: Optional[str] = None,
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None,
+        details: Optional[Dict[str, Any]] = None,
+        **kwargs: Any
+    ) -> Optional[AuditLog]:
+        """Convenience alias for log_event."""
+        return AuditService.log_event(
+            db=db,
+            action=action,
+            resource_type=resource_type,
+            user_id=user_id,
+            resource_id=resource_id,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            details=details
+        )
 
 audit_service = AuditService()

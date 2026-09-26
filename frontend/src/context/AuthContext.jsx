@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../services/api';
+import { supabase } from '../services/supabaseClient';
 
 const AuthContext = createContext(null);
 
@@ -11,6 +12,10 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => localStorage.getItem('healthmate_access_token'));
   const [isLoading, setIsLoading] = useState(true);
 
+  // -----------------------------------------------------------------------
+  // On mount: verify the stored FastAPI token is still valid,
+  // then subscribe to Supabase auth state changes (if Supabase is configured)
+  // -----------------------------------------------------------------------
   useEffect(() => {
     const verifyUser = async () => {
       const storedToken = localStorage.getItem('healthmate_access_token');
@@ -27,7 +32,35 @@ export const AuthProvider = ({ children }) => {
       setIsLoading(false);
     };
     verifyUser();
+
+    // Supabase auth state listener — keeps Supabase session in sync
+    // when token is refreshed by Supabase (e.g. Google OAuth, magic link)
+    let unsubscribe = () => {};
+    if (supabase) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          if (event === 'SIGNED_OUT') {
+            // Mirror sign-out from Supabase to local state
+            setToken(null);
+            setUser(null);
+            localStorage.removeItem('healthmate_access_token');
+            localStorage.removeItem('healthmate_refresh_token');
+            localStorage.removeItem('healthmate_user');
+          }
+          // SIGNED_IN / TOKEN_REFRESHED: Supabase manages its own session;
+          // FastAPI JWTs are managed by the interceptor in api.js
+        }
+      );
+      unsubscribe = () => subscription?.unsubscribe?.();
+    }
+
+    return () => unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // -----------------------------------------------------------------------
+  // Auth actions (all go through FastAPI backend — unchanged)
+  // -----------------------------------------------------------------------
 
   const login = async (identifier, password) => {
     const payload = identifier.includes('@')
@@ -76,7 +109,11 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
-  const logout = () => {
+  const logout = async () => {
+    // Sign out of Supabase session (best-effort)
+    if (supabase) {
+      try { await supabase.auth.signOut(); } catch (_) { /* non-fatal */ }
+    }
     localStorage.removeItem('healthmate_access_token');
     localStorage.removeItem('healthmate_refresh_token');
     localStorage.removeItem('healthmate_user');

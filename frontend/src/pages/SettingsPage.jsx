@@ -219,7 +219,7 @@ const SettingsPage = () => {
               >
                 <option value="en">English</option>
                 <option value="ta">தமிழ் (Tamil)</option>
-                <option value="tanglish">Tanglish (Tamil + English)</option>
+                <option value="tanglish">Multilanguage (Tamil + English)</option>
               </select>
             </div>
           </div>

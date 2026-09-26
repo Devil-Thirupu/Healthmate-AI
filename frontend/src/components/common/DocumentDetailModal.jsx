@@ -174,12 +174,23 @@ const DocumentDetailModal = ({ docId, isOpen, onClose, onUpdated }) => {
                   {doc?.mime_type}
                 </span>
               </div>
-              <div className="flex-1 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-                <iframe
-                  src={`/api/v1/documents/${doc.id}/preview`}
-                  className="w-full h-full"
-                  title="Document Preview"
-                />
+              <div className="flex-1 rounded-xl overflow-auto border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center p-2">
+                {doc?.mime_type?.includes('pdf') ? (
+                  <iframe
+                    src={`/api/v1/documents/${doc.id}/preview?token=${localStorage.getItem('healthmate_access_token') || ''}`}
+                    className="w-full h-full rounded-lg"
+                    title="Document Preview"
+                  />
+                ) : (
+                  <img
+                    src={`/api/v1/documents/${doc.id}/preview?token=${localStorage.getItem('healthmate_access_token') || ''}`}
+                    alt={doc?.title || 'Document Preview'}
+                    className="max-h-full max-w-full object-contain rounded-lg"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                )}
               </div>
             </div>
 

@@ -52,6 +52,22 @@ const NutritionPage = () => {
   const [aiLanguage, setAiLanguage] = useState('en');
   const [explaining, setExplaining] = useState(false);
 
+  // Lab-Connected Nutrition Insights state
+  const [labInsights, setLabInsights] = useState([]);
+  const [loadingInsights, setLoadingInsights] = useState(false);
+
+  const fetchLabInsights = async () => {
+    try {
+      setLoadingInsights(true);
+      const res = await api.get('/nutrition/report-recommendations');
+      setLabInsights(res.data?.insights || []);
+    } catch (err) {
+      console.error('Failed to load lab nutrition insights:', err);
+    } finally {
+      setLoadingInsights(false);
+    }
+  };
+
   const fetchFoods = async (query = '', category = 'All') => {
     try {
       setLoading(true);
@@ -75,6 +91,10 @@ const NutritionPage = () => {
   useEffect(() => {
     fetchFoods(searchQuery, selectedCategory);
   }, [selectedCategory]);
+
+  useEffect(() => {
+    fetchLabInsights();
+  }, []);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -237,6 +257,92 @@ const NutritionPage = () => {
           <p className="text-[11px] text-slate-400">Nutritionally calibrated whole food intake</p>
         </div>
       </div>
+
+      {/* Lab-Connected Nutrition Insights Section */}
+      {labInsights && labInsights.length > 0 && (
+        <div className="p-5 bg-gradient-to-br from-teal-50/80 to-emerald-50/60 dark:from-teal-950/40 dark:to-emerald-950/30 rounded-2xl border border-teal-200/90 dark:border-teal-800 shadow-2xs space-y-4 animate-in fade-in">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-teal-200/60 dark:border-teal-800/60">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-8 h-8 rounded-xl bg-teal-600 text-white flex items-center justify-center shadow-xs">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white font-heading">
+                  Lab-Connected Nutrition Insights ({labInsights.length} Biomarkers Flagged)
+                </h3>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Grounded whole food recommendations mapped from your verified clinical blood and laboratory reports.
+                </p>
+              </div>
+            </div>
+            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-teal-100 dark:bg-teal-900 text-teal-800 dark:text-teal-200 border border-teal-300 dark:border-teal-700">
+              USDA FoodData Grounded
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {labInsights.map((insight, idx) => (
+              <div
+                key={idx}
+                className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-teal-200/80 dark:border-teal-800/80 shadow-2xs space-y-3"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600 bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded-md border border-rose-200">
+                      Below Reference Interval
+                    </span>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white mt-1">
+                      {insight.canonical_name || insight.test_name}
+                    </h4>
+                    <p className="text-xs text-slate-500 font-medium">
+                      Observed: <strong className="text-rose-600">{insight.observed_value} {insight.unit}</strong> • Ref: {insight.reference_range}
+                    </p>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 p-2.5 rounded-lg border border-slate-100 dark:border-slate-700">
+                  <strong>{insight.relevant_nutrient}:</strong> {insight.nutrient_context}
+                </p>
+
+                <div>
+                  <h5 className="text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
+                    Foods containing this nutrient (USDA):
+                  </h5>
+                  <div className="space-y-1.5">
+                    {insight.suggested_foods.map((food, fIdx) => (
+                      <div
+                        key={fIdx}
+                        className="p-2 rounded-lg bg-teal-50/50 dark:bg-slate-800/60 border border-teal-100 dark:border-slate-700 flex items-center justify-between text-xs"
+                      >
+                        <div className="min-w-0">
+                          <span className="font-bold text-slate-800 dark:text-slate-200 block truncate">
+                            {food.food_name}
+                          </span>
+                          <span className="text-[10px] text-slate-400">
+                            Serving: {food.serving_size} • {food.source}
+                          </span>
+                        </div>
+                        <div className="text-right shrink-0 ml-2">
+                          <span className="text-xs font-bold text-teal-700 dark:text-teal-300 block">
+                            {food.nutrient_amount} {food.nutrient_unit}
+                          </span>
+                          <span className="text-[10px] text-slate-500">
+                            {food.calories_kcal} kcal
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <p className="text-[10px] text-slate-400 italic pt-1 border-t border-slate-100 dark:border-slate-800">
+                  {insight.disclaimer}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Search & Category Filter Bar */}
       <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-2xs space-y-3">
@@ -499,7 +605,7 @@ const NutritionPage = () => {
                               : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                           }`}
                         >
-                          {l === 'en' ? 'English' : l === 'ta' ? 'தமிழ்' : 'Tanglish'}
+                          {l === 'en' ? 'English' : l === 'ta' ? 'தமிழ்' : 'Multilanguage'}
                         </button>
                       ))}
                     </div>

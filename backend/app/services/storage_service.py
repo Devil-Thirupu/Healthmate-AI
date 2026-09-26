@@ -22,12 +22,19 @@ class StorageService:
     async def save_uploaded_file(
         self,
         file: UploadFile,
-        user_id: int
-    ) -> Tuple[str, str, str, int, str]:
+        user_id: int,
+        category: str = "other",
+    ) -> Tuple[str, str, str, int, str, str]:
         """
-        Save an incoming UploadFile to disk securely.
+        Save an incoming UploadFile to local disk and (when configured) to
+        Supabase Storage.
+
         Returns:
-            (stored_filename, clean_original_name, absolute_path_str, file_size_bytes, sha256_hash)
+            (stored_filename, clean_original_name, absolute_path_str,
+             file_size_bytes, sha256_hash, supabase_storage_path)
+
+        supabase_storage_path is empty string when Supabase is not configured.
+        The local path is always written and is the primary source for OCR.
         """
         if not file.filename:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Missing filename")
@@ -62,12 +69,33 @@ class StorageService:
         # Compute SHA-256 checksum
         sha256_hash = compute_sha256_bytes(contents)
 
-        # Write to disk securely
+        # --- 1. Write to local disk (primary — OCR reads from here) ---
         with open(destination_path, "wb") as f:
             f.write(contents)
 
-        logger.info(f"File stored securely: {stored_filename} for user {user_id} (SHA-256: {sha256_hash[:12]}...)")
-        return stored_filename, clean_name, str(destination_path), file_size, sha256_hash
+        logger.info(f"File stored locally: {stored_filename} for user {user_id} (SHA-256: {sha256_hash[:12]}...)")
+
+        # --- 2. Mirror to Supabase Storage (when configured) ---
+        supabase_storage_path = ""
+        if settings.supabase_enabled:
+            try:
+                from backend.app.services.supabase_storage_service import supabase_storage
+                mime_type = file.content_type or "application/octet-stream"
+                success, supabase_storage_path = supabase_storage.upload_file(
+                    file_bytes=contents,
+                    stored_filename=stored_filename,
+                    user_id=user_id,
+                    category=category,
+                    mime_type=mime_type,
+                )
+                if success:
+                    logger.info(f"[Supabase] Mirrored {stored_filename} → {supabase_storage_path}")
+                else:
+                    logger.warning(f"[Supabase] Cloud mirror failed for {stored_filename}, local copy available.")
+            except Exception as exc:
+                logger.warning(f"[Supabase] Storage upload error (non-fatal): {exc}")
+
+        return stored_filename, clean_name, str(destination_path), file_size, sha256_hash, supabase_storage_path
 
     def verify_integrity(self, file_path_str: str, expected_hash: str) -> bool:
         """Verify that an existing stored file has not been altered."""

@@ -193,4 +193,121 @@ class NutritionService:
 
         return "\n".join(lines)
 
+    def get_lab_connected_nutrition_insights(
+        self,
+        db: Session,
+        user_id: int,
+        document_id: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """
+        Connects verified medical lab biomarkers to USDA nutrition recommendations.
+        Identifies parameters flagged below reference intervals and suggests nutrient-rich foods.
+        """
+        from backend.app.models.clinical import LabTest
+        from backend.app.models.document import Document
+
+        self.ensure_database_populated(db)
+
+        # Retrieve relevant lab tests
+        query = db.query(LabTest).filter(LabTest.user_id == user_id)
+        if document_id:
+            query = query.filter(LabTest.document_id == document_id)
+        
+        lab_tests = query.order_by(LabTest.test_date.desc()).all()
+
+        NUTRIENT_MAP = {
+            "hemoglobin": {
+                "nutrient_key": "iron_mg",
+                "nutrient_name": "Iron (Fe)",
+                "description": "Iron is a core structural component of hemoglobin, essential for systemic oxygen delivery."
+            },
+            "serum_iron": {
+                "nutrient_key": "iron_mg",
+                "nutrient_name": "Iron (Fe)",
+                "description": "Dietary iron replenishes serum transferrin saturation and ferritin stores."
+            },
+            "ferritin": {
+                "nutrient_key": "iron_mg",
+                "nutrient_name": "Iron (Fe)",
+                "description": "Ferritin represents stored cellular iron."
+            },
+            "calcium": {
+                "nutrient_key": "calcium_mg",
+                "nutrient_name": "Calcium (Ca)",
+                "description": "Calcium supports bone mineral density, neuromuscular signaling, and enzymatic function."
+            },
+            "potassium": {
+                "nutrient_key": "potassium_mg",
+                "nutrient_name": "Potassium (K)",
+                "description": "Potassium helps regulate vascular tone, fluid balance, and cardiac electrophysiology."
+            }
+        }
+
+        insights = []
+        for lab in lab_tests:
+            c_name = (lab.canonical_name or "").lower()
+            t_name = (lab.test_name or "").lower()
+
+            matched_mapping = None
+            for key, mapping in NUTRIENT_MAP.items():
+                if key in c_name or key in t_name:
+                    matched_mapping = mapping
+                    break
+
+            if not matched_mapping:
+                continue
+
+            is_below_ref = False
+            if lab.flag and str(lab.flag).lower() in {"low", "critical_low"}:
+                is_below_ref = True
+            elif lab.numeric_value is not None and lab.reference_range_min is not None:
+                if lab.numeric_value < lab.reference_range_min:
+                    is_below_ref = True
+
+            # If below reference range or explicitly flagged low
+            if is_below_ref:
+                suggested_foods_raw = self.search_by_nutrient(
+                    db=db,
+                    nutrient_key=matched_mapping["nutrient_key"],
+                    min_amount=0.5,
+                    limit=5
+                )
+
+                foods_payload = []
+                for sf in suggested_foods_raw:
+                    nutrients = sf.nutrients or {}
+                    amount = nutrients.get(matched_mapping["nutrient_key"], 0.0)
+                    calories = nutrients.get("energy_kcal", 0.0)
+                    foods_payload.append({
+                        "fdc_id": sf.fdc_id,
+                        "food_name": sf.common_name or sf.food_name,
+                        "category": sf.food_category,
+                        "calories_kcal": calories,
+                        "nutrient_amount": amount,
+                        "nutrient_unit": "mg" if "mg" in matched_mapping["nutrient_key"] else "g",
+                        "serving_size": f"{sf.serving_size} {sf.serving_unit}",
+                        "source": sf.source_name
+                    })
+
+                insights.append({
+                    "lab_test_id": lab.id,
+                    "test_name": lab.test_name,
+                    "canonical_name": lab.canonical_name,
+                    "observed_value": lab.observed_value,
+                    "unit": lab.unit,
+                    "reference_range": lab.reference_range_text or f"{lab.reference_range_min} - {lab.reference_range_max} {lab.unit}",
+                    "flag": str(lab.flag or "low"),
+                    "status_description": "Your report shows a value below the reference range.",
+                    "relevant_nutrient": matched_mapping["nutrient_name"],
+                    "nutrient_context": matched_mapping["description"],
+                    "suggested_foods": foods_payload,
+                    "disclaimer": "Nutritional food suggestions are derived from the USDA FoodData Central Foundation Foods dataset for informational reference only. They do not constitute personalized medical nutrition therapy or replace physician prescriptions."
+                })
+
+        return {
+            "total_insights": len(insights),
+            "insights": insights,
+            "source_dataset": "USDA FoodData Central — Foundation Foods (Public Domain / CC0-1.0)"
+        }
+
 nutrition_service = NutritionService()

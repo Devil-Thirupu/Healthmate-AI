@@ -187,7 +187,7 @@ const ReportsPage = () => {
                 selectedLang === 'tanglish' ? 'bg-teal-600 text-white font-bold' : 'text-slate-500 hover:text-slate-800'
               }`}
             >
-              Tanglish
+              Multilanguage
             </button>
           </div>
 
