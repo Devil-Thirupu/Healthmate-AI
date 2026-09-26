@@ -47,7 +47,9 @@ def setup_db():
 
 @pytest.fixture(scope="module")
 def client():
-    return TestClient(app)
+    app.dependency_overrides[get_db] = override_get_db
+    with TestClient(app) as c:
+        yield c
 
 
 @pytest.fixture(scope="module")
@@ -176,7 +178,11 @@ class TestDoctorConnect:
         assert data["doctor_id"] == self._doctor.id
 
     def test_duplicate_connection_rejected(self, client, patient_token):
-        # A pending connection already exists for this doctor
+        # Create initial pending connection
+        client.post("/api/v1/doctors/connections/request", json={
+            "doctor_id": self._doctor.id,
+        }, headers=auth(patient_token))
+        # A pending connection already exists for this doctor -> 409 Conflict
         res = client.post("/api/v1/doctors/connections/request", json={
             "doctor_id": self._doctor.id,
         }, headers=auth(patient_token))

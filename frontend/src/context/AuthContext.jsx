@@ -13,42 +13,96 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   // -----------------------------------------------------------------------
-  // On mount: verify the stored FastAPI token is still valid,
-  // then subscribe to Supabase auth state changes (if Supabase is configured)
+  // On mount: check Supabase session / verify FastAPI token
   // -----------------------------------------------------------------------
   useEffect(() => {
-    const verifyUser = async () => {
+    const initAuth = async () => {
+      // 1. Check Supabase session first (handles Google OAuth redirect)
+      if (supabase) {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user) {
+            const sbUser = session.user;
+            const profile = {
+              id: sbUser.id,
+              email: sbUser.email,
+              full_name: sbUser.user_metadata?.full_name || sbUser.user_metadata?.name || sbUser.email.split('@')[0],
+              role: sbUser.user_metadata?.role || 'patient',
+              phone_number: sbUser.user_metadata?.phone_number || '',
+              date_of_birth: sbUser.user_metadata?.date_of_birth || '',
+              gender: sbUser.user_metadata?.gender || '',
+              blood_group: sbUser.user_metadata?.blood_group || '',
+              language_preference: sbUser.user_metadata?.language_preference || 'en',
+            };
+            setUser(profile);
+            setToken(session.access_token);
+            localStorage.setItem('healthmate_user', JSON.stringify(profile));
+            localStorage.setItem('healthmate_access_token', session.access_token);
+          }
+        } catch (sbErr) {
+          console.warn('[HealthMate] Supabase session check error:', sbErr);
+        }
+      }
+
+      // 2. If we have a stored token and user, verify against FastAPI backend if available
       const storedToken = localStorage.getItem('healthmate_access_token');
       if (storedToken) {
         try {
           const res = await api.get('/auth/me');
-          setUser(res.data);
-          localStorage.setItem('healthmate_user', JSON.stringify(res.data));
+          if (res.data) {
+            setUser(res.data);
+            localStorage.setItem('healthmate_user', JSON.stringify(res.data));
+          }
         } catch (err) {
-          console.error('Session expired or invalid:', err);
-          logout();
+          // If 401 Unauthorized from backend, clear session
+          if (err.response?.status === 401) {
+            console.warn('[HealthMate] Backend session expired');
+            logout();
+          }
         }
       }
       setIsLoading(false);
     };
-    verifyUser();
 
-    // Supabase auth state listener — keeps Supabase session in sync
-    // when token is refreshed by Supabase (e.g. Google OAuth, magic link)
+    initAuth();
+
+    // -----------------------------------------------------------------------
+    // Supabase auth state listener (Google OAuth callback, token refresh, sign-out)
+    // -----------------------------------------------------------------------
     let unsubscribe = () => {};
     if (supabase) {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         async (event, session) => {
-          if (event === 'SIGNED_OUT') {
-            // Mirror sign-out from Supabase to local state
+          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+            if (session?.user) {
+              const sbUser = session.user;
+              const profile = {
+                id: sbUser.id,
+                email: sbUser.email,
+                full_name: sbUser.user_metadata?.full_name || sbUser.user_metadata?.name || sbUser.email.split('@')[0],
+                role: sbUser.user_metadata?.role || 'patient',
+                phone_number: sbUser.user_metadata?.phone_number || '',
+                date_of_birth: sbUser.user_metadata?.date_of_birth || '',
+                gender: sbUser.user_metadata?.gender || '',
+                blood_group: sbUser.user_metadata?.blood_group || '',
+                language_preference: sbUser.user_metadata?.language_preference || 'en',
+              };
+              setUser(profile);
+              setToken(session.access_token);
+              localStorage.setItem('healthmate_user', JSON.stringify(profile));
+              localStorage.setItem('healthmate_access_token', session.access_token);
+              if (session.refresh_token) {
+                localStorage.setItem('healthmate_refresh_token', session.refresh_token);
+              }
+            }
+          } else if (event === 'SIGNED_OUT') {
             setToken(null);
             setUser(null);
             localStorage.removeItem('healthmate_access_token');
             localStorage.removeItem('healthmate_refresh_token');
             localStorage.removeItem('healthmate_user');
+            localStorage.removeItem('healthmate_supabase_session');
           }
-          // SIGNED_IN / TOKEN_REFRESHED: Supabase manages its own session;
-          // FastAPI JWTs are managed by the interceptor in api.js
         }
       );
       unsubscribe = () => subscription?.unsubscribe?.();
@@ -59,21 +113,54 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // -----------------------------------------------------------------------
-  // Auth actions (all go through FastAPI backend — unchanged)
+  // Auth actions
   // -----------------------------------------------------------------------
 
   const login = async (identifier, password) => {
-    const payload = identifier.includes('@')
-      ? { email: identifier, password }
-      : { identifier, password };
-    const res = await api.post('/auth/login', payload);
-    const { access_token, refresh_token, user: userData } = res.data;
-    localStorage.setItem('healthmate_access_token', access_token);
-    localStorage.setItem('healthmate_refresh_token', refresh_token);
-    localStorage.setItem('healthmate_user', JSON.stringify(userData));
-    setToken(access_token);
-    setUser(userData);
-    return userData;
+    // 1. Try FastAPI backend first
+    try {
+      const payload = identifier.includes('@')
+        ? { email: identifier, password }
+        : { identifier, password };
+      const res = await api.post('/auth/login', payload);
+      const { access_token, refresh_token, user: userData } = res.data;
+      localStorage.setItem('healthmate_access_token', access_token);
+      localStorage.setItem('healthmate_refresh_token', refresh_token);
+      localStorage.setItem('healthmate_user', JSON.stringify(userData));
+      setToken(access_token);
+      setUser(userData);
+
+      // Best effort: also sign in to Supabase if email is used
+      if (supabase && identifier.includes('@')) {
+        try {
+          await supabase.auth.signInWithPassword({ email: identifier, password });
+        } catch (_) { /* non-blocking */ }
+      }
+      return userData;
+    } catch (apiErr) {
+      // 2. If backend is not available (or static hosting) and Supabase is configured:
+      if (supabase && identifier.includes('@') && (!apiErr.response || apiErr.response.status >= 500 || apiErr.code === 'ERR_NETWORK')) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: identifier,
+          password,
+        });
+        if (error) throw new Error(error.message);
+        const sbUser = data.user;
+        const profile = {
+          id: sbUser.id,
+          email: sbUser.email,
+          full_name: sbUser.user_metadata?.full_name || sbUser.email.split('@')[0],
+          role: sbUser.user_metadata?.role || 'patient',
+          phone_number: sbUser.user_metadata?.phone_number || '',
+        };
+        setUser(profile);
+        setToken(data.session.access_token);
+        localStorage.setItem('healthmate_user', JSON.stringify(profile));
+        localStorage.setItem('healthmate_access_token', data.session.access_token);
+        return profile;
+      }
+      throw apiErr;
+    }
   };
 
   const loginMobile = async (phone_number, password) => {
@@ -87,36 +174,104 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
-  const loginGoogle = async (id_token) => {
-    const res = await api.post('/auth/google', { id_token });
-    const { access_token, refresh_token, user: userData } = res.data;
-    localStorage.setItem('healthmate_access_token', access_token);
-    localStorage.setItem('healthmate_refresh_token', refresh_token);
-    localStorage.setItem('healthmate_user', JSON.stringify(userData));
-    setToken(access_token);
-    setUser(userData);
-    return userData;
+  const loginGoogle = async () => {
+    if (!supabase) {
+      throw new Error('Google Sign-In requires Supabase credentials to be configured in frontend/.env');
+    }
+    const currentBase = window.location.origin + (import.meta.env.BASE_URL || '/');
+    const redirectTo = currentBase.endsWith('/') ? `${currentBase}dashboard` : `${currentBase}/dashboard`;
+    
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
+      },
+    });
+    if (error) {
+      throw new Error(error.message || 'Google OAuth failed');
+    }
+    return data;
   };
 
   const register = async (payload) => {
-    const res = await api.post('/auth/register', payload);
-    const { access_token, refresh_token, user: userData } = res.data;
-    localStorage.setItem('healthmate_access_token', access_token);
-    localStorage.setItem('healthmate_refresh_token', refresh_token);
-    localStorage.setItem('healthmate_user', JSON.stringify(userData));
-    setToken(access_token);
-    setUser(userData);
-    return userData;
+    // Sanitize optional empty strings to null for backend schema
+    const sanitized = { ...payload };
+    for (const key of ['phone_number', 'date_of_birth', 'emergency_contact', 'allergies', 'chronic_conditions']) {
+      if (sanitized[key] === '') {
+        sanitized[key] = null;
+      }
+    }
+
+    // 1. If Supabase is available, create the user in Supabase Auth
+    if (supabase && sanitized.email && sanitized.password) {
+      try {
+        const { data: sbData, error: sbError } = await supabase.auth.signUp({
+          email: sanitized.email,
+          password: sanitized.password,
+          options: {
+            data: {
+              full_name: sanitized.full_name,
+              role: sanitized.role || 'patient',
+              phone_number: sanitized.phone_number || '',
+              date_of_birth: sanitized.date_of_birth || '',
+              gender: sanitized.gender || 'Male',
+              blood_group: sanitized.blood_group || 'O+',
+              language_preference: sanitized.language_preference || 'en',
+            },
+          },
+        });
+        if (sbError) {
+          // If error is duplicate, let it proceed to backend
+          if (!sbError.message?.toLowerCase().includes('already')) {
+            console.warn('[HealthMate] Supabase signUp note:', sbError.message);
+          }
+        }
+      } catch (sbErr) {
+        console.warn('[HealthMate] Supabase registration exception:', sbErr);
+      }
+    }
+
+    // 2. Call FastAPI backend register endpoint
+    try {
+      const res = await api.post('/auth/register', sanitized);
+      const { access_token, refresh_token, user: userData } = res.data;
+      localStorage.setItem('healthmate_access_token', access_token);
+      localStorage.setItem('healthmate_refresh_token', refresh_token);
+      localStorage.setItem('healthmate_user', JSON.stringify(userData));
+      setToken(access_token);
+      setUser(userData);
+      return userData;
+    } catch (apiErr) {
+      // 3. If backend is unreachable but Supabase registered the user:
+      if (supabase && (!apiErr.response || apiErr.response.status >= 500 || apiErr.code === 'ERR_NETWORK')) {
+        const profile = {
+          email: sanitized.email,
+          full_name: sanitized.full_name,
+          role: sanitized.role || 'patient',
+          phone_number: sanitized.phone_number || '',
+          gender: sanitized.gender || 'Male',
+          blood_group: sanitized.blood_group || 'O+',
+        };
+        setUser(profile);
+        localStorage.setItem('healthmate_user', JSON.stringify(profile));
+        return profile;
+      }
+      throw apiErr;
+    }
   };
 
   const logout = async () => {
-    // Sign out of Supabase session (best-effort)
     if (supabase) {
       try { await supabase.auth.signOut(); } catch (_) { /* non-fatal */ }
     }
     localStorage.removeItem('healthmate_access_token');
     localStorage.removeItem('healthmate_refresh_token');
     localStorage.removeItem('healthmate_user');
+    localStorage.removeItem('healthmate_supabase_session');
     setToken(null);
     setUser(null);
   };
@@ -138,7 +293,7 @@ export const AuthProvider = ({ children }) => {
       value={{
         user,
         token,
-        isAuthenticated: !!token && !!user,
+        isAuthenticated: !!token || !!user,
         isLoading,
         login,
         loginMobile,
@@ -161,3 +316,4 @@ export const useAuth = () => {
   }
   return context;
 };
+

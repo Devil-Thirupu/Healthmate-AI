@@ -45,7 +45,17 @@ const LoginPage = () => {
       navigate(from, { replace: true });
     } catch (err) {
       console.error('Login failed:', err);
-      setError(err.response?.data?.detail || 'Invalid credentials. Please verify your phone/email and password.');
+      let msg = 'Invalid credentials. Please verify your phone/email and password.';
+      if (err.response?.data?.detail) {
+        if (typeof err.response.data.detail === 'string') {
+          msg = err.response.data.detail;
+        } else if (Array.isArray(err.response.data.detail)) {
+          msg = err.response.data.detail.map((d) => d.msg || d.message).join(', ');
+        }
+      } else if (err.message) {
+        msg = err.message;
+      }
+      setError(msg);
     } finally {
       setIsLoading(false);
     }
@@ -56,17 +66,10 @@ const LoginPage = () => {
     setGoogleNotice('');
     setIsLoading(true);
     try {
-      await loginGoogle('simulated_or_google_token_placeholder');
-      navigate(from, { replace: true });
+      await loginGoogle();
     } catch (err) {
-      const detail = err.response?.data?.detail;
-      if (detail && detail.includes('Google Sign-In is not configured')) {
-        setGoogleNotice('Google Sign-In is not configured.');
-      } else if (detail) {
-        setGoogleNotice(detail);
-      } else {
-        setGoogleNotice('Google Sign-In is not configured.');
-      }
+      console.error('Google Sign-In failed:', err);
+      setError(err.message || 'Google Sign-In failed. Please verify Supabase Auth settings.');
     } finally {
       setIsLoading(false);
     }

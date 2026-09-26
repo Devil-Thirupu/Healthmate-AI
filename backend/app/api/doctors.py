@@ -114,7 +114,7 @@ def list_doctors(
     return result
 
 
-@router.get("/{doctor_id}", response_model=DoctorResponse, summary="Get a doctor profile")
+@router.get("/{doctor_id:int}", response_model=DoctorResponse, summary="Get a doctor profile")
 def get_doctor(
     doctor_id: int,
     current_user: User = Depends(get_current_user),
@@ -137,7 +137,7 @@ def get_doctor(
     return resp
 
 
-@router.put("/{doctor_id}", response_model=DoctorResponse, summary="Update a doctor profile")
+@router.put("/{doctor_id:int}", response_model=DoctorResponse, summary="Update a doctor profile")
 def update_doctor(
     doctor_id: int,
     doctor_in: DoctorUpdate,
@@ -161,7 +161,7 @@ def update_doctor(
     return DoctorResponse.model_validate(doctor)
 
 
-@router.delete("/{doctor_id}", status_code=status.HTTP_204_NO_CONTENT,
+@router.delete("/{doctor_id:int}", status_code=status.HTTP_204_NO_CONTENT,
                summary="Soft-delete (deactivate) a doctor profile")
 def deactivate_doctor(
     doctor_id: int,
