@@ -70,6 +70,9 @@ node_modules/
 frontend/node_modules/
 dist/
 frontend/dist/
+build/
+frontend/build/
+.vercel/
 .npm
 npm-debug.log*
 yarn-debug.log*
