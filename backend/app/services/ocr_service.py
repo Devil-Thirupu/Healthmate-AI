@@ -6,6 +6,18 @@ from typing import Dict, Any, List, Tuple, Optional
 from PIL import Image, ImageEnhance, ImageFilter
 import pypdf
 from backend.app.core.logging import logger
+# Lazy import to avoid circular imports
+_gemini_service = None
+
+def _get_gemini_service():
+    global _gemini_service
+    if _gemini_service is None:
+        try:
+            from backend.app.services.gemini_service import gemini_service
+            _gemini_service = gemini_service
+        except Exception:
+            _gemini_service = None
+    return _gemini_service
 
 # Try importing PyMuPDF
 try:
@@ -147,15 +159,34 @@ class OCRService:
             "language": self.detect_language(combined_text)
         }
 
-    def extract_from_image_object(self, img: Image.Image) -> Tuple[str, float]:
-        """Extract text and confidence score from a PIL Image object."""
+    def extract_from_image_object(self, img: Image.Image, mime_type: str = "image/png") -> Tuple[str, float]:
+        """Extract text and confidence score from a PIL Image object.
+        Tries Gemini Vision first (best quality), then falls back to Tesseract."""
         processed_img = self.preprocess_image(img)
         text = ""
         confidence = 0.85
 
+        # Try Gemini Vision first (superior quality for medical documents)
+        gs = _get_gemini_service()
+        if gs and gs.is_configured:
+            try:
+                img_bytes_io = io.BytesIO()
+                processed_img.save(img_bytes_io, format="PNG")
+                img_bytes = img_bytes_io.getvalue()
+                vision_result = gs.analyze_image_with_vision(
+                    image_bytes=img_bytes,
+                    mime_type="image/png",
+                    prompt="Extract all text exactly as it appears in this medical document image. Preserve formatting, numbers, units, and values. Focus on accuracy."
+                )
+                if vision_result and len(vision_result.strip()) > 10:
+                    logger.info(f"Gemini Vision OCR success: {len(vision_result)} chars extracted")
+                    return vision_result.strip(), 0.97
+            except Exception as e:
+                logger.warning(f"Gemini Vision OCR attempt failed: {e}")
+
+        # Fallback to Tesseract
         if HAS_PYTESSERACT:
             try:
-                # Try getting detailed data with confidence scores
                 data = pytesseract.image_to_data(processed_img, output_type=pytesseract.Output.DICT)
                 conf_values = [float(c) for c in data['conf'] if str(c).replace('.', '').isdigit() and float(c) > 0]
                 text = pytesseract.image_to_string(processed_img).strip()
@@ -167,8 +198,8 @@ class OCRService:
             except Exception as e:
                 logger.warning(f"pytesseract extraction error: {e}")
 
-        # If tesseract is not available or failed, return clean text placeholder
-        return text or "Image document received and indexed.", 0.80
+        # If nothing worked, return placeholder
+        return text or "Image document received — text extraction not available.", 0.50
 
     def extract_from_image_file(self, file_path: Path) -> Dict[str, Any]:
         """Extract text from an image file on disk."""

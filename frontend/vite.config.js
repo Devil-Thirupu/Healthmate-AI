@@ -15,6 +15,25 @@ const getBasePath = () => {
   return '/';
 };
 
+// GitHub Pages SPA 404 redirect script
+// When GH Pages returns 404, this stores the path and redirects to root
+// index.html then reads sessionStorage.redirect and restores the route
+const spa404Script = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>HealthMate AI</title>
+  <script>
+    var base = '/Healthmate-AI';
+    var l = window.location;
+    var path = l.pathname.slice(base.length) || '/';
+    sessionStorage.redirect = l.origin + base + path + l.search + l.hash;
+    l.replace(l.origin + base + '/?p=1');
+  </script>
+</head>
+<body></body>
+</html>`;
+
 // https://vitejs.dev/config/
 export default defineConfig({
   base: getBasePath(),
@@ -24,11 +43,9 @@ export default defineConfig({
       name: 'spa-404-fallback',
       closeBundle() {
         const distDir = path.resolve(__dirname, 'dist')
-        const indexFile = path.join(distDir, 'index.html')
         const fallbackFile = path.join(distDir, '404.html')
-        if (fs.existsSync(indexFile)) {
-          fs.copyFileSync(indexFile, fallbackFile)
-        }
+        // Write proper SPA redirect 404 (not a copy of index.html)
+        fs.writeFileSync(fallbackFile, spa404Script, 'utf8')
       }
     }
   ],

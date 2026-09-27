@@ -37,13 +37,13 @@ import {
 } from 'lucide-react';
 
 const SUGGESTED_PROMPTS = [
-  'What are my latest values?',
-  'What changed from my previous report?',
-  'What medicines are listed?',
-  'Show my glucose history.',
-  'What was my glucose in March?',
-  'Explain my latest report.',
-  'What is glucose and what are normal ranges?'
+  'What are my latest lab values? 🩺',
+  'What changed from my last report?',
+  'What medicines am I on?',
+  'Show my glucose history 📈',
+  'What foods should I eat for my health?',
+  'Explain my latest report in simple words',
+  'How is my hemoglobin level?'
 ];
 
 const AIAssistantPage = () => {
@@ -53,16 +53,16 @@ const AIAssistantPage = () => {
     {
       id: 'welcome',
       sender: 'ai',
-      text: `Hello ${user?.full_name || 'Patient'}! I am your HealthMate Clinical AI Assistant.\n\nI can help you review and analyze your verified personal medical records, track longitudinal biomarker trends, review prescribed medicines, and cross-reference clinical ranges in English, தமிழ், or Multilanguage.`,
+      text: `Hey ${user?.full_name?.split(' ')[0] || 'there'}! 👋 I'm HealthMate, your personal health companion.\n\nI'm here to help you understand your health records, track your lab values, explain your medications, suggest healthy foods based on your reports, and much more — all in plain, friendly language! 🌟\n\nYou can also send me a photo of a medical report or prescription and I'll read it for you! 📸\n\nWhat would you like to know today?`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       citations: [],
       sources: [],
       evidence_status: 'SUPPORTED',
       structured_cards: [],
       follow_up_suggestions: [
-        'What are my latest values?',
-        'What changed from my previous report?',
-        'What medicines are listed?'
+        'What are my latest lab values? 🩺',
+        'What changed from my last report?',
+        'What foods help with my health?'
       ]
     }
   ]);
@@ -71,8 +71,11 @@ const AIAssistantPage = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [activeSourceModal, setActiveSourceModal] = useState(null);
   const [expandedSources, setExpandedSources] = useState({});
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
+  const imageInputRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -91,24 +94,42 @@ const AIAssistantPage = () => {
 
   const handleSend = async (queryText) => {
     const text = (queryText || inputQuery).trim();
-    if (!text || isTyping) return;
+    if (!text && !imageFile || isTyping) return;
 
+    // Build user message
     const userMsg = {
       id: Date.now().toString(),
       sender: 'user',
-      text: text,
+      text: text || (imageFile ? '📸 [Sent an image for analysis]' : ''),
+      imagePreview: imagePreview,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
     setMessages((prev) => [...prev, userMsg]);
     setInputQuery('');
+    const currentImage = imageFile;
+    const currentText = text;
+    setImageFile(null);
+    setImagePreview(null);
     setIsTyping(true);
 
     try {
-      const res = await api.post('/assistant/chat', {
-        query: text,
-        language: selectedLang
-      });
+      let res;
+      if (currentImage) {
+        // Send image for analysis
+        const formData = new FormData();
+        formData.append('image', currentImage);
+        formData.append('query', currentText || 'Analyze this medical image and extract all information.');
+        formData.append('language', selectedLang);
+        res = await api.post('/assistant/analyze-image', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      } else {
+        res = await api.post('/assistant/chat', {
+          query: currentText,
+          language: selectedLang
+        });
+      }
 
       const data = res.data;
       const aiMsg = {
@@ -131,18 +152,27 @@ const AIAssistantPage = () => {
       const errMsg = {
         id: (Date.now() + 1).toString(),
         sender: 'ai',
-        text: "Sorry, I couldn't retrieve your health records right now. Please try again or verify your connection.",
+        text: "Oops! I had trouble connecting right now. Please check your connection and try again 😊",
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         citations: [],
         sources: [],
         evidence_status: 'INSUFFICIENT',
         structured_cards: [],
-        follow_up_suggestions: ['What are my latest values?', 'What is glucose?']
+        follow_up_suggestions: ['What are my latest values? 🩺', 'What is glucose?']
       };
       setMessages((prev) => [...prev, errMsg]);
     } finally {
       setIsTyping(false);
     }
+  };
+
+  const handleImageSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setImagePreview(ev.target.result);
+    reader.readAsDataURL(file);
   };
 
   const handleKeyDown = (e) => {
@@ -284,17 +314,17 @@ const AIAssistantPage = () => {
         <div>
           <div className="flex items-center space-x-2">
             <span className="text-[10px] font-extrabold uppercase tracking-widest text-teal-700 bg-teal-50 dark:bg-teal-950/60 px-2.5 py-0.5 rounded-full border border-teal-200/60 dark:border-teal-800/50">
-              Evidence Guard Engine
+              HealthMate Personal AI
             </span>
             <span className="text-xs text-slate-400">
-              • Zero Hallucination Mode Active
+              • Your friendly health companion 🌟
             </span>
           </div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white font-heading tracking-tight mt-0.5">
-            HealthMate Clinical AI Assistant
+            HealthMate AI Assistant
           </h1>
           <p className="text-xs text-slate-500">
-            Query lab diagnostics, medication records, and historical changes with verbatim source citations.
+            Ask me anything about your health, lab reports, medications, and nutrition!
           </p>
         </div>
 
@@ -329,10 +359,10 @@ const AIAssistantPage = () => {
       </div>
 
       {/* Safety Notice */}
-      <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 text-xs text-amber-900 dark:text-amber-300 flex items-center space-x-2.5 shrink-0 shadow-2xs">
-        <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
+      <div className="p-3 rounded-2xl bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-900/60 text-xs text-teal-900 dark:text-teal-300 flex items-center space-x-2.5 shrink-0 shadow-2xs">
+        <Sparkles className="w-4 h-4 shrink-0 text-teal-600 dark:text-teal-400" />
         <p className="leading-tight">
-          <strong>Clinical Copilot Protocol:</strong> Answers are retrieved strictly from your uploaded files with source chunk hashes. Non-prescriptive reference only.
+          <strong>Your personal health companion:</strong> I speak from your uploaded records and trusted health knowledge. Always consult your doctor for medical decisions 💊
         </p>
       </div>
 
@@ -363,6 +393,13 @@ const AIAssistantPage = () => {
               <div className={`space-y-2.5 max-w-2xl ${isUser ? 'items-end text-right' : 'items-start text-left'}`}>
                 {!isUser && msg.id !== 'welcome' && (
                   <div>{renderEvidenceStatusBadge(msg.evidence_status)}</div>
+                )}
+
+                {/* Image preview in user message */}
+                {isUser && msg.imagePreview && (
+                  <div className="flex justify-end">
+                    <img src={msg.imagePreview} alt="Sent image" className="max-w-[200px] max-h-[160px] rounded-xl border border-teal-300 object-cover shadow-sm" />
+                  </div>
                 )}
 
                 <div
@@ -452,7 +489,7 @@ const AIAssistantPage = () => {
             </div>
             <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 text-xs text-slate-500 flex items-center space-x-2">
               <Loader2 className="w-4 h-4 animate-spin text-teal-600" />
-              <span>Verifying patient records & evidence snippets...</span>
+              <span>HealthMate is thinking & reviewing your records... 💭</span>
             </div>
           </div>
         )}
@@ -479,24 +516,54 @@ const AIAssistantPage = () => {
       )}
 
       {/* Input Bar */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 p-2 shadow-2xs shrink-0 flex items-center space-x-2">
-        <textarea
-          ref={textareaRef}
-          rows={1}
-          value={inputQuery}
-          onChange={(e) => setInputQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Ask a clinical question about your lab tests or medications..."
-          className="flex-1 px-3 py-1.5 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 text-xs resize-none focus:outline-none max-h-24"
-        />
-        <button
-          onClick={() => handleSend()}
-          disabled={!inputQuery.trim() || isTyping}
-          className="p-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl active:scale-95 disabled:opacity-40 disabled:pointer-events-none transition-all shadow-xs"
-          aria-label="Send query"
-        >
-          <Send className="w-4 h-4" />
-        </button>
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 p-2 shadow-2xs shrink-0">
+        {/* Image preview strip */}
+        {imagePreview && (
+          <div className="flex items-center gap-2 px-3 pt-2 pb-1">
+            <img src={imagePreview} alt="Selected" className="h-14 w-14 rounded-lg object-cover border border-teal-300" />
+            <div className="text-xs text-slate-500">
+              <p className="font-semibold text-slate-700">📸 Image selected</p>
+              <p className="text-[10px]">{imageFile?.name}</p>
+            </div>
+            <button onClick={() => { setImageFile(null); setImagePreview(null); }} className="ml-auto p-1 rounded-full hover:bg-rose-100 text-rose-500">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+        <div className="flex items-center space-x-2">
+          {/* Image upload button */}
+          <button
+            onClick={() => imageInputRef.current?.click()}
+            className="p-2 rounded-xl text-slate-400 hover:text-teal-600 hover:bg-teal-50 transition-colors"
+            title="Send a medical image"
+          >
+            <FileText className="w-4 h-4" />
+          </button>
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/*,.pdf"
+            className="hidden"
+            onChange={handleImageSelect}
+          />
+          <textarea
+            ref={textareaRef}
+            rows={1}
+            value={inputQuery}
+            onChange={(e) => setInputQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Ask about your health, or send a photo of a report... 💊"
+            className="flex-1 px-3 py-1.5 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 text-xs resize-none focus:outline-none max-h-24"
+          />
+          <button
+            onClick={() => handleSend()}
+            disabled={(!inputQuery.trim() && !imageFile) || isTyping}
+            className="p-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl active:scale-95 disabled:opacity-40 disabled:pointer-events-none transition-all shadow-xs"
+            aria-label="Send query"
+          >
+            <Send className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Source Highlighting Modal */}
