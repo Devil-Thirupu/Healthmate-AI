@@ -11,7 +11,7 @@ class EvidenceGuardService:
       USER STRUCTURED RECORDS > USER DOCUMENT CHUNKS > GENERAL MEDICAL KNOWLEDGE
     """
 
-    INSUFFICIENT_EVIDENCE_MSG_EN = "The available records do not contain enough information to answer this patient-specific question."
+    INSUFFICIENT_EVIDENCE_MSG_EN = "I couldn't find that information in your uploaded records. The available records do not contain enough information to answer this patient-specific question."
     INSUFFICIENT_EVIDENCE_MSG_TA = "இந்த குறிப்பிட்ட கேள்விக்கு பதிலளிக்க தேவையான தகவல்கள் உங்கள் மருத்துவ ஆவணங்களில் கிடைக்கவில்லை."
     INSUFFICIENT_EVIDENCE_MSG_TANGLISH = "Indha specific question-ku answer panna thevaiyaana details ungaloda uploaded records-il illai."
 

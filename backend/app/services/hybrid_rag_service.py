@@ -11,6 +11,7 @@ from backend.app.schemas.assistant import CitationItem, ChatQueryResponse, Knowl
 from backend.app.services.evidence_guard_service import evidence_guard_service
 from backend.app.services.multilingual_explanation_service import multilingual_explanation_service
 from backend.app.services.health_intelligence_service import health_intelligence_service
+from backend.app.services.gemini_service import gemini_service
 from backend.app.core.logging import logger
 
 class HybridRAGService:
@@ -108,9 +109,10 @@ class HybridRAGService:
         has_patient_marker = bool(re.search(r'\b(my|mine|me|for me|my\s+latest|my\s+previous|my\s+active|this\s+report|in\s+report|in\s+my\s+report|what\s+changed|medicines\s+are\s+listed|show\s+my|history|latest\s+values|latest\s+results|my\s+results|my\s+numbers|my\s+tests|blood\s+test\s+results)\b', q_lower))
         has_explanatory_marker = bool(re.search(r'\b(why|how\s+come|what\s+does\s+that\s+mean|what\s+does\s+this\s+mean|explain\s+the\s+change|reason\s+for|changes\s+in)\b', q_lower))
         has_nutrition_marker = bool(re.search(r'\b(nutrition|food|diet|eat|calories|fruit|vegetable)\b', q_lower))
-        has_doc_marker = bool(re.search(r'\b(uploaded\s+report|report\s+says|document|pdf|file\s+says|in\s+my\s+report|what\s+is\s+in\s+my\s+report|explain\s+my\s+report|explain\s+this\s+report|show\s+my\s+latest\s+report)\b', q_lower))
+        has_doc_marker = bool(re.search(r'\b(uploaded\s+report|report\s+says|document\s+says|pdf\s+says|file\s+says|what\s+is\s+in\s+my\s+report|what\s+does\s+my\s+report\s+say|explain\s+my\s+report|explain\s+this\s+report|show\s+my\s+latest\s+report)\b', q_lower))
         has_med_marker = bool(re.search(r'\b(medicine|medicines|prescription|prescriptions|prescribed|tablet|tablets|drug|drugs|dosage|dose|amoxicillin|metformin|aspirin|paracetamol|statin)\b', q_lower))
-        has_change_marker = bool(re.search(r'\b(what\s+changed|changes|compared|previous\s+value|previous\s+glucose|trend|increased|decreased|difference)\b', q_lower))
+        has_change_marker = bool(re.search(r'\b(compare|comparison|what\s+changed|which\s+values\s+changed|changes|compared|previous\s+value|previous\s+glucose|trend|increased|decreased|difference)\b', q_lower))
+        has_specific_biomarker = any(b in q_lower for b in ["glucose", "sugar", "hba1c", "cholesterol", "lipid", "creatinine", "hemoglobin", "tsh", "thyroid", "wbc", "platelet", "blood pressure", "vital", "value"])
 
         if has_patient_marker and has_explanatory_marker:
             return "HYBRID"
@@ -118,11 +120,11 @@ class HybridRAGService:
             return "HYBRID"
         elif has_med_marker and (has_patient_marker or "what" in q_lower or "show" in q_lower or "list" in q_lower):
             return "PATIENT_MEDICATIONS"
-        elif has_change_marker and (has_patient_marker or "what" in q_lower or "from" in q_lower):
+        elif has_change_marker and (has_patient_marker or "what" in q_lower or "from" in q_lower or "compare" in q_lower or "which" in q_lower):
             return "PATIENT_CHANGES"
-        elif has_doc_marker:
+        elif has_doc_marker and not has_specific_biomarker:
             return "DOCUMENT_SEARCH"
-        elif has_patient_marker:
+        elif has_patient_marker or has_specific_biomarker:
             return "PATIENT_FACTUAL"
         elif has_nutrition_marker:
             return "GENERAL_MEDICAL_KNOWLEDGE"
@@ -186,16 +188,18 @@ class HybridRAGService:
         results = []
         date_filter = self.parse_date_query_filter(query)
 
-        # 1. Handle Changes Query ("What changed from my previous report?")
-        if query_type == "PATIENT_CHANGES" or "what changed" in q_lower:
+        # 1. Handle Changes Query ("What changed from my previous report?", "Compare my reports")
+        if query_type == "PATIENT_CHANGES" or "what changed" in q_lower or "compare" in q_lower or "changes" in q_lower or "which values changed" in q_lower:
             summary = health_intelligence_service.get_user_health_intelligence_summary(db, user_id)
             recent_changes = summary.get("recent_changes", [])
             for c in recent_changes:
                 doc = db.query(Document).filter(Document.id == c.get("latest_doc_id")).first() if c.get("latest_doc_id") else None
-                doc_title = doc.title if doc else "Diagnostic Report"
+                doc_title = doc.title if doc else (doc.original_filename if doc else "Diagnostic Report")
                 date_str = c.get("latest_date") or (doc.document_date if doc else "Recent")
+                ref_range = c.get("reference_range_text") or "Not specified"
+                change_str = c.get("change") or c.get("percentage_change") or "N/A"
                 
-                snippet = f"{c['test_name']}: {c.get('previous_value')} {c.get('unit','')} \u2192 {c.get('latest_value')} {c.get('unit','')} ({c.get('percentage_change')}) [{c.get('trend_direction')}]"
+                snippet = f"{c['test_name']}: {c.get('previous_value')} {c.get('unit','')} → {c.get('latest_value')} {c.get('unit','')} ({c.get('percentage_change')}) [{c.get('trend_direction')}] | Ref: {ref_range}"
                 results.append({
                     "source_type": "USER_STRUCTURED_RECORD",
                     "source_name": doc_title,
@@ -211,8 +215,10 @@ class HybridRAGService:
                         "previous_value": c.get("previous_value"),
                         "latest_value": c.get("latest_value"),
                         "unit": c.get("unit"),
+                        "change": change_str,
                         "percentage_change": c.get("percentage_change"),
                         "trend_direction": c.get("trend_direction"),
+                        "reference_range_text": ref_range,
                         "date": date_str
                     }
                 })
@@ -599,31 +605,38 @@ class HybridRAGService:
                     "document_id": item.get("document_id")
                 })
 
-            # C. Changes
+            # C. Changes & Comparison
             change_items = [item for item in user_structured if item.get("data", {}).get("type") == "change"]
-            for item in change_items:
-                d = item["data"]
-                lines.append(f"• {d['test_name']}: {d['previous_value']} {d.get('unit','')} \u2192 {d['latest_value']} {d.get('unit','')} ({d['percentage_change']}) [{d['trend_direction']}]")
-                citations.append(CitationItem(
-                    source_type=item["source_type"],
-                    source_name=item["source_name"],
-                    record_id=item["record_id"],
-                    document_id=item.get("document_id"),
-                    page_number=item.get("page_number", 1),
-                    text_snippet=item["text_snippet"],
-                    relevance_score=item["relevance_score"]
-                ))
-                structured_cards.append({
-                    "card_type": "TREND_CARD",
-                    "title": d['test_name'],
-                    "previous_value": str(d['previous_value']),
-                    "latest_value": str(d['latest_value']),
-                    "unit": d.get('unit') or '',
-                    "percentage_change": d['percentage_change'],
-                    "trend_direction": d['trend_direction'],
-                    "source": item["source_name"],
-                    "document_id": item.get("document_id")
-                })
+            if change_items:
+                lines.append("\n| Test | Previous | Current | Change | Reference Range |")
+                lines.append("| :--- | :--- | :--- | :--- | :--- |")
+                for item in change_items:
+                    d = item["data"]
+                    p_val = d.get('previous_value', 'N/A')
+                    c_val = d.get('latest_value', 'N/A')
+                    chg = d.get('change') or d.get('percentage_change') or 'N/A'
+                    ref = d.get('reference_range_text', 'Not specified')
+                    lines.append(f"| {d['test_name']} | {p_val} | {c_val} | {chg} | {ref} |")
+                    citations.append(CitationItem(
+                        source_type=item["source_type"],
+                        source_name=item["source_name"],
+                        record_id=item["record_id"],
+                        document_id=item.get("document_id"),
+                        page_number=item.get("page_number", 1),
+                        text_snippet=item["text_snippet"],
+                        relevance_score=item["relevance_score"]
+                    ))
+                    structured_cards.append({
+                        "card_type": "TREND_CARD",
+                        "title": d['test_name'],
+                        "previous_value": str(d.get('previous_value', '')),
+                        "latest_value": str(d.get('latest_value', '')),
+                        "unit": d.get('unit') or '',
+                        "percentage_change": d.get('percentage_change', ''),
+                        "trend_direction": d.get('trend_direction', ''),
+                        "source": item["source_name"],
+                        "document_id": item.get("document_id")
+                    })
 
             if user_doc_chunks and not user_structured:
                 for c in user_doc_chunks[:2]:
@@ -786,13 +799,37 @@ class HybridRAGService:
 
     def process_chat_query(self, db: Session, user_id: int, query: str, language: str = "en") -> ChatQueryResponse:
         """
-        Main entrypoint for Hybrid RAG Chat with Phase 14.1 Evidence Guard & User Isolation:
-        1. Classify query intent
-        2. Retrieve from respective collections with strict user isolation
-        3. Apply Evidence Guard verification & relevance filtering
-        4. Synthesize response adhering to Evidence Hierarchy
-        5. Validate citations and calculate evidence status
+        Main entrypoint for Hybrid RAG Chat with Phase 14.1 Evidence Guard, Gemini & User Isolation:
+        1. Check medication change safety rules
+        2. Classify query intent
+        3. Retrieve from respective collections with strict user isolation
+        4. Apply Evidence Guard verification & relevance filtering
+        5. Synthesize response adhering to Evidence Hierarchy (Gemini or deterministic grounded engine)
+        6. Validate citations and calculate evidence status
         """
+        # 0. Safety Check: Medication Change Interception
+        if gemini_service.is_medication_change_query(query):
+            ans = "I can explain and compare information from your medical records, but I cannot recommend changing your medication. Please discuss medication changes with your doctor."
+            ans = evidence_guard_service.sanitize_and_guard_response(
+                answer=ans,
+                query_type="PATIENT_MEDICATIONS",
+                has_patient_records=False,
+                is_cause_inquiry=False,
+                language=language
+            )
+            return ChatQueryResponse(
+                answer=ans,
+                query_type="PATIENT_MEDICATIONS",
+                evidence_found=False,
+                evidence_priority_applied="MEDICATION_SAFETY_GUARD_ACTIVE",
+                evidence_status="SUPPORTED",
+                citations=[],
+                sources=[],
+                language=language,
+                structured_cards=[],
+                follow_up_suggestions=["What are my latest values?", "What is glucose?", "Explain my latest report"]
+            )
+
         query_type = self.classify_query(query)
 
         # 1. Retrieve User Structured Records (user-isolated)
@@ -821,6 +858,27 @@ class HybridRAGService:
             nutrition_knowledge=nutrition_knowledge,
             language=language
         )
+
+        # 4b. If Gemini is configured and available, utilize Gemini Report Assistant
+        if gemini_service.is_configured:
+            gemini_ans = gemini_service.generate_chat_response(
+                query=query,
+                user_structured=user_structured,
+                user_doc_chunks=user_doc_chunks,
+                general_knowledge=general_knowledge,
+                language=language,
+                query_type=query_type
+            )
+            if gemini_ans:
+                is_cause_inquiry = bool(re.search(r'\b(why|how come|explain the change|reason for|changes in)\b', query.lower()))
+                answer = evidence_guard_service.sanitize_and_guard_response(
+                    answer=gemini_ans,
+                    query_type=query_type,
+                    has_patient_records=bool(user_structured or user_doc_chunks),
+                    is_cause_inquiry=is_cause_inquiry,
+                    language=language
+                )
+                priority_applied = "GEMINI_REPORT_ASSISTANT_GROUNDED"
 
         # 5. Evidence Status Calculation
         has_user_data = bool(user_structured or user_doc_chunks)
