@@ -1,25 +1,40 @@
 import axios from 'axios';
 
+// Normalize base URL from production or development environment variables
+const rawBase = (
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_API_URL ||
+  ''
+).replace(/\/+$/, '');
+
+const baseURL = rawBase
+  ? (rawBase.endsWith('/api/v1') ? rawBase : `${rawBase}/api/v1`)
+  : '/api/v1';
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL}/api/v1` : '/api/v1',
+  baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor: attach token
+// Request interceptor: attach token & handle FormData boundary
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('healthmate_access_token');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
+    // Let browser/Axios set proper multipart boundary for FormData uploads
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Response interceptor: handle token refresh or unauthorized
+// Response interceptor: handle token refresh or unauthorized redirect
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -29,7 +44,7 @@ api.interceptors.response.use(
       const refreshToken = localStorage.getItem('healthmate_refresh_token');
       if (refreshToken) {
         try {
-          const res = await axios.post('/api/v1/auth/refresh', { refresh_token: refreshToken });
+          const res = await axios.post(`${baseURL}/auth/refresh`, { refresh_token: refreshToken });
           const { access_token, refresh_token: newRefreshToken } = res.data;
           localStorage.setItem('healthmate_access_token', access_token);
           if (newRefreshToken) {

@@ -3,9 +3,21 @@ import react from '@vitejs/plugin-react'
 import fs from 'fs'
 import path from 'path'
 
+// Determine base path:
+// Priority: VITE_BASE_PATH env var -> GitHub Pages default -> root '/'
+const getBasePath = () => {
+  if (process.env.VITE_BASE_PATH) {
+    return process.env.VITE_BASE_PATH;
+  }
+  if (process.env.GITHUB_PAGES === 'true') {
+    return '/Healthmate-AI/';
+  }
+  return '/';
+};
+
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: process.env.VITE_BASE_PATH || '/Healthmate-AI/',
+  base: getBasePath(),
   plugins: [
     react(),
     {

@@ -96,6 +96,9 @@ class HybridRAGService:
         """
         q_lower = query.lower().strip()
 
+        if gemini_service.is_conversational_query(q_lower):
+            return "CONVERSATIONAL"
+
         # Pure General Definition / Knowledge Patterns (No patient pronouns/markers)
         pure_general_patterns = [
             r'^(what is|what does|define|explain what|how does|what are normal ranges for)\s+(glucose|sugar|hba1c|cholesterol|blood pressure|creatinine|hemoglobin|thyroid|tsh|lipid|wbc|platelets|diabetes|hypertension|vitamin)\b',
@@ -532,6 +535,19 @@ class HybridRAGService:
         follow_ups: List[str] = []
         q_lower = query.lower()
         is_cause_inquiry = bool(re.search(r'\b(why|how come|explain the change|reason for|changes in)\b', q_lower))
+
+        # CASE 0: Conversational / Greeting Query
+        if query_type == "CONVERSATIONAL":
+            ans = (
+                "Hello! I am HealthMate AI, your clinical health assistant. I can help explain your uploaded lab reports, "
+                "compare previous and recent test results, track biomarker trends, provide USDA-grounded nutritional guidance, "
+                "and explain medications listed in your records. How can I assist you with your health data today?"
+            )
+            return ans, [], "CONVERSATIONAL_RESPONSE", [], [
+                "What are my latest values?",
+                "Compare my two blood reports",
+                "What changed from my previous report?"
+            ]
 
         # CASE 1: Patient-Specific Factual Query
         if query_type in {"PATIENT_FACTUAL", "PATIENT_MEDICATIONS", "PATIENT_CHANGES"}:

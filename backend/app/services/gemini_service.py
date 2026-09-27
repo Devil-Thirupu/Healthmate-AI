@@ -16,39 +16,40 @@ UNSUPPORTED_RECORDS_RESPONSE = (
     "I couldn't find that information in your uploaded records."
 )
 
-GEMINI_SYSTEM_INSTRUCTION = """You are HealthMate AI's Clinical Report Assistant powered by Google Gemini.
-Your SOLE DUTY is to answer questions strictly and exclusively based on the user's provided verified medical report evidence and structured records.
+GEMINI_SYSTEM_INSTRUCTION = """You are HealthMate AI's Clinical Assistant powered by Google Gemini.
+You are a warm, helpful, evidence-grounded medical AI assistant.
 
-AI CHAT SCOPE — You may answer ONLY:
-1. Questions about the user's uploaded medical reports and extracted OCR data.
-2. Comparison and longitudinal trends between the user's medical reports.
-3. Explanation of values, units, and reference ranges present in the reports.
-4. Changes/trends between previous and current reports.
-5. Questions about extracted OCR information.
-6. Questions about the user's stored medical records when supported by evidence.
+AI CHAT CAPABILITIES & ALLOWED SCOPES:
+1. Normal Conversation: Greet the user politely, explain what you can do, and engage in helpful, respectful dialogue.
+2. User Medical Records: Answer questions about the user's uploaded medical reports and extracted OCR data.
+3. Report Explanations: Explain medical values, units, reference ranges, and terms present in the reports.
+4. Report Comparisons: Compare multiple reports and explain longitudinal trends between previous and current values.
+5. Nutrition & Food Suggestions: Suggest evidence-based healthy foods from USDA data or general knowledge based on available report findings (e.g., iron-rich foods for low hemoglobin).
+6. General Healthy Lifestyle: Provide general, non-prescriptive healthy nutrition, hydration, and lifestyle information.
+7. Prescriptions: Explain dosages, frequencies, and instructions for medications ALREADY listed in the user's records.
 
 STRICT SAFETY RULES — You MUST NOT:
 - Recommend changing medicine.
 - Recommend stopping medicine.
 - Recommend increasing or decreasing dosage.
-- Prescribe medicine.
-- Diagnose a disease or condition.
-- Replace a doctor.
+- Prescribe new medicine.
+- Diagnose a disease independently.
+- Replace a doctor or give personal clinical mandates.
 - Invent missing report values or hallucinate medical data.
-- Invent or hallucinate OCR text.
-- Answer unsupported medical-history questions not supported by the evidence.
+- Invent OCR text.
+- Answer unsupported patient history questions not supported by the evidence.
 
 MANDATORY FIXED RESPONSES:
 - If the user asks whether they should change, stop, adjust, increase, or decrease medication (e.g., "Should I change my medicine?"):
-  You MUST reply exactly: "I can explain and compare information from your medical records, but I cannot recommend changing your medication. Please discuss medication changes with your doctor."
-- If the requested information is not present in the user's records:
+  You MUST reply: "I can explain and compare information from your medical records, but I cannot recommend changing your medication. Please discuss medication changes with your doctor."
+- If patient-specific information is not present in the user's records:
   You MUST reply: "I couldn't find that information in your uploaded records."
 
 REPORT COMPARISON FORMAT:
-When comparing reports or summarizing biomarker changes between reports, you MUST format the comparison using the following markdown table format:
+When comparing reports or summarizing biomarker changes between reports, format the comparison using this markdown table format:
 | Test | Previous | Current | Change | Reference Range |
 | :--- | :--- | :--- | :--- | :--- |
-(Fill rows with the exact test names, previous values with units, current values with units, calculated changes, and reference ranges from the evidence).
+(Fill rows with the exact test names, previous values, current values, calculated changes, and reference ranges from the evidence).
 Do not interpret beyond the available evidence.
 
 OCR UNCERTAINTY:
@@ -59,25 +60,37 @@ Every report-based answer must cite its source when available:
 - Document name
 - Report date
 - Page/section
+
+EVIDENCE HIERARCHY:
+USER STRUCTURED RECORDS > USER DOCUMENT CHUNKS > GENERAL MEDICAL KNOWLEDGE > GENERAL NUTRITION KNOWLEDGE
 """
 
 class GeminiService:
     """
     Gemini API Integration for HealthMate AI Report Chat.
     Enforces clinical grounding, evidence guardrails, strict non-prescriptive safety rules,
-    and zero exposure of API keys.
+    conversational assistance, and zero exposure of API keys.
     """
 
     def __init__(self):
         self.api_url_template = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
         self.default_model = "gemini-1.5-flash"
-        self.fallback_models = ["gemini-2.0-flash", "gemini-1.5-pro"]
+        self.fallback_models = ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-1.5-pro"]
 
     @property
     def is_configured(self) -> bool:
         """Returns True if a valid Gemini API key is configured in backend environment."""
         key = (settings.GEMINI_API_KEY or "").strip()
         return bool(key and key != "" and not key.startswith("PASTE_") and not key.startswith("YOUR_"))
+
+    def is_conversational_query(self, query: str) -> bool:
+        """Detects if query is a simple conversational greeting or capability inquiry."""
+        q_lower = query.lower().strip()
+        greetings = {
+            "hello", "hi", "hey", "good morning", "good afternoon", "good evening",
+            "how are you", "who are you", "what can you do", "help", "thanks", "thank you"
+        }
+        return q_lower in greetings or q_lower.startswith(("hello ", "hi ", "hey ", "good morning", "who are you"))
 
     def is_medication_change_query(self, query: str) -> bool:
         """Detects if user is asking to change, stop, alter dosage, or seek medication prescriptions."""
@@ -156,7 +169,7 @@ class GeminiService:
                 context_parts.append(f"- Chunk from '{src_name}' (Page {page}): \"{snippet}\"{conf_tag}")
 
         if general_knowledge:
-            context_parts.append("\n### GENERAL MEDICAL KNOWLEDGE REFERENCE (Use ONLY for general conceptual definitions):")
+            context_parts.append("\n### GENERAL MEDICAL / NUTRITIONAL KNOWLEDGE REFERENCE:")
             for gk in general_knowledge:
                 q = gk.get("data", {}).get("question", "")
                 a = gk.get("data", {}).get("answer", "")
@@ -184,14 +197,14 @@ class GeminiService:
             logger.info("Gemini API key not configured; using deterministic local grounded engine.")
             return None
 
-        # Check safety rule 1: Medication Change Request
+        # Safety Check: Medication Change Request
         if self.is_medication_change_query(query):
             logger.info("Safety guard triggered: Medication change inquiry intercepted.")
             return MEDICATION_CHANGE_SAFETY_RESPONSE
 
         # If it's a patient factual question and there is ZERO evidence
         if query_type in {"PATIENT_FACTUAL", "PATIENT_MEDICATIONS", "PATIENT_CHANGES", "DOCUMENT_SEARCH"}:
-            if not user_structured and not user_doc_chunks:
+            if not user_structured and not user_doc_chunks and not self.is_conversational_query(query):
                 return UNSUPPORTED_RECORDS_RESPONSE
 
         evidence_text = self.format_evidence_context(user_structured, user_doc_chunks, general_knowledge)
@@ -204,13 +217,14 @@ AVAILABLE RETRIEVED EVIDENCE:
 {evidence_text}
 
 Instructions:
-1. Answer the user question strictly using the provided retrieved evidence.
-2. If comparing reports or listing biomarker changes, provide the exact markdown table:
+1. Answer the user question strictly using the provided retrieved evidence and allowed capabilities.
+2. If comparing reports or listing biomarker changes, format as markdown table:
    | Test | Previous | Current | Change | Reference Range |
-3. If information is not in the provided evidence, reply: "{UNSUPPORTED_RECORDS_RESPONSE}".
+3. If information is not in the provided evidence and cannot be answered from general knowledge, reply: "{UNSUPPORTED_RECORDS_RESPONSE}".
 4. Show document name, report date, and page/section source citations for report data.
 5. If low confidence OCR is noted, mark it as needing verification.
-6. Do not offer medical diagnosis, medication changes, or unverified claims.
+6. If the user asks for food or nutrition recommendations, suggest evidence-based foods (with calories/nutrients) aligned with their report findings without diagnosing.
+7. Do not offer medical diagnosis, medication changes, or unverified claims.
 """
 
         payload = {
@@ -221,8 +235,8 @@ Instructions:
                 }
             ],
             "generationConfig": {
-                "temperature": 0.1,
-                "topP": 0.8,
+                "temperature": 0.2,
+                "topP": 0.85,
                 "maxOutputTokens": 1024
             }
         }
@@ -248,7 +262,6 @@ Instructions:
                             parts = candidates[0]["content"].get("parts", [])
                             if parts and "text" in parts[0]:
                                 answer = parts[0]["text"].strip()
-                                # Log metadata only (NO raw medical content or PII)
                                 logger.info(
                                     f"Gemini API Response Success | Model: {model} | Latency: {latency_ms:.1f}ms | "
                                     f"Response Length: {len(answer)} chars"
@@ -256,7 +269,7 @@ Instructions:
                                 return answer
                     else:
                         logger.warning(
-                            f"Gemini API returned status {resp.status_code} for model {model}. Metadata: status={resp.status_code}"
+                            f"Gemini API returned status {resp.status_code} for model {model}."
                         )
             except Exception as ex:
                 logger.warning(f"Gemini API call failed for model {model}: {type(ex).__name__}")

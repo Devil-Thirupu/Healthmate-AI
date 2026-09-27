@@ -53,10 +53,9 @@ function App() {
             <Route path="/sharing" element={<SharingPage />} />
             <Route path="/audit" element={<AuditPage />} />
             <Route path="/settings" element={<SettingsPage />} />
-            {/* Doctor Connect */}
             <Route path="/doctors" element={<MyDoctorsPage />} />
             <Route path="/appointments" element={<AppointmentsPage />} />
-            <Route path="/doctor-sharing" element={<DoctorSharingPage />} />
+            <Route path="/doctor-sharing" element={<Navigate to="/sharing?tab=doctors" replace />} />
           </Route>
 
           {/* Catch-all redirect */}

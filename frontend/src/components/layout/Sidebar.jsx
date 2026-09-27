@@ -31,16 +31,15 @@ const navigationItems = [
   { name: 'Prescriptions', path: '/prescriptions', icon: Pill },
   { name: 'Nutrition & Targets', path: '/nutrition', icon: Apple },
   { name: 'Appointment Prep', path: '/appointment-prep', icon: Bookmark },
-  { name: 'Secure Sharing', path: '/sharing', icon: Share2 },
+  { name: 'Doctor & Secure Sharing', path: '/sharing', icon: Share2 },
   { name: 'Audit & Privacy', path: '/audit', icon: ShieldCheck },
   { name: 'Settings', path: '/settings', icon: Settings },
 ];
 
-// Doctor Connect section — additive
+// Doctor Connect section
 const doctorConnectItems = [
   { name: 'My Doctors', path: '/doctors', icon: Stethoscope },
   { name: 'Appointments', path: '/appointments', icon: Calendar },
-  { name: 'Doctor Sharing', path: '/doctor-sharing', icon: Lock },
 ];
 
 
