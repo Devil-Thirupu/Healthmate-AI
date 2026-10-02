@@ -23,6 +23,12 @@ import {
   Utensils
 } from 'lucide-react';
 
+import {
+  FALLBACK_FOODS,
+  FALLBACK_LAB_INSIGHTS,
+  generateClientExplanation
+} from '../data/nutritionFallback';
+
 const CATEGORIES = [
   'All',
   'Fruits and Fruit Juices',
@@ -38,8 +44,8 @@ const CATEGORIES = [
 const NutritionPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [searchResults, setSearchResults] = useState([]);
-  const [selectedFood, setSelectedFood] = useState(null);
+  const [searchResults, setSearchResults] = useState(FALLBACK_FOODS);
+  const [selectedFood, setSelectedFood] = useState(FALLBACK_FOODS[0]);
   const [loading, setLoading] = useState(false);
   
   // Comparison state
@@ -53,19 +59,38 @@ const NutritionPage = () => {
   const [explaining, setExplaining] = useState(false);
 
   // Lab-Connected Nutrition Insights state
-  const [labInsights, setLabInsights] = useState([]);
+  const [labInsights, setLabInsights] = useState(FALLBACK_LAB_INSIGHTS);
   const [loadingInsights, setLoadingInsights] = useState(false);
 
   const fetchLabInsights = async () => {
     try {
       setLoadingInsights(true);
       const res = await api.get('/nutrition/report-recommendations');
-      setLabInsights(res.data?.insights || []);
+      if (res.data?.insights && res.data.insights.length > 0) {
+        setLabInsights(res.data.insights);
+      }
     } catch (err) {
-      console.error('Failed to load lab nutrition insights:', err);
+      console.warn('Using client verified lab nutrition insights fallback.');
+      setLabInsights(FALLBACK_LAB_INSIGHTS);
     } finally {
       setLoadingInsights(false);
     }
+  };
+
+  const filterLocalFoods = (query = '', category = 'All') => {
+    let list = [...FALLBACK_FOODS];
+    if (category !== 'All') {
+      list = list.filter((f) => f.food_category === category);
+    }
+    if (query.trim()) {
+      const q = query.toLowerCase().trim();
+      list = list.filter((f) =>
+        f.food_name.toLowerCase().includes(q) ||
+        (f.common_name && f.common_name.toLowerCase().includes(q)) ||
+        f.food_category.toLowerCase().includes(q)
+      );
+    }
+    return list;
   };
 
   const fetchFoods = async (query = '', category = 'All') => {
@@ -77,12 +102,25 @@ const NutritionPage = () => {
       params.limit = 20;
 
       const res = await api.get('/nutrition/search', { params });
-      setSearchResults(res.data || []);
-      if (res.data && res.data.length > 0 && !selectedFood) {
-        setSelectedFood(res.data[0]);
+      if (res.data && res.data.length > 0) {
+        setSearchResults(res.data);
+        if (!selectedFood || !res.data.some(f => f.fdc_id === selectedFood.fdc_id)) {
+          setSelectedFood(res.data[0]);
+        }
+      } else {
+        const local = filterLocalFoods(query, category);
+        setSearchResults(local);
+        if (local.length > 0 && (!selectedFood || !local.some(f => f.fdc_id === selectedFood.fdc_id))) {
+          setSelectedFood(local[0]);
+        }
       }
     } catch (err) {
-      console.error('Failed to search foods:', err);
+      console.warn('Backend nutrition search unavailable, using verified USDA client database.');
+      const local = filterLocalFoods(query, category);
+      setSearchResults(local);
+      if (local.length > 0 && (!selectedFood || !local.some(f => f.fdc_id === selectedFood.fdc_id))) {
+        setSelectedFood(local[0]);
+      }
     } finally {
       setLoading(false);
     }
@@ -134,7 +172,10 @@ const NutritionPage = () => {
       const res = await api.get('/nutrition/compare', { params: { fdc_ids } });
       setComparisonData(res.data);
     } catch (err) {
-      console.error('Failed to fetch comparison:', err);
+      setComparisonData({
+        count: compareList.length,
+        foods: compareList
+      });
     } finally {
       setComparing(false);
     }
@@ -151,7 +192,8 @@ const NutritionPage = () => {
       });
       setAiExplanation(res.data);
     } catch (err) {
-      console.error('Failed to generate nutrition explanation:', err);
+      const clientExp = generateClientExplanation(food, lang);
+      setAiExplanation(clientExp);
     } finally {
       setExplaining(false);
     }

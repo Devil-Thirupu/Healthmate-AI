@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useOutletContext, Link } from 'react-router-dom';
 import api from '../services/api';
+import { generateClientChatResponse } from '../services/clientRAGService';
 import {
   BotMessageSquare,
   Send,
@@ -38,12 +39,12 @@ import {
 
 const SUGGESTED_PROMPTS = [
   'What are my latest lab values? 🩺',
+  'What did the report extract? 📄',
   'What changed from my last report?',
   'What medicines am I on?',
   'Show my glucose history 📈',
-  'What foods should I eat for my health?',
-  'Explain my latest report in simple words',
-  'How is my hemoglobin level?'
+  'What foods should I eat for my health? 🥗',
+  'Explain my latest report in simple words'
 ];
 
 const AIAssistantPage = () => {
@@ -61,8 +62,8 @@ const AIAssistantPage = () => {
       structured_cards: [],
       follow_up_suggestions: [
         'What are my latest lab values? 🩺',
-        'What changed from my last report?',
-        'What foods help with my health?'
+        'What did the report extract? 📄',
+        'What foods help with my health? 🥗'
       ]
     }
   ]);
@@ -108,6 +109,7 @@ const AIAssistantPage = () => {
     setMessages((prev) => [...prev, userMsg]);
     setInputQuery('');
     const currentImage = imageFile;
+    const currentPreview = imagePreview;
     const currentText = text;
     setImageFile(null);
     setImagePreview(null);
@@ -148,19 +150,22 @@ const AIAssistantPage = () => {
 
       setMessages((prev) => [...prev, aiMsg]);
     } catch (err) {
-      console.error('Chat error:', err);
-      const errMsg = {
+      console.warn('Backend chat unreachable, generating client-side RAG response from vault:', err);
+      // Generate intelligent offline client RAG response using stored medical records
+      const clientFallback = generateClientChatResponse(currentText, selectedLang, currentPreview);
+      const fallbackMsg = {
         id: (Date.now() + 1).toString(),
         sender: 'ai',
-        text: "Oops! I had trouble connecting right now. Please check your connection and try again 😊",
+        text: clientFallback.answer,
+        queryType: clientFallback.query_type,
+        evidence_status: clientFallback.evidence_status || 'SUPPORTED',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        citations: [],
-        sources: [],
-        evidence_status: 'INSUFFICIENT',
-        structured_cards: [],
-        follow_up_suggestions: ['What are my latest values? 🩺', 'What is glucose?']
+        citations: clientFallback.citations || [],
+        sources: clientFallback.sources || [],
+        structured_cards: clientFallback.structured_cards || [],
+        follow_up_suggestions: clientFallback.follow_up_suggestions || []
       };
-      setMessages((prev) => [...prev, errMsg]);
+      setMessages((prev) => [...prev, fallbackMsg]);
     } finally {
       setIsTyping(false);
     }

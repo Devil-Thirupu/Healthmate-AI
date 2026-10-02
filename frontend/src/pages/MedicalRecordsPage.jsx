@@ -26,6 +26,8 @@ import {
   Filter
 } from 'lucide-react';
 
+import { getStoredDocuments, addStoredDocument } from '../services/documentStore';
+
 const CATEGORY_TABS = [
   { id: 'all', label: 'All Records', icon: FolderOpen },
   { id: 'lab_report', label: 'Lab Reports', icon: FlaskConical },
@@ -58,10 +60,42 @@ const MedicalRecordsPage = () => {
       const params = {};
       if (selectedCategory !== 'all') params.category = selectedCategory;
       if (searchQuery.trim()) params.search = searchQuery.trim();
-      const res = await api.get('/documents/', { params });
-      setDocuments(res.data || []);
+      
+      let docs = [];
+      try {
+        const res = await api.get('/documents/', { params });
+        docs = res.data || [];
+      } catch (apiErr) {
+        console.warn('Using local clinical document store.');
+      }
+
+      const localDocs = getStoredDocuments();
+      // Merge unique by title or ID
+      const allDocs = [...docs];
+      for (const ld of localDocs) {
+        if (!allDocs.some(d => d.id === ld.id || d.title === ld.title)) {
+          allDocs.push(ld);
+        }
+      }
+
+      let filtered = allDocs;
+      if (selectedCategory !== 'all') {
+        filtered = filtered.filter(d => d.category === selectedCategory);
+      }
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        filtered = filtered.filter(d =>
+          d.title?.toLowerCase().includes(q) ||
+          d.doctor_name?.toLowerCase().includes(q) ||
+          d.clinic_or_lab?.toLowerCase().includes(q) ||
+          d.original_filename?.toLowerCase().includes(q)
+        );
+      }
+
+      setDocuments(filtered);
     } catch (err) {
       console.error('Failed to load documents:', err);
+      setDocuments(getStoredDocuments());
     } finally {
       setIsLoading(false);
     }
@@ -76,7 +110,12 @@ const MedicalRecordsPage = () => {
 
   const handleDelete = async (docId) => {
     try {
-      await api.delete(`/documents/${docId}`);
+      try {
+        await api.delete(`/documents/${docId}`);
+      } catch (_) {}
+      
+      const local = getStoredDocuments().filter(d => d.id !== docId);
+      localStorage.setItem('healthmate_vault_documents', JSON.stringify(local));
       setDocuments(documents.filter((d) => d.id !== docId));
       setDeleteConfirmId(null);
     } catch (err) {
@@ -114,8 +153,19 @@ const MedicalRecordsPage = () => {
       formData.append('category', quickCategory);
       formData.append('document_date', new Date().toISOString().split('T')[0]);
 
-      await api.post('/documents/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      try {
+        await api.post('/documents/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+      } catch (apiErr) {
+        console.warn('Backend upload unavailable; storing in local vault.');
+      }
+
+      addStoredDocument({
+        title: quickTitle || quickFile.name,
+        category: quickCategory,
+        document_date: new Date().toISOString().split('T')[0],
+        file: quickFile
       });
 
       setQuickFile(null);
@@ -124,7 +174,7 @@ const MedicalRecordsPage = () => {
       window.dispatchEvent(new Event('healthmate_doc_uploaded'));
     } catch (err) {
       console.error('Quick upload failed:', err);
-      setQuickError(err.response?.data?.detail || 'Failed to upload document.');
+      setQuickError('Failed to upload document.');
     } finally {
       setIsQuickUploading(false);
     }

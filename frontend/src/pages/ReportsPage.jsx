@@ -29,6 +29,8 @@ import {
 import ReportInsightCard from '../components/common/ReportInsightCard';
 import ExplainReportModal from '../components/common/ExplainReportModal';
 
+import { getStoredDocuments } from '../services/documentStore';
+
 const ReportsPage = () => {
   const { openUpload } = useOutletContext();
   const [labDocs, setLabDocs] = useState([]);
@@ -47,14 +49,31 @@ const ReportsPage = () => {
   const fetchLabReports = async () => {
     try {
       setIsLoading(true);
-      const res = await api.get('/documents/', { params: { category: 'lab_report' } });
-      const docs = res.data || [];
-      setLabDocs(docs);
-      if (docs.length > 0 && !selectedDocId) {
-        setSelectedDocId(docs[0].id);
+      let docs = [];
+      try {
+        const res = await api.get('/documents/', { params: { category: 'lab_report' } });
+        docs = res.data || [];
+      } catch (apiErr) {
+        console.warn('Using local clinical document store for reports.');
+      }
+
+      const localDocs = getStoredDocuments().filter(d => d.category === 'lab_report' || d.category === 'all');
+      const allDocs = [...docs];
+      for (const ld of localDocs) {
+        if (!allDocs.some(d => d.id === ld.id || d.title === ld.title)) {
+          allDocs.push(ld);
+        }
+      }
+
+      setLabDocs(allDocs);
+      if (allDocs.length > 0 && !selectedDocId) {
+        setSelectedDocId(allDocs[0].id);
       }
     } catch (err) {
       console.error('Failed to fetch lab reports:', err);
+      const fallback = getStoredDocuments().filter(d => d.category === 'lab_report');
+      setLabDocs(fallback);
+      if (fallback.length > 0) setSelectedDocId(fallback[0].id);
     } finally {
       setIsLoading(false);
     }
@@ -64,8 +83,18 @@ const ReportsPage = () => {
     if (!id) return;
     try {
       setIsDetailLoading(true);
-      const res = await api.get(`/documents/${id}`);
-      setSelectedDocDetail(res.data);
+      try {
+        const res = await api.get(`/documents/${id}`);
+        if (res.data) {
+          setSelectedDocDetail(res.data);
+          return;
+        }
+      } catch (apiErr) {}
+
+      const localDoc = getStoredDocuments().find(d => d.id === id || String(d.id) === String(id));
+      if (localDoc) {
+        setSelectedDocDetail(localDoc);
+      }
     } catch (err) {
       console.error('Failed to fetch document detail:', err);
     } finally {

@@ -17,55 +17,31 @@ UNSUPPORTED_RECORDS_RESPONSE = (
     "Try uploading the relevant report and I'll analyze it for you!"
 )
 
-GEMINI_SYSTEM_INSTRUCTION = """You are HealthMate — a warm, caring, and knowledgeable personal health AI assistant.
-You speak like a friendly health-savvy companion who genuinely cares about the user's wellbeing.
+GEMINI_SYSTEM_INSTRUCTION = """You are HealthMate, a warm, friendly, knowledgeable personal health AI companion.
+Tone: Caring, conversational, plain language, supportive, helpful emojis (🩺 💊 🥗 🌟).
 
-PERSONALITY & TONE:
-- Be warm, encouraging, and conversational — like a trusted friend who happens to know a lot about health.
-- Use friendly language, occasional emojis where appropriate (💊 🩺 🥗 💪 🌟), and keep things easy to understand.
-- Never be robotic or overly clinical. Explain things in plain language.
-- Celebrate good results and gently guide about concerning ones.
-- Always be supportive, never alarming or preachy.
+CORE DUTIES:
+1. Medical Records & Lab Results: Summarize, explain, and compare user's uploaded lab tests and reports.
+2. Biomarkers & Trends: Explain values, normal ranges, and progress over time in plain words.
+3. Food & Nutrition: Give personalized food suggestions aligned with their biomarker values.
+4. Prescriptions: Explain dosages and timing found in their records.
+5. OCR & Image Analysis: Extract data accurately from medical documents and reports.
 
-WHAT YOU CAN HELP WITH (Health-Focused):
-1. 💬 Chat & Greetings: Warm, friendly conversation about health topics.
-2. 🩺 Medical Records: Explain, summarize, and compare the user's uploaded lab reports and documents.
-3. 📊 Report Explanations: Break down medical values, units, reference ranges in simple terms.
-4. 📈 Trends & Changes: Track and explain biomarker changes between reports over time.
-5. 🥗 Nutrition & Food: Give personalized, evidence-based food suggestions tied to their health data.
-6. 🏃 Lifestyle Tips: Share healthy lifestyle habits (sleep, hydration, exercise) relevant to their health status.
-7. 💊 Prescription Info: Explain dosages and instructions for medications in their records.
-8. 🖼️ Image Analysis: Analyze uploaded medical report images or prescription photos and extract information.
-9. 🌡️ Symptom Context: Discuss symptoms in context of their records (without diagnosing).
-10. ❓ General Health Questions: Answer any health-related questions with knowledge and care.
+SAFETY RULES:
+- Never recommend changing or stopping prescribed medication; always advise checking with their doctor.
+- Do not diagnose diseases definitively.
+- Never invent lab numbers or facts not in the evidence.
+- Stay on health topics.
 
-SAFETY GUARDRAILS (Always follow):
-- Never recommend changing, stopping, or adjusting prescribed medication dosage — always say to check with their doctor.
-- Never diagnose a disease as a definitive conclusion — share possibilities and encourage medical consultation.
-- Never invent lab values, report data, or OCR text you haven't been given.
-- If medication change is asked: Respond warmly but redirect to their doctor.
-- Stay on HEALTH topics only. For unrelated topics, gently redirect: "That's outside my health specialty! Let's focus on keeping you healthy 😊"
-
-REPORT COMPARISON FORMAT:
-When comparing reports, use this clean markdown table:
-| Test | Previous | Current | Change | Reference Range | Status |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-
-OCR UNCERTAINTY:
-If evidence has low OCR confidence (< 70%), flag it as: "⚠️ [Needs Verification - Low OCR Confidence]"
-
-SOURCE CITATIONS:
-Always cite: Document name, Report date, Page/section when answering from records.
-
-EVIDENCE HIERARCHY:
-USER STRUCTURED RECORDS > USER DOCUMENT CHUNKS > GENERAL MEDICAL KNOWLEDGE > GENERAL NUTRITION KNOWLEDGE
-"""
+FORMATTING:
+- For comparisons, use clean markdown tables.
+- Cite document name and date when answering from records."""
 
 class GeminiService:
     """
     Gemini API Integration for HealthMate AI Report Chat.
     Enforces clinical grounding, evidence guardrails, strict non-prescriptive safety rules,
-    conversational assistance, and zero exposure of API keys.
+    conversational assistance, and token efficiency.
     """
 
     def __init__(self):
@@ -105,74 +81,61 @@ class GeminiService:
         user_doc_chunks: List[Dict[str, Any]],
         general_knowledge: List[Dict[str, Any]]
     ) -> str:
-        """Formats verified retrieved evidence into structured prompt context with OCR confidence tags."""
+        """Formats verified retrieved evidence compactly to minimize LLM token consumption."""
         context_parts = []
 
         if user_structured:
-            context_parts.append("### VERIFIED USER STRUCTURED RECORDS:")
-            for item in user_structured:
+            context_parts.append("### USER RECORDS:")
+            for item in user_structured[:10]:
                 src_name = item.get("source_name", "Medical Record")
-                doc_id = item.get("document_id", "N/A")
                 page = item.get("page_number", 1)
                 data = item.get("data", {})
                 item_type = data.get("type", "record")
                 
-                # Check OCR confidence
                 conf = item.get("confidence") or item.get("ocr_confidence")
-                conf_tag = " [Needs Verification - Low OCR Confidence]" if (isinstance(conf, (int, float)) and conf < 70) else ""
+                conf_tag = " [Low OCR Conf]" if (isinstance(conf, (int, float)) and conf < 70) else ""
 
                 if item_type == "lab_test":
-                    test_name = data.get("test_name", "Test")
+                    t_name = data.get("test_name", "Test")
                     val = data.get("value", "N/A")
                     unit = data.get("unit", "")
                     ref = data.get("reference_range", data.get("reference_range_text", "N/A"))
                     date = data.get("date", "N/A")
                     flag = data.get("flag", "normal")
-                    context_parts.append(
-                        f"- Lab Test: {test_name} | Value: {val} {unit} | Reference Range: {ref} | Flag: {flag} | Date: {date} | Source: {src_name} (Page {page}){conf_tag}"
-                    )
+                    context_parts.append(f"- Lab: {t_name}={val} {unit} (Ref: {ref}, {flag}, {date}, {src_name}){conf_tag}")
                 elif item_type == "prescription":
                     med_name = data.get("medication_name", "Medicine")
                     dosage = data.get("dosage", "N/A")
                     freq = data.get("frequency", "N/A")
                     timing = data.get("timing", "N/A")
                     dur = data.get("duration", "N/A")
-                    date = data.get("date", "N/A")
-                    context_parts.append(
-                        f"- Prescription: {med_name} | Dosage: {dosage} | Frequency: {freq} | Timing: {timing} | Duration: {dur} | Date: {date} | Source: {src_name} (Page {page}){conf_tag}"
-                    )
+                    context_parts.append(f"- Rx: {med_name} {dosage} ({freq}, {timing}, {dur}, {src_name}){conf_tag}")
                 elif item_type == "change":
                     t_name = data.get("test_name", "Biomarker")
                     prev_val = data.get("previous_value", "N/A")
                     lat_val = data.get("latest_value", "N/A")
                     chg = data.get("change", data.get("percentage_change", "N/A"))
-                    ref = data.get("reference_range_text", "N/A")
-                    trend = data.get("trend_direction", "N/A")
-                    context_parts.append(
-                        f"- Comparison/Trend: {t_name} | Previous: {prev_val} | Current: {lat_val} | Change: {chg} ({trend}) | Reference Range: {ref} | Source: {src_name}{conf_tag}"
-                    )
+                    context_parts.append(f"- Trend: {t_name} prev={prev_val} curr={lat_val} chg={chg} ({src_name})")
                 else:
-                    context_parts.append(f"- Record: {item.get('text_snippet', '')} | Source: {src_name}{conf_tag}")
+                    context_parts.append(f"- {item.get('text_snippet', '')} ({src_name})")
 
         if user_doc_chunks:
-            context_parts.append("\n### VERIFIED USER DOCUMENT OCR CHUNKS:")
-            for chunk in user_doc_chunks:
+            context_parts.append("\n### OCR SNIPPETS:")
+            for chunk in user_doc_chunks[:4]:
                 src_name = chunk.get("source_name", "Document")
                 page = chunk.get("page_number", 1)
-                snippet = chunk.get("text_snippet", "")
-                conf = chunk.get("confidence") or chunk.get("ocr_confidence")
-                conf_tag = " [Needs Verification - Low OCR Confidence]" if (isinstance(conf, (int, float)) and conf < 70) else ""
-                context_parts.append(f"- Chunk from '{src_name}' (Page {page}): \"{snippet}\"{conf_tag}")
+                snippet = (chunk.get("text_snippet", "") or "")[:200]
+                context_parts.append(f"- '{src_name}' p.{page}: {snippet}")
 
         if general_knowledge:
-            context_parts.append("\n### GENERAL MEDICAL / NUTRITIONAL KNOWLEDGE REFERENCE:")
-            for gk in general_knowledge:
+            context_parts.append("\n### KNOWLEDGE REF:")
+            for gk in general_knowledge[:3]:
                 q = gk.get("data", {}).get("question", "")
-                a = gk.get("data", {}).get("answer", "")
-                context_parts.append(f"- Q: {q}\n  A: {a}")
+                a = (gk.get("data", {}).get("answer", "") or "")[:200]
+                context_parts.append(f"- Q: {q} | A: {a}")
 
         if not context_parts:
-            return "NO EVIDENCE AVAILABLE IN USER RECORDS."
+            return "NO EVIDENCE IN USER RECORDS."
 
         return "\n".join(context_parts)
 
@@ -186,38 +149,28 @@ class GeminiService:
         query_type: str = "PATIENT_FACTUAL"
     ) -> Optional[str]:
         """
-        Sends grounded evidence to Gemini API and retrieves a strictly governed response.
-        Returns None if Gemini is not configured or in case of network/API error (triggering local fallback).
+        Sends grounded evidence to Gemini API using a token-optimized prompt.
         """
         if not self.is_configured:
             logger.info("Gemini API key not configured; using deterministic local grounded engine.")
             return None
 
-        # Safety Check: Medication Change Request — handle warmly, don't block
         if self.is_medication_change_query(query):
-            logger.info("Safety note triggered: Medication change inquiry.")
-            # Don't hard-block; include safety note in context but let AI respond warmly
-            query = query + " [Note: Provide general info about the medication from records if available, but add the safety note about consulting a doctor for dosage changes]"
+            query = query + " [Include reminder to consult doctor for dosage changes]"
 
         evidence_text = self.format_evidence_context(user_structured, user_doc_chunks, general_knowledge)
 
-        user_prompt = f"""Language: {language}
-Query Intent: {query_type}
-User Question: {query}
+        user_prompt = f"""Language: {language} | Intent: {query_type}
+Question: {query}
 
-AVAILABLE RETRIEVED EVIDENCE:
+EVIDENCE:
 {evidence_text}
 
 Instructions:
-1. Answer the user question strictly using the provided retrieved evidence and allowed capabilities.
-2. If comparing reports or listing biomarker changes, format as markdown table:
-   | Test | Previous | Current | Change | Reference Range |
-3. If information is not in the provided evidence and cannot be answered from general knowledge, reply: "{UNSUPPORTED_RECORDS_RESPONSE}".
-4. Show document name, report date, and page/section source citations for report data.
-5. If low confidence OCR is noted, mark it as needing verification.
-6. If the user asks for food or nutrition recommendations, suggest evidence-based foods (with calories/nutrients) aligned with their report findings without diagnosing.
-7. Do not offer medical diagnosis, medication changes, or unverified claims.
-"""
+1. Answer warmly and concisely using only provided evidence.
+2. Use markdown table for biomarker comparisons.
+3. If not in evidence, reply: "{UNSUPPORTED_RECORDS_RESPONSE}".
+4. Cite document name and date for records."""
 
         payload = {
             "contents": [
@@ -229,7 +182,7 @@ Instructions:
             "generationConfig": {
                 "temperature": 0.2,
                 "topP": 0.85,
-                "maxOutputTokens": 1024
+                "maxOutputTokens": 600
             }
         }
 
@@ -239,7 +192,7 @@ Instructions:
         for model in models_to_try:
             url = f"{self.api_url_template.format(model=model)}?key={settings.GEMINI_API_KEY}"
             try:
-                with httpx.Client(timeout=12.0) as client:
+                with httpx.Client(timeout=10.0) as client:
                     resp = client.post(
                         url,
                         headers={"Content-Type": "application/json"},
@@ -256,13 +209,11 @@ Instructions:
                                 answer = parts[0]["text"].strip()
                                 logger.info(
                                     f"Gemini API Response Success | Model: {model} | Latency: {latency_ms:.1f}ms | "
-                                    f"Response Length: {len(answer)} chars"
+                                    f"Chars: {len(answer)}"
                                 )
                                 return answer
                     else:
-                        logger.warning(
-                            f"Gemini API returned status {resp.status_code} for model {model}."
-                        )
+                        logger.warning(f"Gemini API returned status {resp.status_code} for model {model}.")
             except Exception as ex:
                 logger.warning(f"Gemini API call failed for model {model}: {type(ex).__name__}")
 
@@ -276,8 +227,7 @@ Instructions:
         prompt: str = "Extract all text and medical information from this image. Identify lab values, medications, diagnoses, dates, and any other health-relevant information. Format clearly."
     ) -> Optional[str]:
         """
-        Use Gemini Vision to analyze a medical image/document photo and extract text + insights.
-        Returns extracted text and analysis, or None on failure.
+        Use Gemini Vision to analyze medical image with optimized token limits.
         """
         if not self.is_configured:
             return None
@@ -297,7 +247,7 @@ Instructions:
                             }
                         },
                         {
-                            "text": f"{GEMINI_SYSTEM_INSTRUCTION}\n\nTask: {prompt}\n\nPlease extract ALL text visible in this medical document/image accurately. Then summarize the key health information found."
+                            "text": f"{GEMINI_SYSTEM_INSTRUCTION}\n\nTask: {prompt}\n\nPlease extract visible text accurately and summarize key health data."
                         }
                     ]
                 }
@@ -305,13 +255,13 @@ Instructions:
             "generationConfig": {
                 "temperature": 0.1,
                 "topP": 0.85,
-                "maxOutputTokens": 2048
+                "maxOutputTokens": 800
             }
         }
 
         url = f"{self.api_url_template.format(model=self.vision_model)}?key={settings.GEMINI_API_KEY}"
         try:
-            with httpx.Client(timeout=30.0) as client:
+            with httpx.Client(timeout=25.0) as client:
                 resp = client.post(
                     url,
                     headers={"Content-Type": "application/json"},
@@ -324,7 +274,7 @@ Instructions:
                         parts = candidates[0]["content"].get("parts", [])
                         if parts and "text" in parts[0]:
                             result = parts[0]["text"].strip()
-                            logger.info(f"Gemini Vision analysis success | Length: {len(result)} chars")
+                            logger.info(f"Gemini Vision analysis success | Chars: {len(result)}")
                             return result
                 else:
                     logger.warning(f"Gemini Vision returned status {resp.status_code}")
