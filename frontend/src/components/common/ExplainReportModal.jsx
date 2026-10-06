@@ -34,7 +34,7 @@ const generateLocalExplanation = (doc, lang = 'en') => {
   let overview = '';
   if (lang === 'ta') {
     overview = `இந்த ஆய்வக அறிக்கை "${doc.title}" ${doc.clinic_or_lab || 'Apollo Diagnostics'} மூலம் ${doc.document_date || 'அண்மையில்'} பெறப்பட்டது. இதில் ${labs.length} இரத்தப் பரிசோதனை விவரங்களும் ${rxs.length} மருந்து விவரங்களும் துல்லியமாக பிரித்தெடுக்கப்பட்டுள்ளன.`;
-  } else if (lang === 'tanglish') {
+  } else if (lang === 'tanglish' || lang === 'multilanguage') {
     overview = `Indha lab report "${doc.title}" ${doc.clinic_or_lab || 'Apollo Diagnostics'} moolam ${doc.document_date || 'recent-aga'} edukkappattadhu. Idhil ${labs.length} test biomarkers verify seiyappattu ungal personal health vault-il save aagiulladhu.`;
   } else {
     overview = `This diagnostic report "${doc.title}" was issued on ${doc.document_date || 'recently'} by ${doc.clinic_or_lab || 'Apollo Diagnostics'}. Automated clinical extraction successfully identified ${labs.length} serum biomarker tests and ${rxs.length} prescription records with verified 98% OCR accuracy.`;
@@ -43,7 +43,7 @@ const generateLocalExplanation = (doc, lang = 'en') => {
   const recordedLines = labs.length > 0
     ? labs.map(l => {
         const flagText = l.flag === 'high' || l.flag === 'critical' ? ' [ELEVATED]' : l.flag === 'low' ? ' [LOW]' : ' [OPTIMAL]';
-        const langExtra = (lang === 'ta' && l.explanation_tamil) ? `\n   ↳ தமிழ்: ${l.explanation_tamil}` : (lang === 'tanglish' && l.explanation_tanglish) ? `\n   ↳ ${l.explanation_tanglish}` : '';
+        const langExtra = (lang === 'ta' && l.explanation_tamil) ? `\n   ↳ தமிழ்: ${l.explanation_tamil}` : ((lang === 'tanglish' || lang === 'multilanguage') && l.explanation_tanglish) ? `\n   ↳ ${l.explanation_tanglish}` : '';
         return `• ${l.test_name}: ${l.observed_value} ${l.unit} (Ref: ${l.reference_range_text || 'Standard'})${flagText}${langExtra}`;
       }).join('\n\n')
     : (doc.ocr_raw_text ? `• Extracted OCR text available:\n${doc.ocr_raw_text.slice(0, 300)}...` : '• Document indexed in vault for AI assistant search.');
@@ -52,13 +52,13 @@ const generateLocalExplanation = (doc, lang = 'en') => {
   if (labs.some(l => l.flag === 'high' || l.flag === 'critical')) {
     changedText = lang === 'ta'
       ? 'சில இரத்த அளவுகளில் லேசான மாறுபாடு உள்ளது. தொடர்ந்து பரிசோதனை செய்து உங்கள் மருத்துவருடன் ஆலோசிக்கவும்.'
-      : lang === 'tanglish'
+      : (lang === 'tanglish' || lang === 'multilanguage')
       ? 'Silavatrai kavanikka vendiyulladhu. Regular monitoring seiyavum.'
       : 'Certain biomarker values are outside standard reference intervals. Tracking these over time will show longitudinal progress.';
   } else {
     changedText = lang === 'ta'
       ? 'அனைத்து பரிசோதனை அளவுகளும் சீராகவும் பாதுகாப்பான இயல்பு வரம்பிலும் உள்ளன.'
-      : lang === 'tanglish'
+      : (lang === 'tanglish' || lang === 'multilanguage')
       ? 'Ellaa test values-um safe normal range-il irukkindrana.'
       : 'All extracted test values are within optimal physiological reference ranges.';
   }
@@ -66,7 +66,7 @@ const generateLocalExplanation = (doc, lang = 'en') => {
   let generalContext = '';
   if (lang === 'ta') {
     generalContext = 'இரத்தப் பரிசோதனைகள் உடலின் சர்க்கரை அளவு, கொழுப்பு, மற்றும் உறுப்புகளின் செயல்பாட்டை அறிய உதவுகின்றன. சரிவிகித உணவு மற்றும் உடற்பயிற்சி இவற்றை சீராக வைக்க உதவும்.';
-  } else if (lang === 'tanglish') {
+  } else if (lang === 'tanglish' || lang === 'multilanguage') {
     generalContext = 'Regular blood checkups body-oda sugar, lipid and kidney health-ai track seiya romba mukkiyam. Balanced nutrition help pannum.';
   } else {
     generalContext = 'Serum and biochemical markers provide objective insight into metabolic, cardiovascular, and renal health. Maintaining a nutrient-rich whole-food diet, regular physical activity, and adequate hydration supports optimal physiological biomarker balance.';
@@ -74,7 +74,7 @@ const generateLocalExplanation = (doc, lang = 'en') => {
 
   const disclaimer = lang === 'ta'
     ? 'இந்த விளக்கம் தகவலுக்காக மட்டுமே. மருத்துவ முடிவுகளுக்கு உங்கள் மருத்துவரை அணுகவும்.'
-    : lang === 'tanglish'
+    : (lang === 'tanglish' || lang === 'multilanguage')
     ? 'Idhu personal understanding-kaga mattume. Medicine changes-ku ungal doctor-idam advice vaangavum.'
     : 'This AI summary is for health tracking and educational insight only. Always consult your qualified healthcare practitioner for medical diagnosis or treatment decisions.';
 

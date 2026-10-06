@@ -13,7 +13,7 @@ class MultilingualExplanationService:
       - Never invents missing patient information.
     """
 
-    SUPPORTED_LANGUAGES = {"en", "ta", "tanglish"}
+    SUPPORTED_LANGUAGES = {"en", "ta", "tanglish", "multilanguage"}
 
     def normalize_language(self, lang: Optional[str]) -> str:
         if not lang:
@@ -21,7 +21,7 @@ class MultilingualExplanationService:
         clean = lang.strip().lower()
         if clean in {"tamil", "ta"}:
             return "ta"
-        elif clean in {"tanglish", "tamil_english"}:
+        elif clean in {"tanglish", "tamil_english", "multilanguage", "multi"}:
             return "tanglish"
         return "en"
 

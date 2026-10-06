@@ -270,7 +270,7 @@ const DashboardPage = () => {
             </div>
           </div>
           <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500 pt-3 border-t border-slate-100 dark:border-slate-800">
-            <span>Trilingual: <strong className="text-slate-800 dark:text-slate-200">En / தமிழ் / Tanglish</strong></span>
+            <span>Trilingual: <strong className="text-slate-800 dark:text-slate-200">En / தமிழ் / Multilanguage</strong></span>
             <Link to="/ai-assistant" className="text-teal-600 hover:text-teal-700 font-bold inline-flex items-center">
               Launch Copilot <ChevronRight className="w-3 h-3 ml-0.5" />
             </Link>

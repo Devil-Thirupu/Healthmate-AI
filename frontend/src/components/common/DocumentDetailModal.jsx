@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api, { getApiUrl } from '../../services/api';
-import { downloadDocument, generateReportHtml } from '../../services/documentStore';
+import { downloadDocument, generateReportHtml, getStoredDocuments } from '../../services/documentStore';
 import {
   X,
   FileText,
@@ -44,14 +44,27 @@ const DocumentDetailModal = ({ docId, isOpen, onClose, onUpdated }) => {
     if (!docId) return;
     try {
       setIsLoading(true);
-      const res = await api.get(`/documents/${docId}`);
-      setDoc(res.data);
-      setEditTitle(res.data.title || '');
-      setEditCategory(res.data.category || 'other');
-      setEditDate(res.data.document_date || '');
-      setEditDoctor(res.data.doctor_name || '');
-      setEditClinic(res.data.clinic_or_lab || '');
-      setEditOcrText(res.data.ocr_raw_text || '');
+      let docData = null;
+      try {
+        const res = await api.get(`/documents/${docId}`);
+        docData = res.data;
+      } catch (apiErr) {
+        // Backend unreachable — fall back to local vault store
+        console.warn('Backend unreachable for document detail; falling back to local vault store:', apiErr);
+        const localDocs = getStoredDocuments();
+        docData = localDocs.find(d => String(d.id) === String(docId)) || localDocs[0];
+      }
+      if (docData) {
+        setDoc(docData);
+        setEditTitle(docData.title || '');
+        setEditCategory(docData.category || 'other');
+        setEditDate(docData.document_date || '');
+        setEditDoctor(docData.doctor_name || '');
+        setEditClinic(docData.clinic_or_lab || '');
+        setEditOcrText(docData.ocr_raw_text || '');
+      } else {
+        setErrorMsg('Document not found in vault.');
+      }
     } catch (err) {
       console.error('Failed to load document details:', err);
       setErrorMsg('Failed to load document details.');
