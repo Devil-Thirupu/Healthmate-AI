@@ -29,7 +29,7 @@ import {
 import ReportInsightCard from '../components/common/ReportInsightCard';
 import ExplainReportModal from '../components/common/ExplainReportModal';
 
-import { getStoredDocuments } from '../services/documentStore';
+import { getStoredDocuments, downloadDocument, openDocumentPreview } from '../services/documentStore';
 
 const ReportsPage = () => {
   const { openUpload } = useOutletContext();
@@ -379,15 +379,13 @@ const ReportsPage = () => {
                       <Sparkles className="w-3.5 h-3.5" />
                       <span>Explain with Grounded AI</span>
                     </button>
-                    <a
-                      href={getApiUrl(`/documents/${selectedDocDetail.id}/download`)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 hover:bg-slate-100 transition-colors"
-                      title="Download PDF"
+                    <button
+                      onClick={() => downloadDocument(selectedDocDetail)}
+                      className="p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                      title="Download Medical Record"
                     >
                       <Download className="w-4 h-4" />
-                    </a>
+                    </button>
                   </div>
                 </div>
 
@@ -545,7 +543,10 @@ const ReportsPage = () => {
           documentTitle={explainModalDoc.title}
           isOpen={!!explainModalDoc}
           onClose={() => setExplainModalDoc(null)}
-          onViewSource={(docId) => window.open(getApiUrl(`/documents/${docId}/download`), '_blank')}
+          onViewSource={(docId) => {
+            const d = labDocs.find(x => x.id === docId || String(x.id) === String(docId)) || selectedDocDetail;
+            openDocumentPreview(d);
+          }}
         />
       )}
     </div>

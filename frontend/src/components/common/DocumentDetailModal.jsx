@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api, { getApiUrl } from '../../services/api';
+import { downloadDocument, generateReportHtml } from '../../services/documentStore';
 import {
   X,
   FileText,
@@ -111,8 +112,12 @@ const DocumentDetailModal = ({ docId, isOpen, onClose, onUpdated }) => {
   };
 
   const handleDownload = () => {
-    const downloadUrl = getApiUrl(`/documents/${docId}/download`, true);
-    window.open(downloadUrl, '_blank');
+    if (doc) {
+      downloadDocument(doc);
+    } else {
+      const downloadUrl = getApiUrl(`/documents/${docId}/download`, true);
+      window.open(downloadUrl, '_blank');
+    }
   };
 
   return (
@@ -171,24 +176,29 @@ const DocumentDetailModal = ({ docId, isOpen, onClose, onUpdated }) => {
               <div className="flex items-center justify-between px-3 py-1.5 text-xs text-slate-500">
                 <span className="font-bold">Original Medical Document</span>
                 <span className="text-[10px] uppercase font-mono">
-                  {doc?.mime_type}
+                  {doc?.mime_type || 'clinical/report'}
                 </span>
               </div>
               <div className="flex-1 rounded-xl overflow-auto border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center p-2">
-                {doc?.mime_type?.includes('pdf') ? (
-                  <iframe
-                    src={getApiUrl(`/documents/${doc.id}/preview`, true)}
-                    className="w-full h-full rounded-lg"
-                    title="Document Preview"
-                  />
+                {doc?.file_data_url ? (
+                  doc.file_data_url.startsWith('data:image/') ? (
+                    <img
+                      src={doc.file_data_url}
+                      alt={doc?.title || 'Document Preview'}
+                      className="max-h-full max-w-full object-contain rounded-lg"
+                    />
+                  ) : (
+                    <iframe
+                      src={doc.file_data_url}
+                      className="w-full h-full rounded-lg border-0"
+                      title="Document Preview"
+                    />
+                  )
                 ) : (
-                  <img
-                    src={getApiUrl(`/documents/${doc.id}/preview`, true)}
-                    alt={doc?.title || 'Document Preview'}
-                    className="max-h-full max-w-full object-contain rounded-lg"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                    }}
+                  <iframe
+                    srcDoc={doc ? generateReportHtml(doc) : ''}
+                    className="w-full h-full rounded-lg border-0 bg-white"
+                    title="Document Preview"
                   />
                 )}
               </div>

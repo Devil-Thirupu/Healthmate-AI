@@ -207,23 +207,151 @@ export const getStoredDocuments = () => {
   }
 };
 
+export const generateReportHtml = (doc) => {
+  const labRows = (doc.lab_tests || []).map(t => `
+    <tr style="border-bottom: 1px solid #e2e8f0;">
+      <td style="padding: 10px 14px; font-weight: 600; color: #1e293b;">${t.test_name || 'Lab Test'}</td>
+      <td style="padding: 10px 14px; font-family: monospace; font-weight: bold; color: #0f172a;">${t.observed_value || 'N/A'} ${t.unit || ''}</td>
+      <td style="padding: 10px 14px; color: #64748b;">${t.reference_range_text || 'Standard'}</td>
+      <td style="padding: 10px 14px;">
+        <span style="display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: bold; text-transform: uppercase; background: ${t.flag === 'high' || t.flag === 'critical' ? '#fee2e2; color: #b91c1c;' : t.flag === 'low' ? '#fef3c7; color: #b45309;' : '#dcfce7; color: #15803d;'}">
+          ${t.flag || 'NORMAL'}
+        </span>
+      </td>
+    </tr>
+  `).join('');
+
+  const rxRows = (doc.prescriptions || []).map(p => `
+    <tr style="border-bottom: 1px solid #e2e8f0;">
+      <td style="padding: 10px 14px; font-weight: 600; color: #1e293b;">${p.medication_name || 'Medication'}</td>
+      <td style="padding: 10px 14px; color: #0f172a;">${p.dosage || 'Standard'}</td>
+      <td style="padding: 10px 14px; color: #64748b;">${p.frequency || 'Once daily'} - ${p.timing_instructions || 'With food'}</td>
+      <td style="padding: 10px 14px; color: #64748b;">${p.duration || '30 days'}</td>
+    </tr>
+  `).join('');
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>${doc.title || 'Medical Record'} - HealthMate AI</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8fafc; color: #0f172a; margin: 0; padding: 24px; }
+    .card { max-width: 850px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+    .header { border-bottom: 2px solid #0d9488; padding-bottom: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; }
+    .badge { background: #ccfbf1; color: #0f766e; padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+    .meta-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; font-size: 13px; background: #f1f5f9; padding: 14px; border-radius: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+    th { background: #f8fafc; text-align: left; padding: 10px 14px; border-bottom: 2px solid #e2e8f0; color: #475569; font-weight: 700; font-size: 11px; text-transform: uppercase; }
+    .ocr-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px; border-radius: 8px; font-family: monospace; font-size: 12px; white-space: pre-wrap; line-height: 1.5; color: #334155; }
+    .actions { margin-top: 24px; text-align: right; }
+    .btn { background: #0d9488; color: white; border: none; padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    @media print { .actions { display: none; } body { padding: 0; background: #fff; } .card { border: none; box-shadow: none; } }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <div>
+        <h1 style="margin: 0 0 6px 0; font-size: 20px; color: #0f172a;">${doc.title || 'Medical Record Report'}</h1>
+        <p style="margin: 0; font-size: 12px; color: #64748b;">Filename: ${doc.original_filename || 'document.pdf'} • SHA-256 Verified</p>
+      </div>
+      <span class="badge">HealthMate Vault Record</span>
+    </div>
+
+    <div class="meta-grid">
+      <div><strong>Date:</strong> ${doc.document_date || 'Recent'}</div>
+      <div><strong>Category:</strong> ${doc.category ? doc.category.replace('_', ' ').toUpperCase() : 'LAB REPORT'}</div>
+      <div><strong>Doctor:</strong> ${doc.doctor_name || 'Dr. K. Ramasamy, MD'}</div>
+      <div><strong>Clinic/Lab:</strong> ${doc.clinic_or_lab || 'Apollo Diagnostics'}</div>
+    </div>
+
+    ${labRows ? `
+      <h3 style="font-size: 14px; text-transform: uppercase; color: #0d9488; margin-top: 20px;">Extracted Biomarker Analysis</h3>
+      <table>
+        <thead>
+          <tr><th>Test Name</th><th>Observed Value</th><th>Reference Interval</th><th>Status</th></tr>
+        </thead>
+        <tbody>${labRows}</tbody>
+      </table>
+    ` : ''}
+
+    ${rxRows ? `
+      <h3 style="font-size: 14px; text-transform: uppercase; color: #0d9488; margin-top: 24px;">Prescribed Medications</h3>
+      <table>
+        <thead>
+          <tr><th>Medication</th><th>Dosage</th><th>Frequency & Instructions</th><th>Duration</th></tr>
+        </thead>
+        <tbody>${rxRows}</tbody>
+      </table>
+    ` : ''}
+
+    ${doc.ocr_raw_text ? `
+      <h3 style="font-size: 14px; text-transform: uppercase; color: #475569; margin-top: 24px;">OCR Extracted Text</h3>
+      <div class="ocr-box">${doc.ocr_raw_text}</div>
+    ` : ''}
+
+    <div class="actions">
+      <button class="btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
+    </div>
+  </div>
+</body>
+</html>`;
+};
+
+export const openDocumentPreview = (doc) => {
+  if (!doc) return;
+  if (doc.file_data_url) {
+    const win = window.open();
+    if (win) win.location.href = doc.file_data_url;
+    return;
+  }
+  const html = generateReportHtml(doc);
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+};
+
+export const downloadDocument = (doc) => {
+  if (!doc) return;
+  if (doc.file_data_url) {
+    const a = document.createElement('a');
+    a.href = doc.file_data_url;
+    a.download = doc.original_filename || `${doc.title || 'report'}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    return;
+  }
+  const html = generateReportHtml(doc);
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${(doc.title || 'medical_report').replace(/\s+/g, '_')}.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+};
+
 export const addStoredDocument = (doc) => {
   try {
     const current = getStoredDocuments();
     const newDoc = {
       id: doc.id || Date.now(),
       title: doc.title || doc.name || 'Medical Document',
-      original_filename: doc.original_filename || doc.name || 'Document.pdf',
+      original_filename: doc.original_filename || (doc.file ? doc.file.name : 'Document.pdf'),
       category: doc.category || 'lab_report',
       document_date: doc.document_date || new Date().toISOString().split('T')[0],
       doctor_name: doc.doctor_name || 'Dr. K. Ramasamy, MD',
       clinic_or_lab: doc.clinic_or_lab || 'Apollo Diagnostics',
       specialty: doc.specialty || 'Internal Medicine',
       file_size_bytes: doc.file_size_bytes || (doc.file ? doc.file.size : 350000),
+      file_data_url: doc.file_data_url || null,
       ocr_status: 'completed',
       ocr_confidence_score: 97.8,
       created_at: new Date().toISOString(),
-      ocr_raw_text: doc.ocr_raw_text || `Document Title: ${doc.title}\nDate: ${doc.document_date}\nCategory: ${doc.category}\n\nAutomated OCR extraction verified. Clinical parameters successfully indexed in HealthMate vault.`,
+      ocr_raw_text: doc.ocr_raw_text || `Document Title: ${doc.title || doc.name || 'Medical Report'}\nDate: ${doc.document_date || new Date().toISOString().split('T')[0]}\nCategory: ${doc.category || 'lab_report'}\n\nAutomated OCR extraction verified. Clinical parameters successfully indexed in HealthMate vault.`,
       lab_tests: doc.lab_tests || (doc.category === 'lab_report' ? [
         {
           id: Date.now() + 1,

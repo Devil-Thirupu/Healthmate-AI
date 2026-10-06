@@ -26,7 +26,7 @@ import {
   Filter
 } from 'lucide-react';
 
-import { getStoredDocuments, addStoredDocument } from '../services/documentStore';
+import { getStoredDocuments, addStoredDocument, downloadDocument, openDocumentPreview } from '../services/documentStore';
 
 const CATEGORY_TABS = [
   { id: 'all', label: 'All Records', icon: FolderOpen },
@@ -124,8 +124,7 @@ const MedicalRecordsPage = () => {
   };
 
   const handleDownload = (doc) => {
-    const downloadUrl = getApiUrl(`/documents/${doc.id}/download`);
-    window.open(downloadUrl, '_blank');
+    downloadDocument(doc);
   };
 
   const handleQuickFileSelect = (file) => {

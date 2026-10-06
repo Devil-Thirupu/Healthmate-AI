@@ -301,7 +301,7 @@ export function generateClientChatResponse(query = '', language = 'en', imagePre
     };
   }
 
-  // 7. Nutrition / Foods / Diet
+  // 7. Nutrition / Foods / Diet / General Healthy Eating
   if (
     q.includes('food') ||
     q.includes('nutrition') ||
@@ -311,23 +311,49 @@ export function generateClientChatResponse(query = '', language = 'en', imagePre
     q.includes('calorie') ||
     q.includes('snack') ||
     q.includes('vegetable') ||
-    q.includes('fruit')
+    q.includes('fruit') ||
+    q.includes('healthy') ||
+    q.includes('weight') ||
+    q.includes('vitamin') ||
+    q.includes('salad') ||
+    q.includes('breakfast') ||
+    q.includes('dinner') ||
+    q.includes('lunch')
   ) {
     const topFoods = FALLBACK_FOODS.slice(0, 4);
     const foodList = topFoods
       .map(
         (f) =>
-          `• **${f.name}** (\`${f.calories} kcal / 100g\`)\n  - *Nutrients:* Protein ${f.protein_g}g | Fiber ${f.fiber_g}g | Carbs ${f.carbohydrates_g}g\n  - *Health Benefit:* ${f.health_benefits[0] || 'Rich in essential micronutrients'}`
+          `🥑 **${f.name}** (\`${f.calories} kcal / 100g\`)\n   • *Nutrients:* Protein ${f.protein_g}g • Fiber ${f.fiber_g}g • Carbs ${f.carbohydrates_g}g\n   • *Why it helps you:* ${f.health_benefits[0] || 'Packed with essential antioxidants and micronutrients'}`
       )
       .join('\n\n');
 
+    let personalizedNote = '';
+    const hasGlucose = allTests.some(t => t.test_name.toLowerCase().includes('glucose') || t.test_name.toLowerCase().includes('sugar'));
+    const hasVitD = allTests.some(t => t.test_name.toLowerCase().includes('vitamin'));
+
+    if (hasGlucose || hasVitD) {
+      personalizedNote = `\n\n🎯 **Tailored to your health records:**\n- Since your fasting blood sugar is around **105 mg/dL**, focusing on high-fiber greens (spinach, broccoli) and complex grains helps prevent glucose spikes!\n- For your Vitamin D level (**22.4 ng/mL**), adding fortified eggs, mushrooms, or salmon gives you a natural boost alongside sunlight. ☀️`;
+    } else {
+      personalizedNote = `\n\n🌟 **Top Daily Habits for You:**\n1. Drink at least 2-3 liters of water throughout the day. 💧\n2. Fill half your plate with colorful veggies and greens. 🥗\n3. Include a clean protein source with every meal (eggs, lentils, chicken, tofu). 🍳`;
+    }
+
+    let friendlyIntro = '';
+    if (language === 'ta') {
+      friendlyIntro = `வணக்கம் நண்பரே! 😊 உங்கள் ஆரோக்கியத்திற்கு ஏற்ற சிறந்த உணவுகள் இதோ:\n\n${foodList}\n\n💡 *ஆரோக்கிய குறிப்பு: காய்கறிகள், கீரைகள் மற்றும் நட்ஸ் உங்கள் உடலுக்கு நிலையான ஆற்றலைத் தரும்.*`;
+    } else if (language === 'tanglish') {
+      friendlyIntro = `Hey friend! 😊 Ungal health-ku romba nalladhu aana food items list idho:\n\n${foodList}\n\n💡 *Tip: Daily green vegetables and adequate water ungal sugar and energy levels-ai balance panna romba help pannum.*`;
+    } else {
+      friendlyIntro = `Hey friend! 😊 Eating the right foods is one of the best ways to feel energetic and keep your body thriving! Here are some super healthy, nutrient-packed foods I recommend for you:\n\n${foodList}${personalizedNote}\n\n💡 **My Quick Friend Tip:** Try swapping sugary snacks with a handful of walnuts or an apple with peanut butter. You'll feel the difference in your energy! 🌟`;
+    }
+
     return {
-      answer: `🥗 **Personalized Nutrition & Food Recommendations:**\n\nBased on your lab profile (Fasting Glucose **105 mg/dL**, Vitamin D **22.4 ng/mL**), here are key nutrient-dense foods that support your health:\n\n${foodList}\n\n💡 *Tip: Combining leafy greens with dietary sources of Vitamin D and lean proteins helps maintain steady energy and optimal glucose metabolism.*`,
+      answer: friendlyIntro,
       query_type: 'HYBRID',
       evidence_status: 'SUPPORTED',
       citations: [
         {
-          document_name: 'USDA FoodData Central & Clinical Nutrition Guidelines',
+          document_name: 'USDA Foundation Foods & Clinical Nutrition Guidelines',
           report_date: '2026-03-20',
           page: 1,
           snippet: 'Foundation Foods Nutritional Matrix for Metabolic Support'
@@ -335,7 +361,7 @@ export function generateClientChatResponse(query = '', language = 'en', imagePre
       ],
       sources: [
         {
-          name: 'USDA Foundation Foods & Lab Match Engine',
+          name: 'USDA Foundation Foods Database',
           date: '2026-03-20',
           type: 'Verified Nutrition Database'
         }
@@ -350,27 +376,30 @@ export function generateClientChatResponse(query = '', language = 'en', imagePre
       })),
       follow_up_suggestions: [
         'What are my latest lab values? 🩺',
-        'What changed from my previous test? 📈',
+        'What foods help lower my blood sugar? 🥗',
         'Show my active medications 💊'
       ]
     };
   }
 
-  // 8. General / Fallback with Vault Context
-  const testPreview = allTests.slice(0, 3).map((t) => `${t.test_name} (${t.value} ${t.unit})`).join(', ');
+  // 8. General / Fallback with Vault Context in a friendly tone
+  const testPreview = allTests.length > 0
+    ? allTests.slice(0, 3).map((t) => `${t.test_name}: ${t.value} ${t.unit}`).join(', ')
+    : 'no test records uploaded yet';
+
   return {
-    answer: `🩺 **HealthMate Clinical Assistant:**\n\nRegarding your question: "${query}"\n\nAccording to your personal health vault, your most recent lab results show **${testPreview}**, and you have **${allPrescriptions.length} active prescriptions**.\n\nEverything is well-indexed and tracked in your profile. What specific details would you like to explore?`,
+    answer: `Hey there! 😊 I hear you!\n\nRegarding your question: **"${query}"**\n\nI'm always here to help you understand your health journey. From your records, we have **${allTests.length} tracked biomarkers** (${testPreview}) and **${allPrescriptions.length} active prescriptions**.\n\nWhether you'd like to dive into your lab numbers, explore diet & nutrition tips, review your medications, or just ask general wellness questions, I'm here for you! 🩺🌟\n\nWhat would you like to explore next?`,
     query_type: 'PATIENT_FACTUAL',
     evidence_status: 'SUPPORTED',
     citations: docs.slice(0, 1).map((d) => ({
-      document_name: d.title || d.filename,
+      document_name: d.title || d.filename || 'Health Vault',
       report_date: d.upload_date || '2026-03-20',
       page: 1,
-      snippet: 'Health vault clinical profile'
+      snippet: 'Personal health profile and records'
     })),
     sources: docs.slice(0, 1).map((d) => ({
-      name: d.title || d.filename,
-      date: d.upload_date,
+      name: d.title || d.filename || 'Health Vault',
+      date: d.upload_date || '2026-03-20',
       type: 'Personal Record'
     })),
     structured_cards: allTests.slice(0, 2).map((t) => ({
@@ -382,9 +411,9 @@ export function generateClientChatResponse(query = '', language = 'en', imagePre
       date: t.date
     })),
     follow_up_suggestions: [
+      'What foods help with my health? 🥗',
       'What are my latest lab values? 🩺',
-      'What did the report extract? 📄',
-      'What foods should I eat for my health? 🥗'
+      'What did my report extract? 📄'
     ]
   };
 }

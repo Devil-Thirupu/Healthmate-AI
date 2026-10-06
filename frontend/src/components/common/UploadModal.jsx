@@ -78,7 +78,16 @@ const UploadModal = ({ isOpen, onClose, onSuccess }) => {
     setIsUploading(true);
     setError('');
 
+    const readFileAsDataUrl = (f) => new Promise((resolve) => {
+      if (!f) return resolve(null);
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(f);
+    });
+
     try {
+      const dataUrl = await readFileAsDataUrl(file);
       const formData = new FormData();
       formData.append('file', file);
       formData.append('title', title || file.name);
@@ -88,34 +97,31 @@ const UploadModal = ({ isOpen, onClose, onSuccess }) => {
       if (clinicOrLab) formData.append('clinic_or_lab', clinicOrLab);
       if (specialty) formData.append('specialty', specialty);
 
-      await api.post('/documents/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      try {
+        await api.post('/documents/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+      } catch (apiErr) {
+        console.warn('Backend upload unavailable; saving directly to secure local vault.');
+      }
 
-      // Also mirror to local document store
+      // Mirror to local document store with data URL for instant viewing/downloading
       addStoredDocument({
         title: title || file.name,
+        original_filename: file.name,
         category,
         document_date: documentDate,
         doctor_name: doctorName,
         clinic_or_lab: clinicOrLab,
         specialty,
-        file
+        file,
+        file_data_url: dataUrl
       });
 
       onSuccess();
     } catch (err) {
-      console.warn('Backend upload unavailable; storing in clinical vault client storage.');
-      addStoredDocument({
-        title: title || file.name,
-        category,
-        document_date: documentDate,
-        doctor_name: doctorName,
-        clinic_or_lab: clinicOrLab,
-        specialty,
-        file
-      });
-      onSuccess();
+      console.error('Failed to process upload:', err);
+      setError('Failed to upload document. Please try again.');
     } finally {
       setIsUploading(false);
     }
