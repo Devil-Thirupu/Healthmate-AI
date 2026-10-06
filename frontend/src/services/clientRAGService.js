@@ -15,18 +15,41 @@ export function generateClientChatResponse(query = '', language = 'en', imagePre
   const allDocSnippets = [];
 
   docs.forEach((doc) => {
-    if (doc.extracted_data?.tests) {
-      doc.extracted_data.tests.forEach((t) => {
-        allTests.push({ ...t, source_doc: doc.title || doc.filename, date: doc.upload_date || '2026-03-20' });
+    // 1. Lab tests from doc.lab_tests or doc.extracted_data?.tests
+    const labItems = doc.lab_tests || doc.extracted_data?.tests || [];
+    labItems.forEach((t) => {
+      allTests.push({
+        test_name: t.test_name || t.canonical_name || 'Lab Test',
+        value: t.observed_value !== undefined ? t.observed_value : (t.value !== undefined ? t.value : 'N/A'),
+        unit: t.unit || '',
+        range: t.reference_range_text || t.range || 'Standard Range',
+        status: (t.flag || t.status || 'normal').toLowerCase(),
+        source_doc: doc.title || doc.original_filename || doc.filename || 'Lab Report',
+        date: t.test_date || doc.document_date || doc.upload_date || 'Recent'
       });
-    }
-    if (doc.extracted_data?.prescriptions) {
-      doc.extracted_data.prescriptions.forEach((p) => {
-        allPrescriptions.push({ ...p, source_doc: doc.title || doc.filename, date: doc.upload_date || '2026-03-20' });
+    });
+
+    // 2. Prescriptions from doc.prescriptions or doc.extracted_data?.prescriptions
+    const rxItems = doc.prescriptions || doc.extracted_data?.prescriptions || [];
+    rxItems.forEach((p) => {
+      allPrescriptions.push({
+        name: p.medication_name || p.drug_name || p.name || 'Medication',
+        dosage: p.dosage || 'Standard',
+        frequency: p.frequency || 'Once daily',
+        instructions: p.timing_instructions || p.instructions || 'As prescribed',
+        source_doc: doc.title || doc.original_filename || doc.filename || 'Prescription',
+        date: p.prescribed_date || doc.document_date || doc.upload_date || 'Recent'
       });
-    }
-    if (doc.ocr_preview) {
-      allDocSnippets.push({ docName: doc.title || doc.filename, text: doc.ocr_preview, date: doc.upload_date });
+    });
+
+    // 3. OCR text snippets
+    const ocr = doc.ocr_raw_text || doc.ocr_preview;
+    if (ocr) {
+      allDocSnippets.push({
+        docName: doc.title || doc.original_filename || doc.filename || 'Document',
+        text: ocr,
+        date: doc.document_date || doc.upload_date || 'Recent'
+      });
     }
   });
 

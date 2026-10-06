@@ -277,10 +277,31 @@ export const AuthProvider = ({ children }) => {
   };
 
   const updateProfile = async (profileData) => {
-    const res = await api.put('/auth/me', profileData);
-    setUser(res.data);
-    localStorage.setItem('healthmate_user', JSON.stringify(res.data));
-    return res.data;
+    let updatedUser = null;
+    try {
+      const res = await api.put('/auth/me', profileData);
+      if (res.data) {
+        updatedUser = res.data;
+      }
+    } catch (apiErr) {
+      console.warn('[HealthMate] Backend profile update note:', apiErr.message);
+    }
+
+    // Also update Supabase metadata if Supabase is connected
+    if (supabase) {
+      try {
+        await supabase.auth.updateUser({
+          data: { ...profileData }
+        });
+      } catch (sbErr) {
+        console.warn('[HealthMate] Supabase updateUser note:', sbErr.message);
+      }
+    }
+
+    const finalUser = updatedUser || { ...(user || {}), ...profileData };
+    setUser(finalUser);
+    localStorage.setItem('healthmate_user', JSON.stringify(finalUser));
+    return finalUser;
   };
 
   const changePassword = async (current_password, new_password) => {

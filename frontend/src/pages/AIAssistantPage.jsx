@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useOutletContext, Link } from 'react-router-dom';
-import api from '../services/api';
+import api, { getApiUrl } from '../services/api';
 import { generateClientChatResponse } from '../services/clientRAGService';
 import {
   BotMessageSquare,
@@ -610,7 +610,7 @@ const AIAssistantPage = () => {
               {activeSourceModal.document_id && (
                 <div className="pt-2 flex justify-end">
                   <a
-                    href={`/api/v1/documents/${activeSourceModal.document_id}/download`}
+                    href={getApiUrl(`/documents/${activeSourceModal.document_id}/download`, true)}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center space-x-1.5 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all"

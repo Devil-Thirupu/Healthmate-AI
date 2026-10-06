@@ -163,6 +163,10 @@ def execute_ocr_and_extraction(doc_id: int, user_id: int, file_path_str: str, ca
     except Exception as e:
         logger.error(f"OCR processing failed for document {doc.id}: {e}")
         doc.ocr_status = OCRStatus.FAILED.value
+        current_meta = dict(doc.metadata_json or {})
+        current_meta["error"] = str(e)
+        current_meta["failed_at"] = datetime.now(timezone.utc).isoformat()
+        doc.metadata_json = current_meta
         db.commit()
 
 
@@ -608,6 +612,66 @@ def preview_document(
         media_type=doc.mime_type,
         content_disposition_type="inline"
     )
+
+@router.get("/{doc_id}/signed-url")
+def get_document_signed_url(
+    doc_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> Any:
+    """Retrieve a secure 1-hour signed URL for direct client-side document access / private Supabase Storage."""
+    from backend.app.core.config import settings as _cfg
+
+    doc = db.query(Document).filter(
+        Document.id == doc_id,
+        Document.user_id == current_user.id
+    ).first()
+
+    if not doc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
+
+    supabase_path = (doc.metadata_json or {}).get("supabase_storage_path", "")
+    signed_url = None
+    if supabase_path and _cfg.supabase_enabled:
+        try:
+            from backend.app.services.supabase_storage_service import supabase_storage
+            signed_url = supabase_storage.create_signed_url(
+                storage_path=supabase_path,
+                category=doc.category,
+                expiry_seconds=3600,
+            )
+        except Exception as exc:
+            logger.warning(f"[Supabase] Signed URL generation failed: {exc}")
+
+    return {
+        "document_id": doc.id,
+        "title": doc.title,
+        "signed_url": signed_url,
+        "storage_path": supabase_path or None,
+        "expires_in_seconds": 3600 if signed_url else 0,
+        "is_cloud_stored": bool(signed_url)
+    }
+
+@router.post("/{doc_id}/explain")
+def explain_document(
+    doc_id: int,
+    request: Request,
+    payload: Optional[dict] = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> Any:
+    """Explain uploaded report with grounded evidence (alias route for /documents/{id}/explain)."""
+    from backend.app.services.health_intelligence_service import health_intelligence_service
+    lang = (payload or {}).get("language") or current_user.language_preference or "en"
+    explanation = health_intelligence_service.explain_report(
+        db=db,
+        user_id=current_user.id,
+        document_id=doc_id,
+        language=lang
+    )
+    if not explanation:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
+    return explanation
 
 @router.put("/{doc_id}", response_model=DocumentResponse)
 def update_document_metadata(

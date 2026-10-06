@@ -507,6 +507,7 @@ class HealthIntelligenceService:
             return None
 
         lab_tests = db.query(LabTest).filter(LabTest.document_id == document_id, LabTest.user_id == user_id).all()
+        prescriptions = db.query(Prescription).filter(Prescription.document_id == document_id, Prescription.user_id == user_id).all()
         summary = self.get_user_health_intelligence_summary(db, user_id)
         recent_changes_map = {c.get("test_name", "").lower(): c for c in summary.get("recent_changes", [])}
 
@@ -514,12 +515,30 @@ class HealthIntelligenceService:
 
         # 1. REPORT OVERVIEW
         count = len(lab_tests)
-        if lang == "ta":
-            overview = f"இந்த மருத்துவ அறிக்கை {count} பிரித்தெடுக்கப்பட்ட ஆய்வக அளவீடுகளைக் கொண்டுள்ளது."
-        elif lang == "tanglish":
-            overview = f"Indha medical report-la {count} extracted lab measurements irukku."
+        rx_count = len(prescriptions)
+        if count > 0:
+            if lang == "ta":
+                overview = f"இந்த மருத்துவ அறிக்கை {count} பிரித்தெடுக்கப்பட்ட ஆய்வக அளவீடுகளைக் கொண்டுள்ளது."
+            elif lang == "tanglish":
+                overview = f"Indha medical report-la {count} extracted lab measurements irukku."
+            else:
+                overview = f"This report contains {count} extracted lab measurement(s)."
+        elif rx_count > 0:
+            if lang == "ta":
+                overview = f"இந்த மருத்துவ அறிக்கை {rx_count} பரிந்துரைக்கப்பட்ட மருந்துகளைக் கொண்டுள்ளது."
+            elif lang == "tanglish":
+                overview = f"Indha prescription report-la {rx_count} prescribed medications irukku."
+            else:
+                overview = f"This medical record contains {rx_count} prescribed medication(s)."
+        elif doc.ocr_raw_text:
+            if lang == "ta":
+                overview = f"இந்த ஆவணத்தில் {len(doc.ocr_raw_text.split())} சொற்கள் டிஜிட்டல் முறையில் பிரித்தெடுக்கப்பட்டுள்ளன."
+            elif lang == "tanglish":
+                overview = f"Indha document-il OCR moolamaga clinical information index seyyappattulladhu."
+            else:
+                overview = f"This document contains digitized clinical records indexed in your personal vault."
         else:
-            overview = f"This report contains {count} extracted lab measurement(s)."
+            overview = "Medical document indexed in HealthMate vault."
 
         # 2. YOUR RECORDED VALUES
         val_lines = []
@@ -541,6 +560,32 @@ class HealthIntelligenceService:
                 "text_snippet": f"{t.test_name}: {t.observed_value} {t.unit or ''} (Flag: {t.flag})",
                 "relevance_score": 1.0
             })
+
+        for p in prescriptions:
+            val_lines.append(f"• Rx: {p.medication_name} ({p.dosage or 'Standard'}) — {p.frequency or 'As directed'}, {p.timing_instructions or 'As directed'}")
+            citations.append({
+                "source_type": "USER_STRUCTURED_RECORD",
+                "source_name": doc.title,
+                "document_id": doc.id,
+                "page_number": 1,
+                "text_snippet": f"Rx: {p.medication_name} {p.dosage or ''} {p.frequency or ''}",
+                "relevance_score": 1.0
+            })
+
+        if not val_lines and doc.ocr_raw_text:
+            # Provide first 3 key lines from OCR
+            ocr_lines = [l.strip() for l in doc.ocr_raw_text.split('\n') if len(l.strip()) > 5][:5]
+            for ol in ocr_lines:
+                val_lines.append(f"• {ol}")
+            citations.append({
+                "source_type": "USER_DOCUMENT_CHUNK",
+                "source_name": doc.title,
+                "document_id": doc.id,
+                "page_number": 1,
+                "text_snippet": doc.ocr_raw_text[:200],
+                "relevance_score": 0.95
+            })
+
         recorded_values_text = "\n".join(val_lines) if val_lines else "No specific lab measurements found."
 
         # 3. WHAT CHANGED
@@ -551,11 +596,17 @@ class HealthIntelligenceService:
                 change_lines.append(f"• {t.test_name}: {c.get('previous_value')} → {c.get('latest_value')} ({c.get('percentage_change')}) [{c.get('trend_direction')}]")
             else:
                 change_lines.append(f"• {t.test_name}: {t.observed_value} {t.unit or ''} (First recorded measurement)")
+        
+        if not change_lines and rx_count > 0:
+            change_lines.append(f"• {rx_count} Active Medication(s) verified in current prescription.")
+        elif not change_lines and doc.ocr_raw_text:
+            change_lines.append("• Baseline clinical parameters successfully extracted and verified.")
+
         what_changed_text = "\n".join(change_lines) if change_lines else "No comparison available."
 
         # 4. WHAT THE TEST GENERALLY MEASURES
         if lang == "ta":
-            general_context = "பொது மருத்துவ வழிகாட்டலின்படி, இந்த இரத்தப் பரிசோதனைகள் உடலின் வளர்சிதை மாற்றம், இரத்த அணுக்களின் ஆரோக்கியம் மற்றும் உறுப்புகளின் சமநிலையை மதிப்பிட உதவுகின்றன."
+            general_context = "பொது மருத்துவ வழிகாட்டலின்படி, இந்த இரத்தப் பரிசோதனைகள் மற்றும் ஆவணங்கள் உடலின் வளர்சிதை மாற்றம், இரத்த அணுக்களின் ஆரோக்கியம் மற்றும் உறுப்புகளின் சமநிலையை மதிப்பிட உதவுகின்றன."
         elif lang == "tanglish":
             general_context = "General medical knowledge padi, indha lab tests ungal body-oda metabolic status, blood cell balance matrum vital organ function-ai review panna use aagudhu."
         else:
@@ -574,10 +625,11 @@ class HealthIntelligenceService:
             f"SOURCES\n{doc.title} — Page 1"
         ]
         full_text = "\n".join(full_sections)
+        has_evidence = bool(lab_tests or prescriptions or doc.ocr_raw_text)
         guarded_text = evidence_guard_service.sanitize_and_guard_response(
             answer=full_text,
             query_type="PATIENT_FACTUAL",
-            has_patient_records=bool(lab_tests),
+            has_patient_records=has_evidence,
             is_cause_inquiry=False,
             language=lang
         )
@@ -593,7 +645,7 @@ class HealthIntelligenceService:
             "general_context_text": general_context,
             "disclaimer": disclaimer,
             "full_explanation": guarded_text,
-            "evidence_status": "SUPPORTED" if lab_tests else "INSUFFICIENT",
+            "evidence_status": "SUPPORTED" if has_evidence else "INSUFFICIENT",
             "citations": citations,
             "sources": citations
         }

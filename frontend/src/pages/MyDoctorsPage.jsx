@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Stethoscope, Plus, Phone, Mail, MapPin, Building2,
   Clock, CheckCircle2, XCircle, AlertCircle, RefreshCw,
@@ -395,6 +396,7 @@ const DoctorCard = ({ doctor, onEdit, onRequestAppointment, onShareRecords, onDi
 // ─── MAIN PAGE ─────────────────────────────────────────────────────────────
 
 export default function MyDoctorsPage() {
+  const navigate = useNavigate();
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -509,7 +511,7 @@ export default function MyDoctorsPage() {
               doctor={doc}
               onEdit={d => { setEditDoctor(d); setShowAddModal(true); }}
               onRequestAppointment={d => setAppointmentDoctor(d)}
-              onShareRecords={d => window.location.href = `/sharing?doctor_id=${d.id}`}
+              onShareRecords={d => navigate(`/sharing?doctor_id=${d.id}`)}
               onDisconnect={() => fetchDoctors()}
               onRefresh={fetchDoctors}
             />

@@ -34,6 +34,23 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+export const getApiUrl = (path, includeToken = true) => {
+  const cleanPath = (path || '').startsWith('/') ? path : `/${path}`;
+  const base = baseURL.replace(/\/+$/, '');
+  const url = cleanPath.startsWith('/api/v1')
+    ? (rawBase ? `${rawBase}${cleanPath}` : cleanPath)
+    : `${base}${cleanPath}`;
+  
+  if (includeToken) {
+    const token = localStorage.getItem('healthmate_access_token');
+    if (token) {
+      const sep = url.includes('?') ? '&' : '?';
+      return `${url}${sep}token=${encodeURIComponent(token)}`;
+    }
+  }
+  return url;
+};
+
 // Response interceptor: handle token refresh or unauthorized redirect
 api.interceptors.response.use(
   (response) => response,
@@ -56,7 +73,8 @@ api.interceptors.response.use(
           localStorage.removeItem('healthmate_access_token');
           localStorage.removeItem('healthmate_refresh_token');
           localStorage.removeItem('healthmate_user');
-          window.location.href = '/login';
+          const basePath = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
+          window.location.href = `${basePath}/login`;
         }
       } else {
         localStorage.removeItem('healthmate_access_token');
@@ -67,4 +85,5 @@ api.interceptors.response.use(
   }
 );
 
+export { baseURL };
 export default api;

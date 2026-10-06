@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import api from '../services/api';
+import api, { getApiUrl } from '../services/api';
 import ReportViewer from '../components/common/ReportViewer';
 import {
   Activity,
@@ -240,7 +240,7 @@ const PublicShareViewPage = () => {
                         </button>
                         {records.allow_download && (
                           <a
-                            href={`/api/v1/sharing/public/${token}/document/${doc.id}/download`}
+                            href={getApiUrl(`/sharing/public/${token}/document/${doc.id}/download`, false)}
                             target="_blank"
                             rel="noreferrer"
                             className="p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 hover:bg-slate-100 transition-colors"
@@ -308,8 +308,8 @@ const PublicShareViewPage = () => {
             onClose={() => setViewingDoc(null)}
             title={viewingDoc.title}
             mimeType={viewingDoc.mime_type}
-            previewUrl={`/api/v1/sharing/public/${token}/document/${viewingDoc.id}/preview`}
-            downloadUrl={records?.allow_download ? `/api/v1/sharing/public/${token}/document/${viewingDoc.id}/download` : null}
+            previewUrl={getApiUrl(`/sharing/public/${token}/document/${viewingDoc.id}/preview`, false)}
+            downloadUrl={records?.allow_download ? getApiUrl(`/sharing/public/${token}/document/${viewingDoc.id}/download`, false) : null}
             allowDownload={!!records?.allow_download}
             docData={viewingDoc}
           />

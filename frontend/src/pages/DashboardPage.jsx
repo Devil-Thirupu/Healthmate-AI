@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useOutletContext } from 'react-router-dom';
+import { Link, useOutletContext, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
+import api, { getApiUrl } from '../services/api';
 import {
   Activity,
   FolderOpen,
@@ -49,6 +49,7 @@ import DoctorVisitModal from '../components/common/DoctorVisitModal';
 
 const DashboardPage = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { openUpload } = useOutletContext();
   const [documents, setDocuments] = useState([]);
   const [intelligenceSummary, setIntelligenceSummary] = useState(null);
@@ -403,7 +404,7 @@ const DashboardPage = () => {
                         </td>
                         <td className="px-4 py-3.5 text-right">
                           <a
-                            href={`/api/v1/documents/${doc.id}/download`}
+                            href={getApiUrl(`/documents/${doc.id}/download`)}
                             target="_blank"
                             rel="noreferrer"
                             className="inline-flex items-center space-x-1 text-teal-600 hover:text-teal-700 dark:text-teal-400 font-bold text-xs"
@@ -640,8 +641,8 @@ const DashboardPage = () => {
 
       {/* Smart Health Timeline Stream */}
       <HealthTimelineView
-        onViewSource={(docId) => window.open(`/api/v1/documents/${docId}/download`, '_blank')}
-        onExplainReport={(docId) => window.location.href = '/reports'}
+        onViewSource={(docId) => window.open(getApiUrl(`/documents/${docId}/download`), '_blank')}
+        onExplainReport={(docId) => navigate('/reports')}
       />
 
       {/* Doctor Visit Mode Modal */}

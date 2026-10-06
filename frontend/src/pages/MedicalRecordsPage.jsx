@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import api from '../services/api';
+import api, { getApiUrl } from '../services/api';
 import DocumentDetailModal from '../components/common/DocumentDetailModal';
 import {
   FolderOpen,
@@ -124,8 +124,8 @@ const MedicalRecordsPage = () => {
   };
 
   const handleDownload = (doc) => {
-    const token = localStorage.getItem('healthmate_access_token');
-    window.open(`/api/v1/documents/${doc.id}/download?token=${token}`, '_blank');
+    const downloadUrl = getApiUrl(`/documents/${doc.id}/download`);
+    window.open(downloadUrl, '_blank');
   };
 
   const handleQuickFileSelect = (file) => {

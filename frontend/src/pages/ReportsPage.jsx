@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import api from '../services/api';
+import api, { getApiUrl } from '../services/api';
 import {
   FlaskConical,
   PlusCircle,
@@ -380,7 +380,7 @@ const ReportsPage = () => {
                       <span>Explain with Grounded AI</span>
                     </button>
                     <a
-                      href={`/api/v1/documents/${selectedDocDetail.id}/download`}
+                      href={getApiUrl(`/documents/${selectedDocDetail.id}/download`)}
                       target="_blank"
                       rel="noreferrer"
                       className="p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 hover:bg-slate-100 transition-colors"
@@ -545,7 +545,7 @@ const ReportsPage = () => {
           documentTitle={explainModalDoc.title}
           isOpen={!!explainModalDoc}
           onClose={() => setExplainModalDoc(null)}
-          onViewSource={(docId) => window.open(`/api/v1/documents/${docId}/download`, '_blank')}
+          onViewSource={(docId) => window.open(getApiUrl(`/documents/${docId}/download`), '_blank')}
         />
       )}
     </div>

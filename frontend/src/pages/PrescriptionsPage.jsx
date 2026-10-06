@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import api from '../services/api';
+import api, { getApiUrl } from '../services/api';
 import ReportViewer from '../components/common/ReportViewer';
 import {
   Pill,
@@ -404,7 +404,7 @@ const PrescriptionsPage = () => {
                       </button>
 
                       <a
-                        href={`/api/v1/documents/${doc.id}/download`}
+                        href={getApiUrl(`/documents/${doc.id}/download`)}
                         target="_blank"
                         rel="noreferrer"
                         className="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors"
@@ -906,8 +906,8 @@ const PrescriptionsPage = () => {
           onClose={() => setViewingDoc(null)}
           title={viewingDoc.title}
           mimeType={viewingDoc.mime_type}
-          previewUrl={`/api/v1/documents/${viewingDoc.id}/preview?token=${localStorage.getItem('healthmate_access_token') || ''}`}
-          downloadUrl={`/api/v1/documents/${viewingDoc.id}/download?token=${localStorage.getItem('healthmate_access_token') || ''}`}
+          previewUrl={getApiUrl(`/documents/${viewingDoc.id}/preview`)}
+          downloadUrl={getApiUrl(`/documents/${viewingDoc.id}/download`)}
           allowDownload={true}
           docData={viewingDoc}
         />

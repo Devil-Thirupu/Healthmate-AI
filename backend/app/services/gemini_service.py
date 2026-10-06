@@ -13,8 +13,8 @@ MEDICATION_CHANGE_SAFETY_NOTE = (
 )
 
 UNSUPPORTED_RECORDS_RESPONSE = (
-    "Hmm, I couldn't find that specific info in your uploaded records. "
-    "Try uploading the relevant report and I'll analyze it for you!"
+    "I couldn't find that information in your uploaded records. "
+    "Please upload the relevant medical report to see this data."
 )
 
 GEMINI_SYSTEM_INSTRUCTION = """You are HealthMate, a warm, friendly, knowledgeable personal health AI companion.
@@ -93,7 +93,7 @@ class GeminiService:
                 item_type = data.get("type", "record")
                 
                 conf = item.get("confidence") or item.get("ocr_confidence")
-                conf_tag = " [Low OCR Conf]" if (isinstance(conf, (int, float)) and conf < 70) else ""
+                conf_tag = " [Needs Verification - Low OCR Confidence]" if (isinstance(conf, (int, float)) and conf < 70) else ""
 
                 if item_type == "lab_test":
                     t_name = data.get("test_name", "Test")
@@ -156,7 +156,10 @@ class GeminiService:
             return None
 
         if self.is_medication_change_query(query):
-            query = query + " [Include reminder to consult doctor for dosage changes]"
+            return "I can explain and compare information from your medical records, but I cannot recommend changing your medication. Please discuss medication changes with your doctor."
+
+        if not user_structured and not user_doc_chunks and not general_knowledge and query_type != "CONVERSATIONAL":
+            return UNSUPPORTED_RECORDS_RESPONSE
 
         evidence_text = self.format_evidence_context(user_structured, user_doc_chunks, general_knowledge)
 
