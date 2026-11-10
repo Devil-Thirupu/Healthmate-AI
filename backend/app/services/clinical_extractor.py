@@ -1,4 +1,7 @@
+import os
+import json
 import re
+from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
 from backend.app.core.logging import logger
 
@@ -210,6 +213,36 @@ LAB_STANDARDS = {
     }
 }
 
+# Dynamically load and merge Clinical Lab Standards Dataset if present
+try:
+    standards_dataset_path = Path(__file__).resolve().parents[3] / "data" / "clinical_lab_standards.json"
+    if standards_dataset_path.exists():
+        with open(standards_dataset_path, "r", encoding="utf-8") as _f:
+            _catalog = json.load(_f)
+            for _k, _info in _catalog.get("biomarkers", {}).items():
+                _def_ref = _info.get("default_ref", {})
+                _min = _info.get("min", _def_ref.get("min", 0.0))
+                _max = _info.get("max", _def_ref.get("max", 999999.0))
+                _merged = {
+                    "canonical_name": _info.get("canonical_name", _k),
+                    "category": _info.get("category", "General"),
+                    "unit": _info.get("unit", ""),
+                    "min": _min,
+                    "max": _max,
+                    "critical_high": _info.get("critical_high", 999999.0),
+                    "critical_low": _info.get("critical_low", -999999.0),
+                    "ref_text": _info.get("ref_text", f"{_min} - {_max}"),
+                    "patterns": _info.get("patterns", [re.escape(_k)]),
+                    "tamil": _info.get("tamil", ""),
+                    "tanglish": _info.get("tanglish", ""),
+                    "loinc": _info.get("loinc", ""),
+                    "clinical_significance": _info.get("clinical_significance", "")
+                }
+                LAB_STANDARDS[_k] = _merged
+        logger.info(f"Loaded {len(LAB_STANDARDS)} lab biomarkers from Clinical Laboratory Standards Dataset.")
+except Exception as _e:
+    logger.warning(f"Could not load external clinical_lab_standards.json: {_e}")
+
 # Common Medication Database for Prescription Parsing
 MEDICATION_CATALOG = [
     {"name": "Metformin", "generic": "Metformin HCl", "form": "Tablet", "category": "Antidiabetic", "tamil": "சர்க்கரை நோய்க்கான மாத்திரை. உணவுக்குப் பின் உட்கொள்ளவும்.", "tanglish": "Sugar tablet. Food-ku pinnaadi saapidavum."},
@@ -243,46 +276,82 @@ class ClinicalExtractor:
             
             for line in lines:
                 line_lower = line.lower()
-                for pattern in standard_info["patterns"]:
+                for pattern in standard_info.get("patterns", []):
                     match = re.search(pattern, line_lower)
                     if match:
                         # Found a line mentioning the test. Search for numeric value AFTER the test name
                         after_text = line[match.end():]
-                        numbers = re.findall(r'(\d+(?:\.\d+)?)', after_text)
-                        if numbers:
-                            # Observed value is the first number after the test parameter name
-                            val_str = numbers[0]
-                            try:
-                                num_val = float(val_str)
-                                # Assign flag
-                                flag = "normal"
-                                if num_val > standard_info.get("critical_high", 9999):
-                                    flag = "critical"
-                                elif num_val > standard_info["max"]:
-                                    flag = "high"
-                                elif num_val < standard_info["min"]:
-                                    flag = "low"
+                        # Look for first numeric token with optional comparator (> 90, 7,800, 13.8)
+                        m_val = re.search(r'([><]=?\s*)?(\d{1,3}(?:,\d{3})*(?:\.\d+)?|\d+(?:\.\d+)?)', after_text)
+                        if not m_val:
+                            continue
+                        
+                        cmp_op = (m_val.group(1) or '').strip()
+                        val_raw = m_val.group(2)
+                        val_clean = val_raw.replace(',', '')
+                        try:
+                            num_val = float(val_clean)
+                        except ValueError:
+                            continue
+                        val_str = f"{cmp_op} {val_raw}".strip()
 
-                                matched_test = {
-                                    "test_name": standard_info["canonical_name"],
-                                    "canonical_name": standard_key,
-                                    "test_category": standard_info["category"],
-                                    "observed_value": val_str,
-                                    "numeric_value": num_val,
-                                    "unit": standard_info["unit"],
-                                    "reference_range_min": standard_info["min"],
-                                    "reference_range_max": standard_info["max"],
-                                    "reference_range_text": standard_info["ref_text"],
-                                    "flag": flag,
-                                    "test_date": document_date,
-                                    "explanation_tamil": standard_info["tamil"],
-                                    "explanation_tanglish": standard_info["tanglish"],
-                                    "confidence_score": 0.95,
-                                    "original_ocr_snippet": line[:150]
-                                }
-                                break
-                            except ValueError:
-                                pass
+                        # Look for document-printed reference range in rest of line
+                        rest_of_line = after_text[m_val.end():]
+                        ref_text = standard_info.get("ref_text", "")
+                        min_val = standard_info.get("min", 0.0)
+                        max_val = standard_info.get("max", 999999.0)
+
+                        # Pattern 1: e.g. 13.0 - 17.0 or 4,000 - 11,000
+                        m_range = re.search(r'(\d{1,3}(?:,\d{3})*(?:\.\d+)?|\d+(?:\.\d+)?)\s*-\s*(\d{1,3}(?:,\d{3})*(?:\.\d+)?|\d+(?:\.\d+)?)', rest_of_line)
+                        if m_range:
+                            doc_min = float(m_range.group(1).replace(',', ''))
+                            doc_max = float(m_range.group(2).replace(',', ''))
+                            min_val = doc_min
+                            max_val = doc_max
+                            ref_text = f"{m_range.group(1)} - {m_range.group(2)}"
+                        else:
+                            # Pattern 2: e.g. < 200, < 100, > 40, >= 60
+                            m_ineq = re.search(r'([<>]=?)\s*(\d{1,3}(?:,\d{3})*(?:\.\d+)?|\d+(?:\.\d+)?)', rest_of_line)
+                            if m_ineq:
+                                op = m_ineq.group(1)
+                                bound = float(m_ineq.group(2).replace(',', ''))
+                                ref_text = f"{op} {m_ineq.group(2)}"
+                                if '<' in op:
+                                    max_val = bound
+                                    min_val = 0.0
+                                elif '>' in op:
+                                    min_val = bound
+                                    max_val = 999999.0
+
+                        # Determine clinical flag
+                        crit_high = standard_info.get("critical_high", 999999.0)
+                        crit_low = standard_info.get("critical_low", -999999.0)
+                        flag = "normal"
+                        if num_val > crit_high or num_val < crit_low:
+                            flag = "critical"
+                        elif num_val > max_val:
+                            flag = "high"
+                        elif num_val < min_val:
+                            flag = "low"
+
+                        matched_test = {
+                            "test_name": standard_info["canonical_name"],
+                            "canonical_name": standard_key,
+                            "test_category": standard_info["category"],
+                            "observed_value": val_str,
+                            "numeric_value": num_val,
+                            "unit": standard_info.get("unit", ""),
+                            "reference_range_min": min_val,
+                            "reference_range_max": max_val,
+                            "reference_range_text": ref_text,
+                            "flag": flag,
+                            "test_date": document_date,
+                            "explanation_tamil": standard_info.get("tamil", ""),
+                            "explanation_tanglish": standard_info.get("tanglish", ""),
+                            "confidence_score": 0.96,
+                            "original_ocr_snippet": line[:150]
+                        }
+                        break
                 if matched_test:
                     break
 
