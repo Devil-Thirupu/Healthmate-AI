@@ -51,13 +51,38 @@ const DoctorFormModal = ({ doctor, onClose, onSave }) => {
     setSaving(true); setError('');
     try {
       if (isEdit) {
-        await doctorsApi.update(doctor.id, form);
+        try {
+          await doctorsApi.update(doctor.id, form);
+        } catch (backendErr) {
+          // If the doctor only exists in the local demo list (not in DB), update locally
+          if (backendErr.response?.status === 404 || !backendErr.response) {
+            const stored = JSON.parse(localStorage.getItem('healthmate_doctors') || 'null') || DEFAULT_DOCTORS_LIST;
+            const updated = stored.map(d => d.id === doctor.id ? { ...d, ...form } : d);
+            localStorage.setItem('healthmate_doctors', JSON.stringify(updated));
+          } else {
+            throw backendErr;
+          }
+        }
       } else {
-        await doctorsApi.create(form);
+        try {
+          await doctorsApi.create(form);
+        } catch (backendErr) {
+          // Backend unavailable — persist locally with a temporary negative ID
+          const stored = JSON.parse(localStorage.getItem('healthmate_doctors') || 'null') || DEFAULT_DOCTORS_LIST;
+          const newDoc = { ...form, id: -(Date.now()), connection_status: 'accepted', is_active: true };
+          localStorage.setItem('healthmate_doctors', JSON.stringify([newDoc, ...stored]));
+          if (backendErr.response && backendErr.response.status < 500) throw backendErr;
+          // For network/5xx errors, treat local save as success
+        }
       }
       onSave();
     } catch (e) {
-      setError(e.response?.data?.detail || 'Failed to save doctor profile.');
+      const detail = e.response?.data?.detail;
+      const status = e.response?.status;
+      const msg = Array.isArray(detail)
+        ? detail.map(d => `${d.loc?.join('.')} — ${d.msg}`).join('; ')
+        : (typeof detail === 'string' ? detail : null);
+      setError(msg || `Failed to save doctor profile${status ? ` (HTTP ${status})` : ''}. Please check your connection.`);
     } finally {
       setSaving(false);
     }
@@ -419,7 +444,7 @@ const DEFAULT_DOCTORS_LIST = [
     phone_number: '+91 98402 34567',
     email: 'meenakshi.path@apollo.com',
     address: 'Anna Nagar, Chennai',
-    consultation_type: 'both',
+    consultation_type: 'in_person',
     available_days: 'Mon - Sat',
     available_time: '08:00 AM - 02:00 PM',
     connection_status: 'accepted',
@@ -434,7 +459,7 @@ const DEFAULT_DOCTORS_LIST = [
     phone_number: '+91 98403 45678',
     email: 'priya.sundaram@medstar.org',
     address: 'Adyar, Chennai',
-    consultation_type: 'telehealth',
+    consultation_type: 'video',
     available_days: 'Tue, Thu, Sat',
     available_time: '05:00 PM - 08:00 PM',
     connection_status: 'accepted',
@@ -463,13 +488,30 @@ export default function MyDoctorsPage() {
     try {
       const res = await doctorsApi.list();
       if (res.data && res.data.length > 0) {
-        setDoctors(res.data);
+        // Backend has real doctors — merge with any locally-only added doctors
+        const localOnly = (() => {
+          try {
+            const stored = JSON.parse(localStorage.getItem('healthmate_doctors') || 'null');
+            if (!stored) return [];
+            // Local-only doctors have negative IDs (temp) or IDs not in backend list
+            return stored.filter(d => d.id < 0 || !res.data.some(bd => bd.id === d.id));
+          } catch { return []; }
+        })();
+        setDoctors([...res.data, ...localOnly]);
       } else {
-        setDoctors(DEFAULT_DOCTORS_LIST);
+        // Backend returned empty — show local/demo data
+        const stored = (() => {
+          try { return JSON.parse(localStorage.getItem('healthmate_doctors') || 'null'); } catch { return null; }
+        })();
+        setDoctors(stored || DEFAULT_DOCTORS_LIST);
       }
-    } catch {
-      console.warn('Backend doctors list unavailable; using registered clinical directory.');
-      setDoctors(DEFAULT_DOCTORS_LIST);
+    } catch (err) {
+      const detail = err.response?.data?.detail;
+      console.warn('Backend doctors list unavailable; using registered clinical directory.', detail || err.message);
+      const stored = (() => {
+        try { return JSON.parse(localStorage.getItem('healthmate_doctors') || 'null'); } catch { return null; }
+      })();
+      setDoctors(stored || DEFAULT_DOCTORS_LIST);
     } finally {
       setLoading(false);
     }

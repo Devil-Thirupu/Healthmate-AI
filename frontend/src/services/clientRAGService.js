@@ -190,20 +190,57 @@ export function generateClientChatResponse(query = '', language = 'en', imagePre
     q.includes('creatinine') ||
     q.includes('vitamin') ||
     q.includes('hemoglobin') ||
+    q.includes('ldl') ||
+    q.includes('hdl') ||
+    q.includes('triglyceride') ||
+    q.includes('bilirubin') ||
+    q.includes('sgot') ||
+    q.includes('sgpt') ||
+    q.includes('ast') ||
+    q.includes('alt') ||
+    q.includes('alp') ||
+    q.includes('kidney') ||
+    q.includes('liver') ||
+    q.includes('sodium') ||
+    q.includes('potassium') ||
+    q.includes('egfr') ||
+    q.includes('urea') ||
+    q.includes('wbc') ||
+    q.includes('rbc') ||
+    q.includes('platelet') ||
+    q.includes('cbc') ||
+    q.includes('blood count') ||
+    q.includes('latest') ||
+    q.includes('report') ||
+    q.includes('result') ||
     q.includes('test')
   ) {
     let matchedTests = allTests;
     if (q.includes('glucose') || q.includes('sugar')) {
-      matchedTests = allTests.filter((t) => t.test_name.toLowerCase().includes('glucose'));
+      matchedTests = allTests.filter((t) => t.test_name.toLowerCase().includes('glucose') || t.test_name.toLowerCase().includes('sugar'));
     } else if (q.includes('hba1c')) {
       matchedTests = allTests.filter((t) => t.test_name.toLowerCase().includes('hba1c'));
-    } else if (q.includes('cholesterol') || q.includes('lipid')) {
-      matchedTests = allTests.filter((t) => t.test_name.toLowerCase().includes('cholesterol'));
+    } else if (q.includes('ldl')) {
+      matchedTests = allTests.filter((t) => t.test_name.toLowerCase().includes('ldl'));
+    } else if (q.includes('hdl')) {
+      matchedTests = allTests.filter((t) => t.test_name.toLowerCase().includes('hdl'));
+    } else if (q.includes('cholesterol') || q.includes('lipid') || q.includes('triglyceride')) {
+      matchedTests = allTests.filter((t) => ['cholesterol','triglyceride','ldl','hdl'].some(k => t.test_name.toLowerCase().includes(k)));
     } else if (q.includes('vitamin')) {
       matchedTests = allTests.filter((t) => t.test_name.toLowerCase().includes('vitamin'));
-    } else if (q.includes('creatinine')) {
-      matchedTests = allTests.filter((t) => t.test_name.toLowerCase().includes('creatinine'));
+    } else if (q.includes('creatinine') || q.includes('egfr') || q.includes('urea') || q.includes('kidney')) {
+      matchedTests = allTests.filter((t) => ['creatinine','egfr','urea','sodium','potassium','chloride','bun'].some(k => t.test_name.toLowerCase().includes(k)));
+    } else if (q.includes('liver') || q.includes('bilirubin') || q.includes('sgot') || q.includes('sgpt') || q.includes('ast') || q.includes('alt') || q.includes('alp')) {
+      matchedTests = allTests.filter((t) => ['bilirubin','sgot','sgpt','ast','alt','alp','protein','albumin','globulin'].some(k => t.test_name.toLowerCase().includes(k)));
+    } else if (q.includes('cbc') || q.includes('blood count') || q.includes('wbc') || q.includes('rbc') || q.includes('platelet') || q.includes('hemoglobin')) {
+      matchedTests = allTests.filter((t) => ['hemoglobin','rbc','wbc','platelet','hematocrit','mcv','mch','mchc'].some(k => t.test_name.toLowerCase().includes(k)));
     }
+
+    // Build dynamic insight from abnormal tests
+    const abnormal = allTests.filter(t => t.status === 'high' || t.status === 'low' || t.status === 'critical');
+    const insightLine = abnormal.length > 0
+      ? abnormal.map(t => `${t.test_name}: **${t.observed_value || t.value} ${t.unit}** (${t.status.toUpperCase()})`).join(', ')
+      : 'All checked biomarkers are within healthy reference ranges.';
 
     const testSummaries = matchedTests
       .map(
@@ -214,11 +251,11 @@ export function generateClientChatResponse(query = '', language = 'en', imagePre
 
     let labAnswer = '';
     if (isTamilLang) {
-      labAnswer = `🩺 **உங்கள் சமீபத்திய இரத்தப் பரிசோதனை அளவுகள்:**\n\n${testSummaries || 'உங்கள் பதிவுகளில் குறிப்பிட்ட biomarker எதுவும் கிடைக்கவில்லை.'}\n\n🌟 **ஆரோக்கிய குறிப்பு:** உங்கள் Fasting Glucose (105 mg/dL) மற்றும் HbA1c (5.8%) முந்தைய பரிசோதனையை விட முன்னேற்றம் அடைந்துள்ளது!`;
+      labAnswer = `🩺 **உங்கள் சமீபத்திய இரத்தப் பரிசோதனை அளவுகள்:**\n\n${testSummaries || 'உங்கள் பதிவுகளில் குறிப்பிட்ட biomarker எதுவும் கிடைக்கவில்லை.'}\n\n🌟 **கவனிக்க வேண்டியவை:** ${insightLine}`;
     } else if (isMultiLang) {
-      labAnswer = `🩺 **Ungaloda Latest Verified Biomarker Values:**\n\n${testSummaries || 'Specific biomarker records-la match aagala.'}\n\n🌟 **Quick Insight:** Ungal Fasting Glucose (105 mg/dL) matrum HbA1c (5.8%) munba vida nalla improve aagi safe target range-ku varudhu!`;
+      labAnswer = `🩺 **Ungaloda Latest Verified Biomarker Values:**\n\n${testSummaries || 'Specific biomarker records-la match aagala.'}\n\n🌟 **Quick Insight:** ${insightLine}`;
     } else {
-      labAnswer = `🩺 **Your Latest Verified Biomarker Values:**\n\n${testSummaries || 'No specific biomarker match found in your records.'}\n\n🌟 **Quick Insight:** Your Fasting Glucose (105 mg/dL) and HbA1c (5.8%) show notable progress towards healthy reference targets compared to previous assessments!`;
+      labAnswer = `🩺 **Your Latest Verified Biomarker Values:**\n\n${testSummaries || 'No specific biomarker match found in your records.'}\n\n🌟 **Quick Insight:** ${insightLine}`;
     }
 
     return {
@@ -241,7 +278,7 @@ export function generateClientChatResponse(query = '', language = 'en', imagePre
         title: t.test_name,
         value: t.value,
         unit: t.unit,
-        flag: t.status === 'optimal' || t.status === 'normal' ? 'NORMAL' : 'BORDERLINE',
+        flag: t.status === 'normal' || t.status === 'optimal' ? 'NORMAL' : t.status === 'high' ? 'HIGH' : t.status === 'low' ? 'LOW' : t.status === 'critical' ? 'CRITICAL' : 'NORMAL',
         date: t.date
       })),
       follow_up_suggestions: [
@@ -441,6 +478,197 @@ export function generateClientChatResponse(query = '', language = 'en', imagePre
     };
   }
 
+  // 8a. Exercise / Fitness questions
+  if (
+    q.includes('exercise') ||
+    q.includes('workout') ||
+    q.includes('fitness') ||
+    q.includes('walk') ||
+    q.includes('yoga') ||
+    q.includes('gym') ||
+    q.includes('running') ||
+    q.includes('jogging') ||
+    q.includes('physical activity') ||
+    q.includes('steps')
+  ) {
+    const abnormal = allTests.filter(t => t.status === 'high' || t.status === 'low');
+    const ldlHigh = abnormal.find(t => t.test_name.toLowerCase().includes('ldl'));
+    const glucoseHigh = abnormal.find(t => t.test_name.toLowerCase().includes('glucose') || t.test_name.toLowerCase().includes('sugar'));
+    let exercisePersonal = '';
+    if (ldlHigh) exercisePersonal += `\n\n🫀 **For your LDL (${ldlHigh.value} ${ldlHigh.unit}):** Cardio exercises like brisk walking, cycling, and swimming are especially helpful to improve your lipid profile.`;
+    if (glucoseHigh) exercisePersonal += `\n\n🩸 **For blood sugar control:** A 30-min walk after meals significantly lowers post-meal glucose spikes. Aim for 150 mins of moderate activity per week.`;
+    const exerciseAnswer = `🏃 **Exercise & Fitness Guide for You:**${exercisePersonal}\n\n**Recommended Weekly Routine:**\n- **Monday / Wednesday / Friday:** 30-min brisk walk or light jog\n- **Tuesday / Thursday:** Yoga or stretching (15–20 mins)\n- **Saturday:** Cycling, swimming, or any sport you enjoy\n- **Sunday:** Rest or leisurely walk\n\n**Beginner Tips:**\n- Start with 10 mins/day and gradually increase\n- Always warm up for 5 minutes before exercise\n- Stay hydrated — drink water before, during and after\n- Exercise 30 mins after meals to help blood sugar management\n\n**Benefits you'll see:**\n- Better blood sugar control\n- Improved heart health and cholesterol levels\n- Higher energy and better sleep quality\n- Reduced stress and anxiety\n\n⚠️ If you have any heart condition or joint pain, consult your doctor before starting a new exercise program.`;
+    return {
+      answer: exerciseAnswer,
+      query_type: 'WELLNESS_ADVICE',
+      evidence_status: 'SUPPORTED',
+      citations: [],
+      sources: [],
+      structured_cards: [],
+      follow_up_suggestions: [
+        'What foods support my workout? 🥗',
+        'What are my latest lab values? 🩺',
+        'How much water should I drink? 💧'
+      ]
+    };
+  }
+
+  // 8b. Sleep / Fatigue / Rest questions
+  if (
+    q.includes('sleep') ||
+    q.includes('insomnia') ||
+    q.includes('tired') ||
+    q.includes('fatigue') ||
+    q.includes('rest') ||
+    q.includes('nap') ||
+    q.includes('drowsy') ||
+    q.includes('energy')
+  ) {
+    const sleepAnswer = `😴 **Sleep & Energy Guide:**\n\n**How much sleep do you need?**\n- Adults: 7–9 hours per night\n- Teenagers: 8–10 hours\n- Children: 9–12 hours\n\n**Tips for Better Sleep:**\n- Go to bed and wake up at the same time every day\n- Avoid screens (phone/TV) 30 mins before bedtime\n- Keep your bedroom cool, dark, and quiet\n- Avoid caffeine after 3 PM\n- Try light stretching or reading before bed\n- Avoid heavy meals within 2 hours of sleep\n\n**Foods That Help You Sleep Better:**\n- Warm milk or chamomile tea at bedtime\n- Bananas (rich in magnesium and tryptophan)\n- Almonds and walnuts\n- Oatmeal — promotes serotonin production\n\n**When to See a Doctor:**\n- If you snore loudly or stop breathing during sleep (sleep apnea)\n- If fatigue persists even after 8 hours of sleep\n- If you feel tired all the time — could indicate anemia, thyroid issues, or low Vitamin D\n\n💡 **Check your Hemoglobin and Vitamin D levels** — low values are common causes of persistent fatigue. I can show you your current values if you ask!`;
+    return {
+      answer: sleepAnswer,
+      query_type: 'WELLNESS_ADVICE',
+      evidence_status: 'SUPPORTED',
+      citations: [],
+      sources: [],
+      structured_cards: [],
+      follow_up_suggestions: [
+        'What are my latest lab values? 🩺',
+        'What foods give me more energy? 🥗',
+        'How much exercise is good for me? 🏃'
+      ]
+    };
+  }
+
+  // 8c. Stress / Anxiety / Mental health questions
+  if (
+    q.includes('stress') ||
+    q.includes('anxiety') ||
+    q.includes('worry') ||
+    q.includes('panic') ||
+    q.includes('mental') ||
+    q.includes('mood') ||
+    q.includes('depress') ||
+    q.includes('tension') ||
+    q.includes('calm')
+  ) {
+    const stressAnswer = `🧘 **Stress & Mental Wellness Guide:**\n\n**Signs of Stress to Watch:**\n- Headaches, fatigue, or difficulty sleeping\n- Irritability or mood swings\n- Difficulty concentrating\n- Changes in appetite\n\n**Proven Stress-Relief Techniques:**\n- **Deep Breathing (4-7-8 method):** Inhale 4s → Hold 7s → Exhale 8s. Repeat 4 times.\n- **Mindfulness & Meditation:** Even 10 minutes daily reduces cortisol significantly\n- **Regular Exercise:** 30-min walk releases endorphins — natural mood boosters\n- **Journaling:** Write your thoughts for 5 mins each morning or night\n- **Talk to someone:** A trusted friend, family member or counselor\n\n**Foods That Reduce Stress:**\n- Dark chocolate (1-2 squares) — releases serotonin\n- Green tea — contains L-theanine which promotes calm\n- Avocados — rich in B vitamins for brain health\n- Blueberries — antioxidants reduce cortisol\n- Oats — steady blood sugar = stable mood\n\n**Daily Habits That Help:**\n- Limit news/social media to 30 mins/day\n- Spend time in nature or sunlight\n- Maintain a regular sleep schedule\n- Practice gratitude — write 3 good things daily\n\n⚠️ If stress or anxiety is significantly affecting your daily life, please consider speaking to a mental health professional.`;
+    return {
+      answer: stressAnswer,
+      query_type: 'WELLNESS_ADVICE',
+      evidence_status: 'SUPPORTED',
+      citations: [],
+      sources: [],
+      structured_cards: [],
+      follow_up_suggestions: [
+        'What foods help with anxiety? 🥗',
+        'How much sleep should I get? 😴',
+        'What exercise is best for stress? 🏃'
+      ]
+    };
+  }
+
+  // 8d. Water / Hydration questions
+  if (
+    q.includes('water') ||
+    q.includes('hydrat') ||
+    q.includes('drink') ||
+    q.includes('fluid')
+  ) {
+    const waterAnswer = `💧 **Hydration Guide:**\n\n**How much water should you drink?**\n- General guideline: **8–10 glasses (2–2.5 litres) per day**\n- In hot weather or after exercise: add 1–2 extra glasses\n- If you have kidney stones: 2.5–3 litres daily is recommended\n\n**Signs of Dehydration:**\n- Dark yellow urine (pale yellow = well hydrated)\n- Dry mouth and lips\n- Headache or dizziness\n- Fatigue and low concentration\n\n**Tips to Stay Hydrated:**\n- Keep a water bottle on your desk or bag\n- Start your morning with a glass of water before tea/coffee\n- Eat water-rich foods: cucumber, watermelon, oranges, tomatoes\n- Set hourly reminders if you forget to drink\n- Coconut water is excellent for electrolyte balance\n\n**Foods with High Water Content:**\n- Cucumber — 96% water\n- Watermelon — 92% water\n- Oranges — 88% water\n- Yogurt — also hydrating with probiotics\n\n💡 Your kidney function tests (Creatinine, BUN, eGFR) reflect how well-hydrated you are. Ask me to show your kidney values!`;
+    return {
+      answer: waterAnswer,
+      query_type: 'WELLNESS_ADVICE',
+      evidence_status: 'SUPPORTED',
+      citations: [],
+      sources: [],
+      structured_cards: [],
+      follow_up_suggestions: [
+        'Show my kidney function test results 🩺',
+        'What foods keep me hydrated? 🥗',
+        'What are my latest lab values? 📊'
+      ]
+    };
+  }
+
+  // 8e. Weight / BMI / Obesity questions
+  if (
+    q.includes('weight') ||
+    q.includes('bmi') ||
+    q.includes('obese') ||
+    q.includes('fat') ||
+    q.includes('slim') ||
+    q.includes('lose weight') ||
+    q.includes('gain weight') ||
+    q.includes('overweight')
+  ) {
+    const weightAnswer = `⚖️ **Weight & BMI Guide:**\n\n**What is BMI?**\nBMI (Body Mass Index) = Weight (kg) ÷ Height (m)²\n\n**BMI Categories:**\n- Below 18.5 — Underweight\n- 18.5 – 24.9 — Healthy Weight ✅\n- 25 – 29.9 — Overweight ⚠️\n- 30 and above — Obese 🔴\n\n**To Lose Weight Healthily:**\n- Create a small calorie deficit (300–500 kcal/day)\n- Prioritize protein: eggs, lentils, chicken, fish\n- Cut sugary drinks and processed foods first\n- Walk 30–45 minutes daily\n- Get 7–8 hours of sleep (poor sleep = weight gain)\n- Never skip breakfast — it sets your metabolism\n\n**To Gain Healthy Weight:**\n- Eat more calorie-dense healthy foods: nuts, avocado, whole grains\n- Strength training 3x/week to build muscle\n- Add healthy smoothies (banana + peanut butter + milk)\n- Eat every 3–4 hours — don't skip meals\n\n⚠️ Extreme dieting is harmful. Aim for 0.5–1 kg weight loss/gain per week for sustainable results. Always consult a nutritionist for a personalized plan.`;
+    return {
+      answer: weightAnswer,
+      query_type: 'WELLNESS_ADVICE',
+      evidence_status: 'SUPPORTED',
+      citations: [],
+      sources: [],
+      structured_cards: [],
+      follow_up_suggestions: [
+        'What foods help with weight management? 🥗',
+        'How much exercise is recommended? 🏃',
+        'What are my latest lab values? 🩺'
+      ]
+    };
+  }
+
+  // 8f. Blood pressure / Heart health questions
+  if (
+    q.includes('blood pressure') ||
+    q.includes('bp') ||
+    q.includes('hypertension') ||
+    q.includes('heart') ||
+    q.includes('cardiac') ||
+    q.includes('pulse')
+  ) {
+    const bpAnswer = `❤️ **Blood Pressure & Heart Health Guide:**\n\n**Normal Blood Pressure:** 120/80 mmHg\n\n**BP Categories:**\n- Below 120/80 — Normal ✅\n- 120–129 / below 80 — Elevated ⚠️\n- 130–139 / 80–89 — High BP Stage 1 🔴\n- 140+ / 90+ — High BP Stage 2 🔴🔴\n- Below 90/60 — Low BP (Hypotension)\n\n**Foods That Lower BP:**\n- Bananas — rich in potassium\n- Leafy greens (spinach, kale) — magnesium\n- Beets — natural nitrates improve circulation\n- Oats — reduces cholesterol and BP\n- Garlic — natural ACE inhibitor\n- Avoid excess salt (< 5g/day recommended)\n\n**Lifestyle Changes:**\n- Exercise 30 mins daily (walking, swimming)\n- Reduce sodium intake — avoid processed and packaged food\n- Quit smoking and limit alcohol\n- Manage stress with breathing exercises\n- Maintain healthy weight\n\n💡 Your Lipid Profile (LDL, HDL, Total Cholesterol) is directly linked to heart health. Ask me to show your cholesterol levels!`;
+    return {
+      answer: bpAnswer,
+      query_type: 'WELLNESS_ADVICE',
+      evidence_status: 'SUPPORTED',
+      citations: [],
+      sources: [],
+      structured_cards: [],
+      follow_up_suggestions: [
+        'Show my cholesterol results 🩺',
+        'What foods are good for my heart? 🥗',
+        'What exercise helps with blood pressure? 🏃'
+      ]
+    };
+  }
+
+  // 8g. Diabetes / Blood sugar management
+  if (
+    q.includes('diabet') ||
+    q.includes('insulin') ||
+    q.includes('blood sugar') ||
+    q.includes('hyperglycemia') ||
+    q.includes('hypoglycemia') ||
+    q.includes('a1c') ||
+    q.includes('fasting sugar')
+  ) {
+    const diabetesAnswer = `🩸 **Diabetes & Blood Sugar Management:**\n\n**Key Blood Sugar Values to Know:**\n- Fasting Glucose: Normal < 100 mg/dL | Pre-diabetes 100–125 | Diabetic ≥ 126\n- HbA1c: Normal < 5.7% | Pre-diabetes 5.7–6.4% | Diabetic ≥ 6.5%\n- Post-meal (2hrs): Normal < 140 mg/dL\n\n**Foods to EAT for Blood Sugar Control:**\n- Bitter gourd (karela) — powerful natural blood sugar reducer\n- Fenugreek seeds (methi) — soak overnight, eat in morning\n- Brown rice, oats, whole wheat — lower glycemic index\n- Lentils, chickpeas, kidney beans — protein + fiber\n- Leafy greens, broccoli, cucumber — low carb, high nutrition\n- Cinnamon — add to tea or food, reduces insulin resistance\n\n**Foods to AVOID:**\n- White rice, white bread, maida products\n- Sugary drinks (soda, packaged juice, energy drinks)\n- Sweets, pastries, cakes\n- Fried foods and fast food\n\n**Daily Habits:**\n- Walk 30 mins after every meal\n- Eat small meals every 3–4 hours (avoid long gaps)\n- Monitor your blood sugar regularly\n- Stay hydrated — dehydration raises blood sugar\n- Get 7–8 hours of sleep\n\n⚠️ Never adjust insulin or diabetes medication without your doctor's guidance.`;
+    return {
+      answer: diabetesAnswer,
+      query_type: 'WELLNESS_ADVICE',
+      evidence_status: 'SUPPORTED',
+      citations: [],
+      sources: [],
+      structured_cards: [],
+      follow_up_suggestions: [
+        'What is my current blood sugar level? 🩸',
+        'What foods lower blood sugar? 🥗',
+        'Show my HbA1c result 📊'
+      ]
+    };
+  }
+
   // 8. General / Fallback with Vault Context in a friendly tone
   const testPreview = allTests.length > 0
     ? allTests.slice(0, 3).map((t) => `${t.test_name}: ${t.value} ${t.unit}`).join(', ')
@@ -452,7 +680,7 @@ export function generateClientChatResponse(query = '', language = 'en', imagePre
   } else if (isMultiLang) {
     generalAnswer = `Hey friend! 😊\n\nUngal question: **"${query}"**\n\nUngal health vault-la **${allTests.length} Biomarkers** (${testPreview}) matrum **${allPrescriptions.length} Active Prescriptions** ready-a irukku.\n\nLab numbers, healthy diet tips 🥗, medicine schedules — edhu venaalum friendly-a kelunga, naan explain pannuven! 🩺🌟`;
   } else {
-    generalAnswer = `Hey there! 😊 I hear you!\n\nRegarding your question: **"${query}"**\n\nI'm always here to help you understand your health journey. From your records, we have **${allTests.length} tracked biomarkers** (${testPreview}) and **${allPrescriptions.length} active prescriptions**.\n\nWhether you'd like to dive into your lab numbers, explore diet & nutrition tips, review your medications, or just ask general wellness questions, I'm here for you! 🩺🌟\n\nWhat would you like to explore next?`;
+    generalAnswer = `Hey there! 😊 I'm HealthMate, your personal AI health companion!\n\nYou asked: **"${query}"**\n\nI can help you with many health topics. Here is what I can answer:\n\n**Your Personal Health Data:**\n- Lab results and biomarker values (CBC, LFT, KFT, Lipid Profile)\n- Prescription and medication details\n- Report extraction and OCR analysis\n\n**General Health Questions:**\n- 🥗 Food and nutrition advice\n- 🏃 Exercise and fitness guidance\n- 😴 Sleep and energy tips\n- 🧘 Stress and mental wellness\n- 💧 Hydration and water intake\n- ❤️ Blood pressure and heart health\n- 🩸 Diabetes and blood sugar management\n- ⚖️ Weight and BMI guidance\n\nFrom your records I have **${allTests.length} tracked biomarkers** and **${allPrescriptions.length} active prescriptions** ready.\n\nTry asking: What are my cholesterol levels? What foods should I eat? How much should I exercise? Show my latest lab results!`;
   }
 
   return {

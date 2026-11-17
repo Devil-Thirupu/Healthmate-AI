@@ -46,9 +46,9 @@ class GeminiService:
 
     def __init__(self):
         self.api_url_template = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
-        self.default_model = "gemini-2.0-flash"
-        self.fallback_models = ["gemini-1.5-flash", "gemini-2.5-flash", "gemini-1.5-pro"]
-        self.vision_model = "gemini-2.0-flash"
+        self.default_model = "gemini-1.5-flash"
+        self.fallback_models = ["gemini-1.5-pro", "gemini-1.5-flash-8b"]
+        self.vision_model = "gemini-1.5-flash"
 
     @property
     def is_configured(self) -> bool:
@@ -264,7 +264,7 @@ Instructions:
 
         url = f"{self.api_url_template.format(model=self.vision_model)}?key={settings.GEMINI_API_KEY}"
         try:
-            with httpx.Client(timeout=25.0) as client:
+            with httpx.Client(timeout=60.0) as client:
                 resp = client.post(
                     url,
                     headers={"Content-Type": "application/json"},

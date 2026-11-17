@@ -24,12 +24,13 @@ import {
   Sparkles,
   ShieldCheck,
   ChevronRight,
-  Download
+  Download,
+  Trash2
 } from 'lucide-react';
 import ReportInsightCard from '../components/common/ReportInsightCard';
 import ExplainReportModal from '../components/common/ExplainReportModal';
 
-import { getStoredDocuments, downloadDocument, openDocumentPreview } from '../services/documentStore';
+import { getStoredDocuments, deleteStoredDocument, downloadDocument, openDocumentPreview } from '../services/documentStore';
 
 const ReportsPage = () => {
   const { openUpload } = useOutletContext();
@@ -120,6 +121,30 @@ const ReportsPage = () => {
     setSelectedDocIds((prev) =>
       prev.includes(docId) ? prev.filter((id) => id !== docId) : [...prev, docId]
     );
+  };
+
+  const handleDeleteReport = async (docId) => {
+    if (!window.confirm('Are you sure you want to delete this lab report?')) return;
+    try {
+      try {
+        await api.delete(`/documents/${docId}`);
+      } catch (_) {}
+      deleteStoredDocument(docId);
+      const remaining = labDocs.filter((d) => d.id !== docId);
+      setLabDocs(remaining);
+      setSelectedDocIds(selectedDocIds.filter((id) => id !== docId));
+      if (selectedDocId === docId) {
+        if (remaining.length > 0) {
+          setSelectedDocId(remaining[0].id);
+          fetchDocDetail(remaining[0].id);
+        } else {
+          setSelectedDocId(null);
+          setSelectedDocDetail(null);
+        }
+      }
+    } catch (err) {
+      console.error('Delete failed:', err);
+    }
   };
 
   const handleCompareReports = async () => {
@@ -385,6 +410,13 @@ const ReportsPage = () => {
                       title="Download Medical Record"
                     >
                       <Download className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteReport(selectedDocDetail.id)}
+                      className="p-1.5 rounded-xl border border-rose-200 dark:border-rose-900/60 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                      title="Delete Lab Report"
+                    >
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>

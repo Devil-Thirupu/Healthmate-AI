@@ -43,6 +43,37 @@ import {
   Check
 } from 'lucide-react';
 
+// ── Markdown renderer ──────────────────────────────────────────────────────────
+// Converts **bold**, *italic*, ### headings, - bullets, numbered lists to HTML.
+// Used for clean chat messages (no raw ** asterisks).
+const renderMarkdown = (text) => {
+  if (!text) return null;
+  const lines = text.split('\n');
+  return lines.map((line, i) => {
+    // Bold+italic combo first
+    let html = line
+      .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/`(.+?)`/g, '<code class="bg-slate-100 dark:bg-slate-700 px-1 rounded text-xs font-mono">$1</code>');
+    // Headings
+    if (/^###\s+/.test(line)) {
+      html = '<span class="block font-bold text-sm text-slate-900 dark:text-white mt-2 mb-0.5">' + html.replace(/^###\s+/, '') + '</span>';
+    } else if (/^##\s+/.test(line)) {
+      html = '<span class="block font-bold text-sm text-slate-900 dark:text-white mt-2 mb-0.5">' + html.replace(/^##\s+/, '') + '</span>';
+    } else if (/^#\s+/.test(line)) {
+      html = '<span class="block font-bold text-base text-slate-900 dark:text-white mt-2 mb-1">' + html.replace(/^#\s+/, '') + '</span>';
+    } else if (/^[-•]\s/.test(line)) {
+      html = '<span class="block ml-3 before:content-[\'•\'] before:mr-2 before:text-teal-500">' + html.replace(/^[-•]\s/, '') + '</span>';
+    } else if (/^\d+\.\s/.test(line)) {
+      const num = line.match(/^(\d+)\./)[1];
+      html = '<span class="block ml-3"><span class="text-teal-600 font-semibold mr-1.5">' + num + '.</span>' + html.replace(/^\d+\.\s/, '') + '</span>';
+    }
+    if (!line.trim()) return <div key={i} className="h-1.5" />;
+    return <div key={i} dangerouslySetInnerHTML={{ __html: html }} />;
+  });
+};
+
 const SUGGESTED_PROMPTS = [
   'What foods help with my health? 🥗',
   'What are my latest lab values? 🩺',
@@ -642,7 +673,9 @@ const AIAssistantPage = () => {
                           </div>
                         )}
 
-                        <div className="whitespace-pre-wrap font-sans">{msg.text}</div>
+                        <div className="font-sans text-sm leading-relaxed space-y-0.5">
+                          {renderMarkdown(msg.text)}
+                        </div>
 
                         <div className={`mt-2 flex items-center justify-between text-[10px] ${isUser ? 'text-teal-100' : 'text-slate-400'}`}>
                           <span>{msg.timestamp}</span>

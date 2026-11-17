@@ -26,7 +26,7 @@ import {
   Filter
 } from 'lucide-react';
 
-import { getStoredDocuments, addStoredDocument, downloadDocument, openDocumentPreview } from '../services/documentStore';
+import { getStoredDocuments, addStoredDocument, deleteStoredDocument, downloadDocument, openDocumentPreview } from '../services/documentStore';
 
 const CATEGORY_TABS = [
   { id: 'all', label: 'All Records', icon: FolderOpen },
@@ -114,8 +114,8 @@ const MedicalRecordsPage = () => {
         await api.delete(`/documents/${docId}`);
       } catch (_) {}
       
-      const local = getStoredDocuments().filter(d => d.id !== docId);
-      localStorage.setItem('healthmate_vault_documents', JSON.stringify(local));
+      // Permanently remove from localStorage vault (works for INITIAL_DOCUMENTS too)
+      deleteStoredDocument(docId);
       setDocuments(documents.filter((d) => d.id !== docId));
       setDeleteConfirmId(null);
     } catch (err) {
