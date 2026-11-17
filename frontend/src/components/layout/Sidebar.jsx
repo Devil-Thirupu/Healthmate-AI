@@ -16,15 +16,17 @@ import {
 } from 'lucide-react';
 
 const navigationItems = [
-  { name: 'Dashboard',       path: '/dashboard',     icon: LayoutDashboard },
-  { name: 'Medical Records', path: '/records',        icon: FolderOpen },
-  { name: 'Prescriptions',   path: '/prescriptions',  icon: Pill },
-  { name: 'Lab Tests',       path: '/reports',        icon: FlaskConical },
-  { name: 'AI Assistant',    path: '/ai-assistant',   icon: MessageSquare },
-  { name: 'Nutrition',       path: '/nutrition',      icon: Apple },
-  { name: 'Health Trends',   path: '/audit',          icon: TrendingUp },
-  { name: 'Appointments',    path: '/appointments',   icon: Calendar },
-  { name: 'Settings',        path: '/settings',       icon: Settings },
+  { name: 'Dashboard',       path: '/dashboard',        icon: LayoutDashboard },
+  { name: 'Medical Records', path: '/records',          icon: FolderOpen },
+  { name: 'Prescriptions',   path: '/prescriptions',    icon: Pill },
+  { name: 'Lab Tests',       path: '/reports',          icon: FlaskConical },
+  { name: 'AI Assistant',    path: '/ai-assistant',     icon: MessageSquare },
+  { name: 'Nutrition',       path: '/nutrition',        icon: Apple },
+  { name: 'Health Trends',   path: '/audit',            icon: TrendingUp },
+  { name: 'Appointments',    path: '/appointments',     icon: Calendar },
+  { name: 'My Doctors',      path: '/doctors',          icon: Heart },
+  { name: 'Secure Sharing',  path: '/sharing',          icon: FolderOpen },
+  { name: 'Settings',        path: '/settings',         icon: Settings },
 ];
 
 const Sidebar = ({ isOpen, onClose }) => {

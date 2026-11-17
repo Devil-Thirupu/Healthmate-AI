@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Calendar, Clock, Building2, CheckCircle2, XCircle,
   AlertCircle, RefreshCw, Loader2, X, Stethoscope, Info,
-  Phone, MessageSquare
+  Phone, MessageSquare, ClipboardList
 } from 'lucide-react';
 import { appointmentsApi } from '../services/doctorsApi';
 
@@ -212,12 +213,21 @@ export default function AppointmentsPage() {
             Track your appointment requests. Status updates when your doctor responds.
           </p>
         </div>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/appointment-prep"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-teal-600 hover:bg-teal-700 shadow-sm transition"
+          >
+            <ClipboardList className="w-3.5 h-3.5" />
+            Prepare for Visit
+          </Link>
         <button
           onClick={fetchAppointments}
           className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition"
         >
           <RefreshCw className={`w-4 h-4 text-slate-500 ${loading ? 'animate-spin' : ''}`} />
         </button>
+        </div>
       </div>
 
       {/* Tabs */}

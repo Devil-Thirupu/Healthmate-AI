@@ -5,6 +5,72 @@ import { FALLBACK_FOODS, generateClientExplanation } from '../data/nutritionFall
  * HealthMate Client-Side Intelligent RAG & Chat Engine
  * Provides deterministic, evidence-grounded fallback responses when backend is offline or on GitHub Pages.
  */
+
+// ── Tamil Clinical Translation Helpers ──────────────────────────────────────────
+const translateBiomarkerToTamil = (name = '') => {
+  const n = name.toLowerCase();
+  if (n.includes('hemoglobin') || n.includes('hb')) return 'ஹீமோகுளோபின் (இரத்த அளவு)';
+  if (n.includes('rbc')) return 'சிவப்பணுக்கள் எண்ணிக்கை (RBC)';
+  if (n.includes('wbc')) return 'வெள்ளையணுக்கள் எண்ணிக்கை (WBC)';
+  if (n.includes('platelet')) return 'பிளேட்லெட் தட்டணுக்கள்';
+  if (n.includes('glucose') || n.includes('sugar')) return 'இரத்த சர்க்கரை அளவு (குளுக்கோஸ்)';
+  if (n.includes('hba1c')) return 'சராசரி 3 மாத சர்க்கரை (HbA1c)';
+  if (n.includes('cholesterol') && n.includes('total')) return 'மொத்த கொழுப்பு (Total Cholesterol)';
+  if (n.includes('ldl')) return 'கெட்ட கொழுப்பு (LDL)';
+  if (n.includes('hdl')) return 'நல்ல கொழுப்பு (HDL)';
+  if (n.includes('triglyceride')) return 'டிரைகிளிசரைடு கொழுப்பு';
+  if (n.includes('creatinine')) return 'சீரம் கிரியேட்டினின் (சிறுநீரக செயல்பாடு)';
+  if (n.includes('urea') || n.includes('bun')) return 'இரத்த யூரியா (BUN)';
+  if (n.includes('egfr')) return 'சிறுநீரக வடிகட்டும் திறன் (eGFR)';
+  if (n.includes('bilirubin')) return 'பிலிரூபின் (மஞ்சள் காமாலை அளவு)';
+  if (n.includes('sgot') || n.includes('ast')) return 'கல்லீரல் என்சைம் (AST / SGOT)';
+  if (n.includes('sgpt') || n.includes('alt')) return 'கல்லீரல் என்சைம் (ALT / SGPT)';
+  if (n.includes('alp')) return 'ஆல்கலைன் பாஸ்பேட்டேஸ் (ALP)';
+  if (n.includes('protein')) return 'மொத்த புரதம் (Total Protein)';
+  if (n.includes('albumin')) return 'அல்புமின் புரதம்';
+  if (n.includes('sodium')) return 'சோடியம் உப்பு அளவு';
+  if (n.includes('potassium')) return 'பொட்டாசியம் அளவு';
+  if (n.includes('chloride')) return 'குளோரைடு அளவு';
+  if (n.includes('vitamin d')) return 'வைட்டமின் D3 அளவு';
+  return name;
+};
+
+const translateTimingToTamil = (instructions = '', frequency = '') => {
+  const combined = (instructions + ' ' + frequency).toLowerCase();
+  let timing = [];
+  
+  if (combined.includes('before food') || combined.includes('before meals') || combined.includes('empty stomach') || combined.includes('ac')) {
+    timing.push('உணவுக்கு முன் (சாப்பிடுவதற்கு அரை மணி நேரம் முன்)');
+  } else if (combined.includes('after food') || combined.includes('after meals') || combined.includes('pc') || combined.includes('with food')) {
+    timing.push('உணவுக்குப் பின் (சாப்பிட்ட பிறகு)');
+  } else {
+    timing.push('உணவுக்குப் பின் (வழக்கமான முறை)');
+  }
+
+  if (combined.includes('twice') || combined.includes('bid') || combined.includes('2 times') || combined.includes('morning and night')) {
+    timing.push('காலை மற்றும் இரவு');
+  } else if (combined.includes('thrice') || combined.includes('tid') || combined.includes('3 times')) {
+    timing.push('காலை, மதியம், மற்றும் இரவு');
+  } else if (combined.includes('once') || combined.includes('od') || combined.includes('daily')) {
+    if (combined.includes('night') || combined.includes('bedtime') || combined.includes('hs')) {
+      timing.push('தினமும் இரவு தூங்கும் முன்');
+    } else {
+      timing.push('தினமும் காலை ஒரு வேளை');
+    }
+  }
+
+  return timing.join(' — ');
+};
+
+const translateStatusToTamil = (status = '') => {
+  const s = status.toLowerCase();
+  if (s === 'normal' || s === 'optimal') return 'இயல்பான ஆரோக்கிய அளவு ✅';
+  if (s === 'high') return 'அதிகமாக உள்ளது ⚠️';
+  if (s === 'low') return 'குறைவாக உள்ளது ⚠️';
+  if (s === 'critical') return 'மிக எச்சரிக்கை தேவை 🔴';
+  return 'சரிபார்க்கப்பட்டது';
+};
+
 export function generateClientChatResponse(query = '', language = 'en', imagePreview = null) {
   const q = (query || '').toLowerCase().trim();
   const docs = getStoredDocuments();
@@ -251,7 +317,17 @@ export function generateClientChatResponse(query = '', language = 'en', imagePre
 
     let labAnswer = '';
     if (isTamilLang) {
-      labAnswer = `🩺 **உங்கள் சமீபத்திய இரத்தப் பரிசோதனை அளவுகள்:**\n\n${testSummaries || 'உங்கள் பதிவுகளில் குறிப்பிட்ட biomarker எதுவும் கிடைக்கவில்லை.'}\n\n🌟 **கவனிக்க வேண்டியவை:** ${insightLine}`;
+      const tamilSummaries = matchedTests.map(t => {
+        const tamilName = translateBiomarkerToTamil(t.test_name);
+        const tamilStatus = translateStatusToTamil(t.status);
+        return `• **${tamilName}**\n  - பரிசோதனை முடிவு: **${t.value} ${t.unit}** (இயல்பான எல்லை: ${t.range})\n  - நிலை: **${tamilStatus}**\n  - அறிக்கை: *${t.source_doc}* (${t.date})`;
+      }).join('\n\n');
+
+      const tamilInsight = abnormal.length > 0
+        ? abnormal.map(t => `${translateBiomarkerToTamil(t.test_name)}: **${t.observed_value || t.value} ${t.unit}** (${translateStatusToTamil(t.status)})`).join(', ')
+        : 'அனைத்து பரிசோதனை அளவுகளும் இயல்பான ஆரோக்கியமான வரம்பிற்குள் உள்ளன.';
+
+      labAnswer = `🩺 **உங்கள் சமீபத்திய இரத்தப் பரிசோதனை அளவுகள் (முழுமையான தமிழ் விவரம்):**\n\n${tamilSummaries || 'குறிப்பிட்ட பரிசோதனை விவரங்கள் உங்கள் பதிவேட்டில் கிடைக்கவில்லை.'}\n\n🌟 **கவனிக்க வேண்டியவை & வழிகாட்டுதல்:**\n${tamilInsight}\n\n💡 *குறிப்பு: உங்கள் பரிசோதனை முடிவுகள் பற்றி மேலும் அறிய அல்லது மருந்து உட்கொள்ளும் முறைகளைத் தெரிந்துகொள்ள என்னிடம் கேளுங்கள்!*`;
     } else if (isMultiLang) {
       labAnswer = `🩺 **Ungaloda Latest Verified Biomarker Values:**\n\n${testSummaries || 'Specific biomarker records-la match aagala.'}\n\n🌟 **Quick Insight:** ${insightLine}`;
     } else {
@@ -359,7 +435,12 @@ export function generateClientChatResponse(query = '', language = 'en', imagePre
 
     let medAnswer = '';
     if (isTamilLang) {
-      medAnswer = `💊 **நீங்கள் உட்கொள்ளும் மருந்துகள்:**\n\n${medDetails}\n\n⚠️ *நினைவூட்டல்: மருந்துகளின் அளவை மாற்றுவதற்கு முன் எப்போதும் உங்கள் மருத்துவரை அணுகவும்.*`;
+      const tamilMedDetails = allPrescriptions.map(p => {
+        const tamilTiming = translateTimingToTamil(p.instructions, p.frequency);
+        return `• 💊 மருந்து பெயர்: **${p.name}** (மருந்தின் அளவு: \`${p.dosage}\`)\n  - உட்கொள்ளும் நேரம் & அட்டவணை: **${tamilTiming}**\n  - கூடுதல் மருத்துவ வழிமுறை: ${p.instructions || 'மருத்துவர் அறிவுரைப்படி'}\n  - பதிவு ஆவணம்: *${p.source_doc}*`;
+      }).join('\n\n');
+
+      medAnswer = `💊 **நீங்கள் உட்கொள்ளும் மருந்துகள் & எப்போது எப்படி உட்கொள்ள வேண்டும் என்ற முழு விவரம்:**\n\n${tamilMedDetails || 'உங்கள் பதிவுகளில் செயலில் உள்ள மருந்துச் சீட்டுகள் எதுவும் இல்லை.'}\n\n⚠️ **முக்கிய மருத்துவ நினைவூட்டல்:**\n1. மருந்துகளை எப்போதும் மருத்துவர் பரிந்துரைத்த நேரத்தில் சரியான இடைவெளியில் உட்கொள்ளவும்.\n2. மருத்துவரை ஆலோசிக்காமல் மருந்துகளின் அளவையோ நேரத்தையோ சுயமாக மாற்றக்கூடாது.\n3. மருந்துகளை உட்கொண்ட பின் ஏதேனும் ஒவ்வாமை ஏற்பட்டால் உடனடியாக மருத்துவரை அணுகவும்.`;
     } else if (isMultiLang) {
       medAnswer = `💊 **Ungaloda Active Prescriptions & Regimen:**\n\n${medDetails}\n\n⚠️ *Friendly Reminder: Medicine dosage change pannradhuku munnaadi ungal doctor-idam advice vaangavum.*`;
     } else {

@@ -23,6 +23,7 @@ import {
   Utensils
 } from 'lucide-react';
 
+import { deriveLabNutritionInsights, getRecommendedFoods } from '../services/labNutritionService';
 import {
   FALLBACK_FOODS,
   FALLBACK_LAB_INSIGHTS,
@@ -62,35 +63,32 @@ const NutritionPage = () => {
   const [labInsights, setLabInsights] = useState(FALLBACK_LAB_INSIGHTS);
   const [loadingInsights, setLoadingInsights] = useState(false);
 
+  const [isSugarHighAlert, setIsSugarHighAlert] = useState(false);
+
   const fetchLabInsights = async () => {
     try {
       setLoadingInsights(true);
+      const personal = deriveLabNutritionInsights();
+      setIsSugarHighAlert(personal.isSugarElevated);
+      if (personal.insights && personal.insights.length > 0) {
+        setLabInsights(personal.insights);
+        return;
+      }
       const res = await api.get('/nutrition/report-recommendations');
       if (res.data?.insights && res.data.insights.length > 0) {
         setLabInsights(res.data.insights);
       }
     } catch (err) {
-      console.warn('Using client verified lab nutrition insights fallback.');
-      setLabInsights(FALLBACK_LAB_INSIGHTS);
+      const personal = deriveLabNutritionInsights();
+      setIsSugarHighAlert(personal.isSugarElevated);
+      setLabInsights(personal.insights || FALLBACK_LAB_INSIGHTS);
     } finally {
       setLoadingInsights(false);
     }
   };
 
   const filterLocalFoods = (query = '', category = 'All') => {
-    let list = [...FALLBACK_FOODS];
-    if (category !== 'All') {
-      list = list.filter((f) => f.food_category === category);
-    }
-    if (query.trim()) {
-      const q = query.toLowerCase().trim();
-      list = list.filter((f) =>
-        f.food_name.toLowerCase().includes(q) ||
-        (f.common_name && f.common_name.toLowerCase().includes(q)) ||
-        f.food_category.toLowerCase().includes(q)
-      );
-    }
-    return list;
+    return getRecommendedFoods(query, category);
   };
 
   const fetchFoods = async (query = '', category = 'All') => {
